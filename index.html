@@ -151,6 +151,82 @@
   .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
   .ar { font-family: var(--serif); font-weight: 400; letter-spacing: -.005em; }
 
+  /* ---------- the menu ---------- */
+
+  .nav-veil {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(8, 20, 24, .45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+  }
+
+  .nav-veil.is-open { opacity: 1; pointer-events: auto; }
+
+  .nav {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 41;
+    width: min(310px, 84vw);
+    padding: 14px 14px 28px;
+    overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    box-shadow: var(--shadow-lift);
+    transform: translateX(-102%);
+    transition: transform .22s cubic-bezier(.4, 0, .2, 1);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav.is-open { transform: none; }
+  .nav[aria-hidden="true"] { visibility: hidden; }
+  .nav.is-open[aria-hidden="false"] { visibility: visible; }
+
+  .nav-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 6px 14px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 10px;
+  }
+
+  .nav-title { font-family: var(--serif); font-size: 22px; letter-spacing: -.02em; }
+
+  .nav-group {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 14px 6px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    text-align: left;
+    padding: 10px 11px;
+    border-radius: var(--r-sm);
+    border: 1px solid transparent;
+  }
+
+  .nav-item:hover:not(.is-off) { background: var(--surface-2); border-color: var(--line); }
+  .nav-item.is-off { opacity: .45; cursor: not-allowed; }
+  .nav-label { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+  .nav-note { font-size: 12px; color: var(--ink-3); line-height: 1.35; }
+  .nav-sub .nav-label { font-weight: 500; font-size: 14.5px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav { transition: none; }
+  }
+
   /* ---------- masthead ---------- */
 
   .masthead {
@@ -984,6 +1060,45 @@
   .heard-text { font-size: 19px; line-height: 1.4; direction: rtl; }
   .heard-note { font-size: 12px; color: var(--ink-3); line-height: 1.4; margin-top: 3px; }
 
+  .heard-yes {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    align-self: center;
+    margin-top: 11px;
+    padding: 9px 16px 9px 13px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--good);
+    background: var(--surface);
+    border: 1px solid var(--good);
+  }
+
+  .heard-yes:hover { background: var(--good-soft); }
+  .heard.is-close .heard-yes { background: var(--surface); }
+  .heard-yes .aside-tick { opacity: 1; border-color: currentColor; }
+
+  .understood-hint {
+    float: right;
+    letter-spacing: .04em;
+    text-transform: none;
+    font-weight: 400;
+    color: var(--ink-3);
+  }
+
+  .understood-none {
+    align-self: flex-start;
+    margin-top: 2px;
+    font-size: 12.5px;
+    color: var(--ink-3);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .understood-none:hover { color: var(--ink-2); }
+
   /* ---------- listening ---------- */
 
   .listen-stage { display: grid; place-items: center; padding: 18px 0 6px; }
@@ -1220,6 +1335,25 @@
   details.guide > summary::after { content: "+"; font-family: var(--mono); color: var(--ink-3); }
   details.guide[open] > summary::after { content: "\2212"; }
   details.guide[open] > summary { border-bottom: 1px solid var(--line); }
+
+  details.guide.fold { margin-top: 10px; }
+  details.guide.fold > summary { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }
+
+  .fold-count {
+    margin-left: auto;
+    margin-right: 12px;
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 400;
+    color: var(--ink-3);
+  }
+
+  .fold-body { padding: 15px 14px 17px; }
+  .fold-body .picker { margin-bottom: 0; }
+  .fold-lead { margin: 0 0 12px; font-size: 13px; color: var(--ink-3); }
 
   .guide-body { padding: 15px 16px 17px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
   .guide-body p { margin: 0 0 11px; }
@@ -2979,19 +3113,26 @@
   }
 
   // What the recogniser made of you, shown plainly and without a verdict.
-  function heardHTML(t, expectedTranslit) {
+  function heardHTML(t, expectedTranslit, confirm) {
     if (!t.heard) return "";
     if (!t.heard.text) {
       return '<div class="heard is-none">Nothing came through. Try again, or just mark yourself.</div>';
     }
     var close = t.heard.score >= HEARD_OK;
     var near = close ? { text: expectedTranslit, sure: true } : nearestTranslit(t.heard.text);
+    // Whatever it thinks it heard, the last word is yours: one tap to
+    // confirm and carry on, rather than being left looking at a guess.
+    var yes = confirm
+      ? '<button class="heard-yes" data-act="' + confirm.act + '"' +
+        (confirm.id ? ' data-id="' + esc(confirm.id) + '"' : "") + ">" +
+        '<span class="aside-tick" aria-hidden="true"></span>' + esc(confirm.label) + "</button>"
+      : "";
     return '<div class="heard' + (close ? " is-close" : "") + '">' +
       '<span class="heard-label">' +
       (close ? "That matches" : near.sure ? "Closest to" : "It heard") + "</span>" +
       '<span class="heard-text ar">' + esc(near.text || "-") + "</span>" +
       (close ? "" : '<span class="heard-note">Recognisers are shaky on Modern Standard Arabic. You decide.</span>') +
-      "</div>";
+      yes + "</div>";
   }
 
   function sayBtn(translit, small) {
@@ -3721,6 +3862,7 @@
     return {
       lesson: fields.lesson || null,
       isReview: !!fields.isReview,
+      isDrill: fields.isDrill || null,
       isConvo: !!fields.isConvo,
       isToday: !!fields.isToday,
       convo: fields.convo || null,
@@ -3904,6 +4046,45 @@
       reviewPool: pool.length,
       tasks: tasks
     });
+  }
+
+  // A single game on its own, over everything you have passed. For when
+  // you want twelve rounds of one thing rather than a mixed session.
+  function buildDrill(type) {
+    var pool = finishedLessons();
+    if (!pool.length) return null;
+    if (!playable(type)) return null;
+
+    if (type === "match") {
+      var all = studied().filter(function (it) { return !it.known; });
+      if (all.length < MATCH_PAIRS) all = studied();
+      if (!all.length) return null;
+      var grids = [];
+      for (var g = 0; g < 3; g++) {
+        var draw = drawWeighted(all, MATCH_PAIRS * 3).map(function (it) {
+          return { ar: it.ar, en: it.en, _lesson: it.lesson, _phrase: it.phrase };
+        });
+        grids.push(matchRound({ phrases: [], pool: dedupePhrases(draw).slice(0, MATCH_PAIRS) }));
+      }
+      return newSession({ isReview: true, isDrill: type, reviewPool: pool.length, tasks: grids });
+    }
+
+    var usable = studied().filter(function (it) { return !it.known && canMake(it, type); });
+    if (!usable.length) usable = studied().filter(function (it) { return canMake(it, type); });
+    if (!usable.length) return null;
+
+    var picked = [], guard = 0;
+    while (picked.length < REVIEW_ROUNDS && guard++ < 40) {
+      var batch = drawWeighted(usable, REVIEW_ROUNDS - picked.length);
+      var made = 0;
+      batch.forEach(function (item) {
+        var r = makeRound(item.lesson, item, type);
+        if (r) { picked.push(r); made++; }
+      });
+      if (!made) break;
+    }
+    if (!picked.length) return null;
+    return newSession({ isReview: true, isDrill: type, reviewPool: pool.length, tasks: picked });
   }
 
   /* ---------- what to do today ---------- */
@@ -4471,10 +4652,50 @@
         '<span class="lesson-meta">' + esc(meta) + "</span></span>" + right + "</button>";
     }).join("");
 
-    return '<div class="section-head" style="margin-top:32px">' +
-      "<h2>Conversations</h2>" +
-      '<span class="picker-note">whole exchanges, start to finish</span></div>' +
+    return '<p class="fold-lead">Whole exchanges, start to finish.</p>' +
       '<div class="track">' + rows + "</div>";
+  }
+
+  var navOpen = false;
+
+  // Everything the app can do, in one list, reachable from any screen.
+  function navHTML() {
+    var done = finishedLessons().length;
+    var g = games();
+    var drills = GAMES.filter(function (x) { return playable(x.key); }).map(function (x) {
+      var off = !done;
+      return '<button class="nav-item nav-sub' + (off ? " is-off" : "") + '" data-act="drill" data-id="' +
+        x.key + '"' + (off ? " disabled" : "") + ">" +
+        '<span class="nav-label">' + esc(x.label) + "</span>" +
+        '<span class="nav-note">' + esc(x.hint) + "</span></button>";
+    }).join("");
+
+    return '<div class="nav-veil' + (navOpen ? " is-open" : "") + '" data-act="nav-close"></div>' +
+      '<nav class="nav' + (navOpen ? " is-open" : "") + '" aria-hidden="' + (navOpen ? "false" : "true") + '">' +
+      '<div class="nav-head"><span class="nav-title">Fus&#183;ha</span>' +
+      '<button class="icon-btn" data-act="nav-close" aria-label="Close the menu">&times;</button></div>' +
+
+      '<div class="nav-group">Practise</div>' +
+      '<button class="nav-item" data-act="nav-today"><span class="nav-label">Today</span>' +
+      '<span class="nav-note">' + esc(todayCopy(todayPlan()).line) + "</span></button>" +
+      '<button class="nav-item' + (done ? "" : " is-off") + '" data-go="review"' + (done ? "" : " disabled") +
+      '><span class="nav-label">Mixed review</span>' +
+      '<span class="nav-note">' + (done ? "Everything you have passed" : "Pass a lesson to open this") + "</span></button>" +
+
+      '<div class="nav-group">One game at a time</div>' + drills +
+
+      '<div class="nav-group">Speak</div>' +
+      '<button class="nav-item" data-go="talk"><span class="nav-label">Free talk</span>' +
+      '<span class="nav-note">Say anything; it answers from the lessons you choose</span></button>' +
+
+      '<div class="nav-group">Learn</div>' +
+      '<button class="nav-item" data-act="nav-course"><span class="nav-label">The course</span>' +
+      '<span class="nav-note">' + done + " of " + LESSONS.length + " lessons passed</span></button>" +
+      '<button class="nav-item" data-act="nav-convos"><span class="nav-label">Conversations</span>' +
+      '<span class="nav-note">' + CONVOS.length + " scripted exchanges</span></button>" +
+      '<button class="nav-item" data-go="phrasebook"><span class="nav-label">Phrasebook</span>' +
+      '<span class="nav-note">The lines worth having to hand</span></button>' +
+      "</nav>";
   }
 
   function homeHTML() {
@@ -4505,8 +4726,7 @@
     }).join("");
 
     return '<header class="masthead">' +
-      '<button class="pb-link" data-go="phrasebook">Phrasebook</button>' +
-      '<button class="pb-link talk-link" data-go="talk">Free talk</button>' +
+      '<button class="pb-link" data-act="nav-open" aria-label="Open the menu">&#9776; Menu</button>' +
       '<div class="eyebrow">Modern Standard Arabic</div>' +
       '<h1 class="wordmark">Fus<em>&#183;</em>ha</h1>' +
       '<p class="tagline">The Arabic every Arab country understands, in twenty-six lessons. No alphabet required.</p>' +
@@ -4530,13 +4750,22 @@
 
       coreHTML() +
       todayHTML() +
-      pickerHTML("used in lessons and review") +
       reviewHTML() +
 
-      '<div class="section-head"><h2>The course</h2></div>' +
-      '<div class="track">' + rows + "</div>" +
+      // Everything else is here when you want it and out of the way when
+      // you do not. One screen with five things shouting at once is how
+      // Today stopped being the obvious thing to press.
+      '<details class="guide fold"' + (doneCount ? "" : " open") + '>' +
+      '<summary>The course<span class="fold-count">' + doneCount + " / " + LESSONS.length + "</span></summary>" +
+      '<div class="fold-body"><div class="track">' + rows + "</div></div></details>" +
 
-      convosHTML() +
+      '<details class="guide fold"><summary>Conversations' +
+      '<span class="fold-count">' + CONVOS.length + "</span></summary>" +
+      '<div class="fold-body">' + convosHTML() + "</div></details>" +
+
+      '<details class="guide fold"><summary>Games<span class="fold-count">' +
+      GAMES.filter(function (g) { return games()[g.key]; }).length + " on</span></summary>" +
+      '<div class="fold-body">' + pickerHTML("used in lessons and review") + "</div></details>" +
 
       '<details class="guide"><summary>How to read the spelling</summary><div class="guide-body">' +
       '<p>Every phrase is written in the Latin alphabet. The accent marks the syllable you lean on: <span class="ar">Sab&agrave;h al-kh&egrave;ir</span> is <i>sa-BAAH al-KHAYR</i>.</p>' +
@@ -4595,13 +4824,15 @@
       var top = talk.options[0];
       var sure = top.score >= TALK_MATCH;
       understood = '<div class="understood' + (sure ? " is-sure" : "") + '">' +
-        '<div class="understood-head">' + (sure ? "I understood" : "Did you mean") + "</div>" +
+        '<div class="understood-head">' + (sure ? "I understood" : "Did you mean") +
+        '<span class="understood-hint">tap to say it</span></div>' +
         talk.options.map(function (o, i) {
           return '<button class="understood-opt' + (i === 0 && sure ? " is-lead" : "") +
             '" data-act="talk-pick" data-id="' + esc(o.p.ar) + '">' +
             '<span class="ar">' + esc(o.p.ar) + "</span>" +
             '<span class="understood-en">' + esc(o.p.en) + "</span></button>";
         }).join("") +
+        '<button class="understood-none" data-act="talk-none">None of these</button>' +
         "</div>";
     } else if (talk.heard !== null) {
       understood = '<div class="understood is-lost">' +
@@ -4682,6 +4913,7 @@
   function topbarHTML(title, barPct, counter) {
     return '<div class="topbar">' +
       '<button class="icon-btn" data-act="back" aria-label="Back">&larr;</button>' +
+      '<button class="icon-btn" data-act="nav-open" aria-label="Open the menu">&#9776;</button>' +
       '<span class="topbar-title">' + esc(title) + "</span>" +
       (counter ? '<span class="counter">' + esc(counter) + "</span>" : "") +
       "</div>" +
@@ -4770,7 +5002,8 @@
       t.type === "write" ? writeHTML(t) :
       t.type === "listen" ? listenHTML(t) :
       t.type === "convoturn" ? convoTurnHTML(t) : dialogHTML(t);
-    var title = session.isReview ? "Mixed review"
+    var title = session.isDrill ? (gameByKey(session.isDrill) || {}).label + " only"
+      : session.isReview ? "Mixed review"
       : session.isConvo ? session.convo.title
       : session.lesson.title;
     return topbarHTML(title, pct, (session.i + 1) + " / " + session.tasks.length) +
@@ -4820,7 +5053,8 @@
         '<div class="prompt-sub">out loud, then check yourself</div>' +
         (canHear() ? '<div class="mic-row">' + micBtn("Say it into the mic", ears.busy) + "</div>" : micNote()) +
         "</div>" +
-        heardHTML(t, t.phrase.ar) +
+        heardHTML(t, t.phrase.ar,
+          t.heard && t.heard.text ? { act: "say-confirm", label: "Yes, that is what I said" } : null) +
         '<div class="btn-row"><button class="btn btn-wide" data-act="say-reveal">Reveal</button></div>';
     }
     return '<div class="prompt">' +
@@ -4871,6 +5105,18 @@
       sayBtn(ar, true) + "</div>";
   }
 
+  // Which of the three replies the microphone landed on, if any.
+  function convoHeardPick(t) {
+    if (!t.heard || !t.heard.text) return null;
+    var best = null, bestScore = 0;
+    t.options.forEach(function (opt) {
+      var sc = heardScore(t.heard.text, SCRIPT[opt] || "");
+      if (sc > bestScore) { bestScore = sc; best = opt; }
+    });
+    if (!best || bestScore < 0.34) return null;
+    return { act: "convo-confirm", id: best, label: "Yes, I said " + best };
+  }
+
   function convoTurnHTML(t) {
     var checked = session.state === "checked";
     var lines = "";
@@ -4886,7 +5132,7 @@
       (checked ? "" :
         '<div class="prompt-label" style="margin:20px 0 12px">How do you reply?</div>' +
         (canHear() ? '<div class="mic-row">' + micBtn("Answer out loud", ears.busy) + "</div>" : micNote()) +
-        heardHTML(t, t.answer) +
+        heardHTML(t, t.answer, convoHeardPick(t)) +
         optionsHTML(t.options, true, t));
   }
 
@@ -4983,6 +5229,9 @@
     } else if (session.isToday && session.todayNext) {
       line = "Revision done. Lesson " + session.todayNext.id + ", " +
         session.todayNext.title.toLowerCase() + ", is waiting when you are.";
+    } else if (session.isDrill) {
+      line = ((gameByKey(session.isDrill) || {}).label || "That game") +
+        ", drawn from everything you have passed.";
     } else if (session.isReview) {
       line = "Drawn from your " + session.reviewPool + " finished lesson" +
         (session.reviewPool === 1 ? "" : "s") +
@@ -5025,6 +5274,7 @@
         : '<button class="btn" data-go="home">Back to lessons</button>';
 
     return topbarHTML(session.isConvo ? session.convo.title
+      : session.isDrill ? (gameByKey(session.isDrill) || {}).label + " only"
       : session.isReview ? "Mixed review" : lesson.title) +
       '<div class="card result fade-in">' +
       '<div class="eyebrow">' + eyebrow + "</div>" +
@@ -5176,14 +5426,19 @@
      RENDER + EVENTS
      ============================================================ */
 
+  function screenHTML() {
+    if (view.name === "home") return homeHTML();
+    if (view.name === "lesson") return lessonHTML(view.lesson);
+    if (view.name === "learn") return learnHTML();
+    if (view.name === "play") return playHTML();
+    if (view.name === "result") return resultHTML();
+    if (view.name === "phrasebook") return phrasebookHTML();
+    if (view.name === "talk") return talkHTML();
+    return "";
+  }
+
   function render() {
-    if (view.name === "home") app.innerHTML = homeHTML();
-    else if (view.name === "lesson") app.innerHTML = lessonHTML(view.lesson);
-    else if (view.name === "learn") app.innerHTML = learnHTML();
-    else if (view.name === "play") app.innerHTML = playHTML();
-    else if (view.name === "result") app.innerHTML = resultHTML();
-    else if (view.name === "phrasebook") app.innerHTML = phrasebookHTML();
-    else if (view.name === "talk") app.innerHTML = talkHTML();
+    app.innerHTML = navHTML() + screenHTML();
     markPlaying();
     afterRender();
   }
@@ -5239,6 +5494,7 @@
 
     var dest = el.getAttribute("data-go");
     if (dest) {
+      navOpen = false;
       stopSpeech();
       if (dest === "home") { session = null; go({ name: "home" }); return; }
       if (dest === "phrasebook") { pbQuery = ""; go({ name: "phrasebook" }); return; }
@@ -5275,6 +5531,22 @@
       return;
     }
 
+    if (act === "nav-open") { navOpen = true; render(); return; }
+    if (act === "nav-close") { navOpen = false; render(); return; }
+    if (act === "nav-today") { navOpen = false; stopSpeech(); startToday(); return; }
+    if (act === "nav-course" || act === "nav-convos") {
+      navOpen = false;
+      session = null;
+      go({ name: "home" });
+      return;
+    }
+    if (act === "drill") {
+      navOpen = false;
+      var d = buildDrill(el.getAttribute("data-id"));
+      if (d) { session = d; go({ name: "play" }); }
+      else render();
+      return;
+    }
     if (act === "back") {
       var up = parentHash(view);
       stopSpeech();
@@ -5400,6 +5672,13 @@
       render();
       return;
     }
+    if (act === "talk-none") {
+      talk.options = [];
+      talk.heard = null;
+      talk.draft = "";
+      render();
+      return;
+    }
     if (act === "talk-pick") {
       talkSay(el.getAttribute("data-id"));
       render();
@@ -5436,6 +5715,19 @@
         }
         render();
       }, function () { render(); }, function () { render(); });
+      return;
+    }
+    if (act === "say-confirm") {
+      var tc = session.tasks[session.i];
+      if (session.state === "checked") return;
+      // You confirmed it, so it counts, and the strength system will
+      // catch it later if you were being kind to yourself.
+      settle(tc, true, tc.phrase);
+      return;
+    }
+    if (act === "convo-confirm") {
+      if (session.state === "checked") return;
+      answer(el.getAttribute("data-id"));
       return;
     }
     if (act === "say-reveal") {
