@@ -223,6 +223,24 @@
   .nav-note { font-size: 12px; color: var(--ink-3); line-height: 1.35; }
   .nav-sub .nav-label { font-weight: 500; font-size: 14.5px; }
 
+  .nav-who { position: relative; padding-right: 30px; }
+  .nav-who.is-on { background: var(--accent-soft); border-color: transparent; }
+  .nav-who.is-on .nav-label { color: var(--accent-ink); }
+
+  .who-tick {
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-top: -4px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .who-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 9px 6px 2px; }
+  .who-row .chip { padding: 6px 11px; font-size: 12.5px; }
+
   @media (prefers-reduced-motion: reduce) {
     .nav { transition: none; }
   }
@@ -3370,24 +3388,127 @@
      PROGRESS
      ============================================================ */
 
-  var KEY = "fusha-msa-v1";
+  var KEY = "fusha-msa-v1";          // the original single-user store
+  var BOOK = "fusha-people-v1";      // who exists, and who is current
   var store = { lessons: {} };
   var storageOff = false;
+  var people = { list: [], current: null };
+
+  function readRaw(key) {
+    try { return window.localStorage.getItem(key); }
+    catch (e) { storageOff = true; return null; }
+  }
+
+  function writeRaw(key, value) {
+    if (storageOff) return;
+    try { window.localStorage.setItem(key, value); }
+    catch (e) { storageOff = true; }
+  }
+
+  function storeKeyFor(id) { return KEY + ":" + id; }
+
+  function savePeople() { writeRaw(BOOK, JSON.stringify(people)); }
+
+  function currentPerson() {
+    for (var i = 0; i < people.list.length; i++) {
+      if (people.list[i].id === people.current) return people.list[i];
+    }
+    return people.list[0] || null;
+  }
+
+  function loadStoreFor(id) {
+    var raw = readRaw(storeKeyFor(id));
+    var out = { lessons: {} };
+    if (raw) {
+      try {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && parsed.lessons) out = parsed;
+      } catch (e) { /* a corrupt profile starts clean rather than crashing */ }
+    }
+    return out;
+  }
+
+  function newPersonId() {
+    var n = 1;
+    var taken = {};
+    people.list.forEach(function (p) { taken[p.id] = true; });
+    while (taken["p" + n]) n++;
+    return "p" + n;
+  }
 
   function load() {
-    try {
-      var raw = window.localStorage.getItem(KEY);
-      if (raw) {
-        var parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object" && parsed.lessons) store = parsed;
-      }
-    } catch (e) { storageOff = true; }
+    var book = readRaw(BOOK);
+    if (book) {
+      try {
+        var parsed = JSON.parse(book);
+        if (parsed && parsed.list && parsed.list.length) people = parsed;
+      } catch (e) { /* fall through to setting one up */ }
+    }
+
+    if (!people.list.length) {
+      // Anyone already using the app keeps everything: their progress
+      // simply becomes the first profile.
+      var legacy = readRaw(KEY);
+      var first = { id: "p1", name: "Me" };
+      people = { list: [first], current: first.id };
+      if (legacy) writeRaw(storeKeyFor(first.id), legacy);
+      savePeople();
+    }
+
+    if (!currentPerson()) people.current = people.list[0].id;
+    store = loadStoreFor(people.current);
   }
 
   function save() {
     if (storageOff) return;
-    try { window.localStorage.setItem(KEY, JSON.stringify(store)); }
-    catch (e) { storageOff = true; }
+    writeRaw(storeKeyFor(people.current), JSON.stringify(store));
+  }
+
+  function switchTo(id) {
+    save();
+    people.current = id;
+    savePeople();
+    store = loadStoreFor(id);
+    TALK = null; TALK_KEY = null; ENGLISH = null;
+    restoreNote = null;
+  }
+
+  function addPerson(name) {
+    var id = newPersonId();
+    people.list.push({ id: id, name: name || "Someone" });
+    savePeople();
+    switchTo(id);
+    return id;
+  }
+
+  function renamePerson(id, name) {
+    people.list.forEach(function (p) { if (p.id === id) p.name = name; });
+    savePeople();
+  }
+
+  function removePerson(id) {
+    if (people.list.length < 2) return false;
+    var wasCurrent = people.current === id;
+    people.list = people.list.filter(function (p) { return p.id !== id; });
+
+    // Deliberately not switchTo: that saves the outgoing store first,
+    // which would write the departing profile's data straight back.
+    if (wasCurrent) {
+      people.current = people.list[0].id;
+      store = loadStoreFor(people.current);
+      TALK = null; TALK_KEY = null; ENGLISH = null;
+      restoreNote = null;
+    }
+    savePeople();
+    try { window.localStorage.removeItem(storeKeyFor(id)); } catch (e) { /* best effort */ }
+    return true;
+  }
+
+  function personSummary(id) {
+    var s = id === people.current ? store : loadStoreFor(id);
+    var done = 0;
+    Object.keys(s.lessons || {}).forEach(function (k) { if (s.lessons[k].done) done++; });
+    return done;
   }
 
   function recordOf(id) { return store.lessons[id] || null; }
@@ -4698,6 +4819,22 @@
       '<div class="nav-head"><span class="nav-title">Fus&#183;ha</span>' +
       '<button class="icon-btn" data-act="nav-close" aria-label="Close the menu">&times;</button></div>' +
 
+      '<div class="nav-group">Who is practising</div>' +
+      people.list.map(function (p) {
+        var on = p.id === people.current;
+        var n = personSummary(p.id);
+        return '<button class="nav-item nav-who' + (on ? " is-on" : "") + '" data-act="who" data-id="' +
+          esc(p.id) + '" aria-pressed="' + (on ? "true" : "false") + '">' +
+          '<span class="nav-label">' + esc(p.name) + "</span>" +
+          '<span class="nav-note">' + n + " lesson" + (n === 1 ? "" : "s") + " passed</span>" +
+          (on ? '<span class="who-tick" aria-hidden="true"></span>' : "") + "</button>";
+      }).join("") +
+      '<div class="who-row">' +
+      '<button class="chip" data-act="who-add">Add someone</button>' +
+      '<button class="chip" data-act="who-rename">Rename</button>' +
+      (people.list.length > 1 ? '<button class="chip" data-act="who-remove">Remove</button>' : "") +
+      "</div>" +
+
       '<div class="nav-group">Practise</div>' +
       '<button class="nav-item" data-act="nav-today"><span class="nav-label">Today</span>' +
       '<span class="nav-note">' + esc(todayCopy(todayPlan()).line) + "</span></button>" +
@@ -5554,6 +5691,44 @@
       return;
     }
 
+    if (act === "who") {
+      var wid = el.getAttribute("data-id");
+      if (wid !== people.current) { stopSpeech(); session = null; learn = null; switchTo(wid); }
+      go({ name: "home" });
+      return;
+    }
+    if (act === "who-add") {
+      var name = window.prompt("Who is this? A first name is enough.", "");
+      if (name === null) return;
+      name = String(name).trim().slice(0, 24);
+      if (!name) return;
+      stopSpeech();
+      session = null; learn = null;
+      addPerson(name);
+      go({ name: "home" });
+      return;
+    }
+    if (act === "who-rename") {
+      var me = currentPerson();
+      if (!me) return;
+      var newName = window.prompt("Call this profile what?", me.name);
+      if (newName === null) return;
+      newName = String(newName).trim().slice(0, 24);
+      if (!newName) return;
+      renamePerson(me.id, newName);
+      render();
+      return;
+    }
+    if (act === "who-remove") {
+      var who = currentPerson();
+      if (!who || people.list.length < 2) return;
+      if (!window.confirm("Erase " + who.name + " and everything they have done?")) return;
+      stopSpeech();
+      session = null; learn = null;
+      removePerson(who.id);
+      go({ name: "home" });
+      return;
+    }
     if (act === "nav-open") { navOpen = true; render(); return; }
     if (act === "nav-close") { navOpen = false; render(); return; }
     if (act === "nav-today") { navOpen = false; stopSpeech(); startToday(); return; }
