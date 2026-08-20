@@ -917,6 +917,23 @@
   .mic.is-live { color: var(--on-accent); background: var(--accent); cursor: default; opacity: 1; }
   .mic[disabled] { opacity: 1; }
 
+  .mic-stop {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 9px;
+    padding: 11px 17px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-2);
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+  }
+
+  .mic-stop:hover { color: var(--bad); border-color: var(--bad); }
+  .mic-stop-box { width: 10px; height: 10px; border-radius: 2px; background: currentColor; }
+
   .mic-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 16px; }
 
   .mic-bars i {
@@ -2949,21 +2966,30 @@
     var bars = busy
       ? '<span class="mic-bars" aria-hidden="true"><i></i><i></i><i></i></span>'
       : MIC_SVG;
-    return '<button class="mic' + (busy ? " is-live" : "") + '" data-act="mic"' +
+    var main = '<button class="mic' + (busy ? " is-live" : "") + '" data-act="mic"' +
       (busy ? " disabled" : "") + ' aria-live="polite">' +
       bars + "<span>" + esc(text) + "</span></button>";
+    // While it is open you can shut it: waiting for a recogniser to
+    // decide you have finished is the most irritating way to wait.
+    var stop = busy
+      ? '<button class="mic-stop" data-act="mic-stop" aria-label="Stop listening">' +
+        '<span class="mic-stop-box" aria-hidden="true"></span>Stop</button>'
+      : "";
+    return main + stop;
   }
 
   // What the recogniser made of you, shown plainly and without a verdict.
-  function heardHTML(t, expectedAr) {
+  function heardHTML(t, expectedTranslit) {
     if (!t.heard) return "";
     if (!t.heard.text) {
       return '<div class="heard is-none">Nothing came through. Try again, or just mark yourself.</div>';
     }
     var close = t.heard.score >= HEARD_OK;
+    var near = close ? { text: expectedTranslit, sure: true } : nearestTranslit(t.heard.text);
     return '<div class="heard' + (close ? " is-close" : "") + '">' +
-      '<span class="heard-label">' + (close ? "That matches" : "It heard") + "</span>" +
-      '<span class="heard-text">' + esc(t.heard.text) + "</span>" +
+      '<span class="heard-label">' +
+      (close ? "That matches" : near.sure ? "Closest to" : "It heard") + "</span>" +
+      '<span class="heard-text ar">' + esc(near.text || "-") + "</span>" +
       (close ? "" : '<span class="heard-note">Recognisers are shaky on Modern Standard Arabic. You decide.</span>') +
       "</div>";
   }
@@ -2989,7 +3015,7 @@
   var Recog = (typeof window !== "undefined") &&
     (window.SpeechRecognition || window.webkitSpeechRecognition);
 
-  var ears = { supported: !!Recog, busy: false, blocked: null, reason: null, tried: false, stage: null };
+  var ears = { supported: !!Recog, busy: false, blocked: null, reason: null, tried: false, stage: null, active: null };
 
   // Inside an iframe the microphone is refused before the device ever
   // asks you, unless the page embedding us allows it. That is not
@@ -3046,6 +3072,17 @@
 
   function canHear() { return ears.supported && !ears.blocked; }
 
+  // Stopping asks for whatever it has; aborting throws it away. Stop is
+  // the kinder one: you may well have finished speaking.
+  function stopListening() {
+    var r = ears.active;
+    if (!r) return;
+    try { r.stop(); }
+    catch (e) {
+      try { r.abort(); } catch (e2) { /* nothing more to try */ }
+    }
+  }
+
   function listenOnce(onHeard, onDone, onStage) {
     if (!canHear() || ears.busy) return;
     ears.tried = true;
@@ -3059,6 +3096,7 @@
 
     ears.busy = true;
     ears.stage = "starting";
+    ears.active = r;
     var finished = false;
     function stage(name) { ears.stage = name; onStage && onStage(); }
     function done(list) {
@@ -3066,6 +3104,7 @@
       finished = true;
       ears.busy = false;
       ears.stage = null;
+      ears.active = null;
       onHeard(list || []);
       onDone && onDone();
     }
@@ -3146,6 +3185,45 @@
   }
 
   var HEARD_OK = 0.6;
+
+  // The whole course is built on not having to read the alphabet, so
+  // what the recogniser hands back gets romanised before you see it.
+  // Rough on purpose: it is there to show you were heard, not to teach.
+  var ROMAN = {
+    "\u0627": "a", "\u0628": "b", "\u062A": "t", "\u062B": "th", "\u062C": "j",
+    "\u062D": "h", "\u062E": "kh", "\u062F": "d", "\u0630": "dh", "\u0631": "r",
+    "\u0632": "z", "\u0633": "s", "\u0634": "sh", "\u0635": "s", "\u0636": "d",
+    "\u0637": "t", "\u0638": "dh", "\u0639": "\u02BF", "\u063A": "gh", "\u0641": "f",
+    "\u0642": "q", "\u0643": "k", "\u0644": "l", "\u0645": "m", "\u0646": "n",
+    "\u0647": "h", "\u0648": "u", "\u064A": "i", "\u0621": "'",
+    "\u0629": "a", "\u0649": "a", "\u0623": "a", "\u0625": "i", "\u0622": "a",
+    "\u0624": "u", "\u0626": "i", "\u0671": "a"
+  };
+
+  // Written Arabic leaves the short vowels out, so letter-by-letter gives
+  // a consonant skeleton nobody can read: marhaban comes back "mrhba".
+  // Far better to find the nearest phrase the course teaches and show it
+  // the way you learned it. The skeleton is only the last resort.
+  function nearestTranslit(heardAr) {
+    var best = null, bestScore = 0;
+    for (var k in SCRIPT) {
+      if (!Object.prototype.hasOwnProperty.call(SCRIPT, k)) continue;
+      var sc = heardScore(heardAr, SCRIPT[k]);
+      if (sc > bestScore) { bestScore = sc; best = k; }
+    }
+    if (best && bestScore >= 0.34) return { text: best, sure: true };
+    return { text: romanise(heardAr), sure: false };
+  }
+
+  function romanise(ar) {
+    var flat = flattenArabic(ar);
+    var out = "";
+    for (var i = 0; i < flat.length; i++) {
+      var c = flat.charAt(i);
+      out += (c === " ") ? " " : (ROMAN[c] !== undefined ? ROMAN[c] : "");
+    }
+    return out.replace(/\s+/g, " ").trim();
+  }
 
   /* ============================================================
      PROGRESS
@@ -4528,7 +4606,7 @@
     } else if (talk.heard !== null) {
       understood = '<div class="understood is-lost">' +
         '<div class="understood-head">Nothing I know sounds like that</div>' +
-        (talk.heard ? '<div class="heard-text">' + esc(talk.heard) + "</div>" : "") +
+        (talk.heard ? '<div class="heard-text ar">' + esc(nearestTranslit(talk.heard).text || talk.heard) + "</div>" : "") +
         '<div class="understood-note">Try again, or type it below. It only knows the phrases in the lessons.</div>' +
         "</div>";
     }
@@ -5292,6 +5370,7 @@
       render();
       return;
     }
+    if (act === "mic-stop") { stopListening(); return; }
     if (act === "mic-again") {
       ears.blocked = null;
       ears.reason = null;
