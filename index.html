@@ -2902,7 +2902,12 @@
   function micNote() {
     var msg = micTrouble();
     if (!msg) return "";
-    return '<div class="mic-note">' + esc(msg) + "</div>";
+    var serviceHeld = ears.reason === "service-not-allowed" || ears.reason === "network" || ears.reason === "silent";
+    var retry = ears.supported && !inFrame() && !serviceHeld
+      ? '<div class="mic-row" style="margin-top:12px">' +
+        '<button class="mic" data-act="mic-grant">' + MIC_SVG + "<span>Ask for the microphone</span></button></div>"
+      : "";
+    return '<div class="mic-note">' + esc(msg) + "</div>" + retry;
   }
 
   function micBtn(label, busy) {
@@ -2954,16 +2959,50 @@
     try { return window.self !== window.top; } catch (e) { return true; }
   }
 
+  // On iOS the permission sheet reliably appears for getUserMedia, not
+  // for the recogniser. Offer it as its own step rather than hoping.
+  function askForMic(after) {
+    var md = (typeof navigator !== "undefined") && navigator.mediaDevices;
+    if (!md || !md.getUserMedia) { after(false, "no-getusermedia"); return; }
+    var p;
+    try { p = md.getUserMedia({ audio: true }); }
+    catch (e) { after(false, "throw"); return; }
+    if (!p || !p.then) { after(false, "no-promise"); return; }
+    p.then(function (stream) {
+      if (stream && stream.getTracks) stream.getTracks().forEach(function (t) { t.stop(); });
+      after(true, null);
+    }).catch(function (err) {
+      after(false, (err && err.name) || "denied");
+    });
+  }
+
   function micTrouble() {
     if (!ears.supported) {
       return "This browser has no speech recognition. Safari on iOS, or Chrome, will do it.";
     }
-    if (ears.blocked === "denied" || ears.blocked === "start") {
-      return inFrame()
-        ? "The microphone is blocked here because this page runs inside a frame, and a framed page cannot ask for it. Download the file and open it directly in Safari and the microphone works. Typing works either way."
-        : "The microphone was refused. Check Safari's site settings for this page, then try again. Typing works either way.";
+    if (ears.blocked !== "denied" && ears.blocked !== "start") return null;
+
+    if (inFrame()) {
+      return "The microphone is blocked here because this page runs inside a frame, and a framed page cannot ask for it. Open the page on its own and it works. Typing works either way.";
     }
-    return null;
+
+    var r = ears.reason;
+
+    // The microphone and the recogniser are two separate permissions.
+    // Granting the first and being refused the second means the browser
+    // itself is withholding the speech service, which no page can undo.
+    if (r === "service-not-allowed" || r === "network") {
+      return "The microphone is fine, but this browser is withholding the speech service itself. Brave switches it off by default, because recognition is done on Google's servers. Safari or Chrome will do it. Typing works either way.";
+    }
+    if (r === "audio-capture") {
+      return "No microphone was found on this device. Typing works either way.";
+    }
+    if (r === "silent") {
+      return "The recogniser started but never answered. That usually means the browser is quietly withholding it. Safari or Chrome will do it. Typing works either way.";
+    }
+    return "The microphone was refused" + (r ? " (" + r + ")" : "") +
+      ". On iOS: Settings > General > Keyboard > Enable Dictation, then Settings > Safari > Microphone. " +
+      "Then ask again below. Typing works either way.";
   }
 
   function canHear() { return ears.supported && !ears.blocked; }
@@ -5204,6 +5243,14 @@
       render();
       return;
     }
+    if (act === "mic-grant") {
+      askForMic(function (ok, why) {
+        if (ok) { ears.blocked = null; ears.reason = null; }
+        else { ears.blocked = "denied"; ears.reason = why || "denied"; }
+        render();
+      });
+      return;
+    }
     if (act === "talk-reset") { talk = newTalk(); render(); return; }
     if (act === "talk-typing") return;
     if (act === "talk-send") {
@@ -5228,7 +5275,6 @@
       if (!canHear() || ears.busy) return;
       talk.heard = null;
       talk.options = [];
-      render();
       listenOnce(function (list) {
         var said = (list && list[0]) || "";
         talk.heard = said;
@@ -5245,7 +5291,6 @@
       var tm = session && session.tasks[session.i];
       if (!tm || session.state === "checked" || ears.busy) return;
       tm.heard = null;
-      render();
       listenOnce(function (list) {
         var expect = tm.type === "convoturn" ? SCRIPT[tm.answer] : SCRIPT[tm.phrase.ar];
         tm.heard = bestHeard(list, expect || "");
