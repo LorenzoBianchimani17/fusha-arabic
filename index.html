@@ -914,7 +914,31 @@
 
   .mic:hover { filter: brightness(.95); }
   .mic:active { transform: scale(.98); }
-  .mic.is-live { color: var(--on-accent); background: var(--accent); animation: pulse .9s ease-in-out infinite; }
+  .mic.is-live { color: var(--on-accent); background: var(--accent); cursor: default; opacity: 1; }
+  .mic[disabled] { opacity: 1; }
+
+  .mic-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 16px; }
+
+  .mic-bars i {
+    display: block;
+    width: 3px;
+    height: 5px;
+    border-radius: 2px;
+    background: currentColor;
+    animation: bars .9s ease-in-out infinite;
+  }
+
+  .mic-bars i:nth-child(2) { animation-delay: .15s; }
+  .mic-bars i:nth-child(3) { animation-delay: .3s; }
+
+  @keyframes bars {
+    0%, 100% { height: 5px; opacity: .7; }
+    50% { height: 15px; opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mic-bars i { height: 10px; }
+  }
 
   .heard {
     display: flex;
@@ -2913,9 +2937,21 @@
     return '<div class="mic-note">' + esc(msg) + "</div>" + retry;
   }
 
+  var STAGE_TEXT = {
+    starting: "Getting ready",
+    listening: "Listening - say it now",
+    hearing: "I can hear you",
+    thinking: "Working it out"
+  };
+
   function micBtn(label, busy) {
-    return '<button class="mic' + (busy ? " is-live" : "") + '" data-act="mic">' +
-      MIC_SVG + "<span>" + esc(busy ? "Listening..." : label) + "</span></button>";
+    var text = busy ? (STAGE_TEXT[ears.stage] || "Listening") : label;
+    var bars = busy
+      ? '<span class="mic-bars" aria-hidden="true"><i></i><i></i><i></i></span>'
+      : MIC_SVG;
+    return '<button class="mic' + (busy ? " is-live" : "") + '" data-act="mic"' +
+      (busy ? " disabled" : "") + ' aria-live="polite">' +
+      bars + "<span>" + esc(text) + "</span></button>";
   }
 
   // What the recogniser made of you, shown plainly and without a verdict.
@@ -2953,7 +2989,7 @@
   var Recog = (typeof window !== "undefined") &&
     (window.SpeechRecognition || window.webkitSpeechRecognition);
 
-  var ears = { supported: !!Recog, busy: false, blocked: null, reason: null, tried: false };
+  var ears = { supported: !!Recog, busy: false, blocked: null, reason: null, tried: false, stage: null };
 
   // Inside an iframe the microphone is refused before the device ever
   // asks you, unless the page embedding us allows it. That is not
@@ -3010,7 +3046,7 @@
 
   function canHear() { return ears.supported && !ears.blocked; }
 
-  function listenOnce(onHeard, onDone) {
+  function listenOnce(onHeard, onDone, onStage) {
     if (!canHear() || ears.busy) return;
     ears.tried = true;
     var r;
@@ -3022,14 +3058,21 @@
     r.maxAlternatives = 3;
 
     ears.busy = true;
+    ears.stage = "starting";
     var finished = false;
+    function stage(name) { ears.stage = name; onStage && onStage(); }
     function done(list) {
       if (finished) return;
       finished = true;
       ears.busy = false;
+      ears.stage = null;
       onHeard(list || []);
       onDone && onDone();
     }
+
+    r.onaudiostart = function () { stage("listening"); };
+    r.onspeechstart = function () { stage("hearing"); };
+    r.onspeechend = function () { stage("thinking"); };
 
     r.onresult = function (ev) {
       var out = [];
@@ -3050,6 +3093,9 @@
 
     try { r.start(); }
     catch (e) { ears.blocked = "start"; ears.reason = "start"; done([]); return; }
+
+    // Now that it has started, the tap is spent and the screen can move.
+    onStage && onStage();
 
     // Scheduled after start on purpose: if the engine answers straight
     // away this has nothing left to do.
@@ -5067,7 +5113,7 @@
   function afterRender() {
     if (view.name === "talk") {
       var tf = app.querySelector('[data-act="talk-typing"]');
-      if (tf && talk.draft && typeof tf.focus === "function") {
+      if (tf && talk.draft && !ears.busy && typeof tf.focus === "function") {
         tf.focus();
         if (typeof tf.setSelectionRange === "function") tf.setSelectionRange(tf.value.length, tf.value.length);
       }
@@ -5292,7 +5338,7 @@
           talkSay(talk.options[0].p.ar);
         }
         render();
-      }, function () { render(); });
+      }, function () { render(); }, function () { render(); });
       return;
     }
     if (act === "mic") {
@@ -5310,7 +5356,7 @@
           return;
         }
         render();
-      }, function () { render(); });
+      }, function () { render(); }, function () { render(); });
       return;
     }
     if (act === "say-reveal") {
