@@ -2903,9 +2903,12 @@
     var msg = micTrouble();
     if (!msg) return "";
     var serviceHeld = ears.reason === "service-not-allowed" || ears.reason === "network" || ears.reason === "silent";
-    var retry = ears.supported && !inFrame() && !serviceHeld
+    // A network refusal can be a bad moment rather than a policy, so
+    // there is always a way back in without reloading the page.
+    var retry = ears.supported && !inFrame()
       ? '<div class="mic-row" style="margin-top:12px">' +
-        '<button class="mic" data-act="mic-grant">' + MIC_SVG + "<span>Ask for the microphone</span></button></div>"
+        '<button class="mic" data-act="' + (serviceHeld ? "mic-again" : "mic-grant") + '">' + MIC_SVG +
+        "<span>" + (serviceHeld ? "Try the microphone again" : "Ask for the microphone") + "</span></button></div>"
       : "";
     return '<div class="mic-note">' + esc(msg) + "</div>" + retry;
   }
@@ -5240,6 +5243,12 @@
       setTalkScope(next);
       talk = newTalk();
       talk.pickOpen = true;
+      render();
+      return;
+    }
+    if (act === "mic-again") {
+      ears.blocked = null;
+      ears.reason = null;
       render();
       return;
     }
