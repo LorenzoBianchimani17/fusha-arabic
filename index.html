@@ -4050,14 +4050,35 @@
 
   // A single game on its own, over everything you have passed. For when
   // you want twelve rounds of one thing rather than a mixed session.
+  // Everything you can already open, not only what you have passed:
+  // there is no reason to bar practice on a lesson you are working on.
+  function reachable() {
+    var out = [];
+    LESSONS.filter(unlocked).forEach(function (l) {
+      phrasesOf(l).forEach(function (item) {
+        if (isHidden(l.id, item.ar)) return;
+        item.s = strengthOf(l.id, item.ar);
+        var rec = knownRec(l.id, item.ar);
+        item.known = !!rec;
+        item.dueCheck = isDueCheck(rec);
+        out.push(item);
+      });
+    });
+    return out;
+  }
+
+  function canDrill(type) {
+    return playable(type) && reachable().some(function (it) { return canMake(it, type); });
+  }
+
   function buildDrill(type) {
-    var pool = finishedLessons();
+    var pool = LESSONS.filter(unlocked);
     if (!pool.length) return null;
     if (!playable(type)) return null;
 
     if (type === "match") {
-      var all = studied().filter(function (it) { return !it.known; });
-      if (all.length < MATCH_PAIRS) all = studied();
+      var all = reachable().filter(function (it) { return !it.known; });
+      if (all.length < MATCH_PAIRS) all = reachable();
       if (!all.length) return null;
       var grids = [];
       for (var g = 0; g < 3; g++) {
@@ -4069,8 +4090,8 @@
       return newSession({ isReview: true, isDrill: type, reviewPool: pool.length, tasks: grids });
     }
 
-    var usable = studied().filter(function (it) { return !it.known && canMake(it, type); });
-    if (!usable.length) usable = studied().filter(function (it) { return canMake(it, type); });
+    var usable = reachable().filter(function (it) { return !it.known && canMake(it, type); });
+    if (!usable.length) usable = reachable().filter(function (it) { return canMake(it, type); });
     if (!usable.length) return null;
 
     var picked = [], guard = 0;
@@ -4662,12 +4683,14 @@
   function navHTML() {
     var done = finishedLessons().length;
     var g = games();
-    var drills = GAMES.filter(function (x) { return playable(x.key); }).map(function (x) {
-      var off = !done;
-      return '<button class="nav-item nav-sub' + (off ? " is-off" : "") + '" data-act="drill" data-id="' +
-        x.key + '"' + (off ? " disabled" : "") + ">" +
+    var drills = GAMES.map(function (x) {
+      var why = null;
+      if (x.needsVoice && !canSpeak()) why = "Needs an Arabic voice on this device";
+      else if (!canDrill(x.key)) why = "Nothing to draw on yet";
+      return '<button class="nav-item nav-sub' + (why ? " is-off" : "") + '" data-act="drill" data-id="' +
+        x.key + '"' + (why ? " disabled" : "") + ">" +
         '<span class="nav-label">' + esc(x.label) + "</span>" +
-        '<span class="nav-note">' + esc(x.hint) + "</span></button>";
+        '<span class="nav-note">' + esc(why || x.hint) + "</span></button>";
     }).join("");
 
     return '<div class="nav-veil' + (navOpen ? " is-open" : "") + '" data-act="nav-close"></div>' +
