@@ -488,6 +488,26 @@
 
   .picker { margin-bottom: 22px; }
 
+  .variety-pick {
+    padding: 14px 16px 12px;
+    margin-bottom: 22px;
+    border-radius: var(--r-md);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+
+  .variety-where { margin: 10px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-3); }
+
+  .in-variety {
+    font-size: 12px;
+    color: var(--ink-3);
+    text-align: center;
+    letter-spacing: .02em;
+  }
+
+  .in-variety .ar { font-family: var(--serif); color: var(--ink-2); }
+
   .picker-head {
     display: flex;
     align-items: baseline;
@@ -2915,6 +2935,187 @@
     "Naʿam, urìd tàksi": "نَعَمْ، أُرِيدُ تَاكْسِي"
   };
 
+  /* ============================================================
+     VARIETIES - fusha is the written and formal register; nobody
+     speaks it at home. These are the spoken ones. Only the phrases
+     that genuinely differ are listed: where a line is missing the
+     fusha form is what people say anyway, and the app says so.
+     ============================================================ */
+
+  var VARIETIES = [
+    { key: "msa", label: "Fusha", where: "Written and formal Arabic. Read it everywhere, speak it nowhere." },
+    { key: "egy", label: "Egyptian", where: "Egypt, and understood across the Arab world through its films and music." },
+    { key: "lev", label: "Levantine", where: "Syria, Lebanon, Jordan, Palestine." },
+    { key: "gulf", label: "Gulf", where: "UAE, Saudi Arabia, Qatar, Kuwait, Bahrain, Oman." }
+  ];
+
+  // Keyed on the fusha phrase, so everything else in the app - progress,
+  // conversations, the phrasebook - keeps working on one set of keys.
+  var DIALECT = {
+    "Marhàban": {
+      egy: ["Màrhaba", "مرحبا"], lev: ["Màrhaba", "مرحبا"], gulf: ["Màrhaba", "مرحبا"]
+    },
+    "Kèifa hàluk?": {
+      egy: ["Izzàyak?", "إزيك؟"], lev: ["Kìfak?", "كيفك؟"], gulf: ["Shlònak?", "شلونك؟"]
+    },
+    "Kèifa hàluki?": {
+      egy: ["Izzàyik?", "إزيك؟"], lev: ["Kìfik?", "كيفك؟"], gulf: ["Shlònich?", "شلونچ؟"]
+    },
+    "Anà bikhèir": {
+      egy: ["Anà kuwàyyis", "أنا كويس"], lev: ["Anà mnìh", "أنا منيح"], gulf: ["Anà zèin", "أنا زين"]
+    },
+    "Mà ìsmuk?": {
+      egy: ["Ìsmak èh?", "اسمك إيه؟"], lev: ["Shu ìsmak?", "شو اسمك؟"], gulf: ["Shu ìsmak?", "شو اسمك؟"]
+    },
+    "Mà ìsmuki?": {
+      egy: ["Ìsmik èh?", "اسمك إيه؟"], lev: ["Shu ìsmik?", "شو اسمك؟"], gulf: ["Shu ìsmich?", "شو اسمچ؟"]
+    },
+    "Min àina ànta?": {
+      egy: ["Ìnta minèin?", "انت منين؟"], lev: ["Min wèin ìnta?", "من وين انت؟"], gulf: ["Min wèin ìnta?", "من وين انت؟"]
+    },
+    "Min àina ànti?": {
+      egy: ["Ìnti minèin?", "انت منين؟"], lev: ["Min wèin ìnti?", "من وين انت؟"], gulf: ["Min wèin ìnti?", "من وين انت؟"]
+    },
+    "Hal tatakàllam al-ʿarabìyya?": {
+      egy: ["Bititkàllim ʿàrabi?", "بتتكلم عربي؟"], lev: ["Btìhki ʿàrabi?", "بتحكي عربي؟"], gulf: ["Titkàllam ʿàrabi?", "تتكلم عربي؟"]
+    },
+    "Kam as-sìʿr?": {
+      egy: ["Bikàm?", "بكام؟"], lev: ["Addèsh?", "قديش؟"], gulf: ["Bikàm?", "بكم؟"]
+    },
+    "Kam hàdha?": {
+      egy: ["Da bikàm?", "ده بكام؟"], lev: ["Addèsh hàda?", "قديش هدا؟"], gulf: ["Hàdha bikàm?", "هذا بكم؟"]
+    },
+    "Kam as-sàʿa?": {
+      egy: ["As-sàʿa kam?", "الساعة كام؟"], lev: ["Addèsh as-sàʿa?", "قديش الساعة؟"], gulf: ["As-sàʿa kam?", "الساعة كم؟"]
+    },
+    "Àina al-hammàm?": {
+      egy: ["Fèin al-hammàm?", "فين الحمام؟"], lev: ["Wèin al-hammàm?", "وين الحمام؟"], gulf: ["Wèin al-hammàm?", "وين الحمام؟"]
+    },
+    "Àina al-mahàtta?": {
+      egy: ["Fèin al-mahàtta?", "فين المحطة؟"], lev: ["Wèin al-mahàtta?", "وين المحطة؟"], gulf: ["Wèin al-mahàtta?", "وين المحطة؟"]
+    },
+    "Àina al-màtʿam?": {
+      egy: ["Fèin al-màtʿam?", "فين المطعم؟"], lev: ["Wèin al-màtʿam?", "وين المطعم؟"], gulf: ["Wèin al-màtʿam?", "وين المطعم؟"]
+    },
+    "Àina al-matàr?": {
+      egy: ["Fèin al-matàr?", "فين المطار؟"], lev: ["Wèin al-matàr?", "وين المطار؟"], gulf: ["Wèin al-matàr?", "وين المطار؟"]
+    },
+    "Àina as-saydalìyya?": {
+      egy: ["Fèin as-saydalìyya?", "فين الصيدلية؟"], lev: ["Wèin as-saydalìyya?", "وين الصيدلية؟"], gulf: ["Wèin as-saydalìyya?", "وين الصيدلية؟"]
+    },
+    "Àina ash-shùrta?": {
+      egy: ["Fèin al-bulìs?", "فين البوليس؟"], lev: ["Wèin ash-shùrta?", "وين الشرطة؟"], gulf: ["Wèin ash-shùrta?", "وين الشرطة؟"]
+    },
+    "Là àfham": {
+      egy: ["Mish fàhim", "مش فاهم"], lev: ["Mà bèfham", "ما بفهم"], gulf: ["Mà àfham", "ما أفهم"]
+    },
+    "Àfham": {
+      egy: ["Fàhim", "فاهم"], lev: ["Bèfham", "بفهم"], gulf: ["Àfham", "أفهم"]
+    },
+    "Takàllam bibut'": {
+      egy: ["Itkàllim birràha", "اتكلم بالراحة"], lev: ["Ìhki shwày shwày", "احكي شوي شوي"], gulf: ["Tkàllam ʿala màhlak", "تكلم على مهلك"]
+    },
+    "Urìd": {
+      egy: ["ʿÀyiz", "عايز"], lev: ["Bìddi", "بدي"], gulf: ["Àbi", "أبي"]
+    },
+    "Urìd tàksi": {
+      egy: ["ʿÀyiz tàksi", "عايز تاكسي"], lev: ["Bìddi tàksi", "بدي تاكسي"], gulf: ["Àbi tàksi", "أبي تاكسي"]
+    },
+    "Urìd tàdhkara": {
+      egy: ["ʿÀyiz tàzkara", "عايز تذكرة"], lev: ["Bìddi tàzkara", "بدي تذكرة"], gulf: ["Àbi tàdhkara", "أبي تذكرة"]
+    },
+    "Urìd hàdha": {
+      egy: ["ʿÀyiz da", "عايز ده"], lev: ["Bìddi hàda", "بدي هدا"], gulf: ["Àbi hàdha", "أبي هذا"]
+    },
+    "Là urìd": {
+      egy: ["Mish ʿàyiz", "مش عايز"], lev: ["Mà bìddi", "ما بدي"], gulf: ["Mà àbi", "ما أبي"]
+    },
+    "Ahtàj": {
+      egy: ["Mihtàg", "محتاج"], lev: ["Làzem", "لازم"], gulf: ["Ahtàj", "أحتاج"]
+    },
+    "Tafàddal": {
+      egy: ["Itfàddal", "اتفضل"], lev: ["Tfàddal", "تفضل"], gulf: ["Tfàddal", "تفضل"]
+    },
+    "Hayyà bina": {
+      egy: ["Yàlla bìna", "يلا بينا"], lev: ["Yàlla", "يلا"], gulf: ["Yàlla", "يلا"]
+    },
+    "Àdhhab": {
+      egy: ["Barùh", "بروح"], lev: ["Bròh", "بروح"], gulf: ["Arùh", "أروح"]
+    },
+    "Hal yùmkin?": {
+      egy: ["Mùmkin?", "ممكن؟"], lev: ["Mùmken?", "ممكن؟"], gulf: ["Mùmkin?", "ممكن؟"]
+    },
+    "Ghàli jìddan": {
+      egy: ["Ghàli àwi", "غالي أوي"], lev: ["Ghàli ktìr", "غالي كتير"], gulf: ["Ghàli wàjid", "غالي واجد"]
+    },
+    "Naʿam, kathìran": {
+      egy: ["Àiwa, àwi", "أيوة أوي"], lev: ["Èh, ktìr", "إي كتير"], gulf: ["Èe, wàjid", "إي واجد"]
+    },
+    "Naʿam": {
+      egy: ["Àiwa", "أيوة"], lev: ["Èh", "إي"], gulf: ["Èe", "إي"]
+    },
+    "Là bà's": {
+      egy: ["Mà ʿalèish", "معلش"], lev: ["Mà ʿlèsh", "معليش"], gulf: ["Mà ʿalèih", "ما عليه"]
+    },
+    "Al-yàum": {
+      egy: ["An-nahàrda", "النهاردة"], lev: ["Al-yòm", "اليوم"], gulf: ["Al-yòm", "اليوم"]
+    },
+    "Ghàdan": {
+      egy: ["Bùkra", "بكرة"], lev: ["Bùkra", "بكرة"], gulf: ["Bùkra", "بكرة"]
+    },
+    "Ams": {
+      egy: ["Imbàrih", "إمبارح"], lev: ["Mbàrih", "مبارح"]
+    },
+    "Matà?": {
+      egy: ["Ìmta?", "إمتى؟"], lev: ["Èmta?", "إيمتى؟"]
+    },
+    "Man hàdha?": {
+      egy: ["Mìn da?", "مين ده؟"], lev: ["Mìn hàda?", "مين هدا؟"], gulf: ["Mìn hàdha?", "مين هذا؟"]
+    },
+    "Anà jà'iʿ": {
+      egy: ["Anà gaʿàn", "أنا جعان"], lev: ["Anà jùʿan", "أنا جوعان"], gulf: ["Anà jùʿan", "أنا جوعان"]
+    },
+    "Al-hisàb, min fàdlik": {
+      egy: ["Al-hisàb, lau samàht", "الحساب لو سمحت"], lev: ["Al-hsàb, lau samàht", "الحساب لو سمحت"]
+    },
+    "Ilà al-yamìn": {
+      egy: ["ʿAla yamìn", "على يمين"], lev: ["ʿAla al-yamìn", "على اليمين"]
+    },
+    "Ilà al-yasàr": {
+      egy: ["ʿAla shimàl", "على شمال"], lev: ["ʿAla ash-shmàl", "على الشمال"]
+    },
+    "Anà marìd": {
+      egy: ["Anà ʿayyàn", "أنا عيان"]
+    },
+    "Àina taskun?": {
+      egy: ["Sàkin fèin?", "ساكن فين؟"], lev: ["Wèin sàken?", "وين ساكن؟"]
+    },
+    "Mà mìhnatuk?": {
+      egy: ["Bitìshtaghal èh?", "بتشتغل إيه؟"], lev: ["Shu btìshtighel?", "شو بتشتغل؟"]
+    },
+    "Sa'àkhudh hàdha": {
+      egy: ["Hàkhud da", "هاخد ده"], lev: ["Rah àkhod hàda", "رح آخد هدا"]
+    },
+    "Sa'ufàkkir": {
+      egy: ["Hafàkkar", "هفكر"], lev: ["Rah fàkker", "رح فكر"]
+    },
+    "Khudhni ilà al-matàr": {
+      egy: ["Wàddini al-matàr", "وديني المطار"], lev: ["Khùdni ʿa al-matàr", "خدني ع المطار"]
+    },
+    "Hal ʿìndakum wàifài?": {
+      egy: ["ʿAndùku wàifài?", "عندكو وايفاي؟"], lev: ["ʿAndkun wàifài?", "عندكن وايفاي؟"]
+    },
+    "Àkul": {
+      egy: ["Bàkul", "باكل"], lev: ["Bòkol", "بوكل"]
+    },
+    "Àshrab": {
+      egy: ["Bàshrab", "باشرب"], lev: ["Bìshrab", "بشرب"]
+    },
+    "Àdhhab ilà al-bàit": {
+      egy: ["Barùh al-bèit", "بروح البيت"], lev: ["Bròh ʿal-bèit", "بروح عالبيت"]
+    }
+  };
+
   var PASS = 70;
   var ROUNDS = 10;
   var REVIEW_ROUNDS = 12;
@@ -3002,6 +3203,22 @@
       });
     });
 
+    // A spoken form must belong to a phrase the course teaches, or it
+    // would sit in the file doing nothing while looking correct.
+    var keys = {};
+    Object.keys(SCRIPT).forEach(function (k) { keys[k] = true; });
+    Object.keys(DIALECT).forEach(function (k) {
+      if (!keys[k]) problems.push('Spoken forms are listed for "' + k + '", which no lesson teaches');
+      var row = DIALECT[k];
+      Object.keys(row).forEach(function (v) {
+        var known = VARIETIES.some(function (x) { return x.key === v; });
+        if (!known) problems.push('Unknown variety "' + v + '" on "' + k + '"');
+        if (!Array.isArray(row[v]) || row[v].length !== 2 || !row[v][0] || !row[v][1]) {
+          problems.push('"' + k + '" in ' + v + " needs both a spelling and Arabic script");
+        }
+      });
+    });
+
     var convoIds = {};
     CONVOS.forEach(function (c) {
       var where = 'Conversation "' + c.id + '"';
@@ -3062,7 +3279,7 @@
 
   function speak(translit) {
     if (!canSpeak()) return;
-    var text = SCRIPT[translit];
+    var text = spk(translit);
     if (!text) return;
     window.speechSynthesis.cancel();
     var u = new window.SpeechSynthesisUtterance(text);
@@ -3162,7 +3379,7 @@
   }
 
   function sayBtn(translit, small) {
-    var ok = canSpeak() && !!SCRIPT[translit];
+    var ok = canSpeak() && !!spk(translit);
     var cls = "say" + (small ? " say-sm" : "");
     return '<button class="' + cls + '" data-act="say" data-say="' + esc(translit) + '"' +
       (ok ? "" : " disabled") +
@@ -3521,6 +3738,61 @@
 
   function recordOf(id) { return store.lessons[id] || null; }
 
+  /* ---------- which Arabic you are learning ---------- */
+
+  function variety() {
+    var v = store.variety;
+    for (var i = 0; i < VARIETIES.length; i++) if (VARIETIES[i].key === v) return v;
+    return "msa";
+  }
+
+  function varietyInfo() {
+    var v = variety();
+    for (var i = 0; i < VARIETIES.length; i++) if (VARIETIES[i].key === v) return VARIETIES[i];
+    return VARIETIES[0];
+  }
+
+  function setVariety(v) {
+    store.variety = v;
+    save();
+    TALK = null; TALK_KEY = null;
+  }
+
+  // The spoken form, if this phrase has one in the chosen variety.
+  function dialectOf(ar) {
+    var v = variety();
+    if (v === "msa") return null;
+    var row = DIALECT[ar];
+    return (row && row[v]) || null;
+  }
+
+  // What to show on screen for a phrase whose key is `ar`.
+  function disp(ar) {
+    var d = dialectOf(ar);
+    return d ? d[0] : ar;
+  }
+
+  // What to hand the speech engine for it.
+  function spk(ar) {
+    var d = dialectOf(ar);
+    return d ? d[1] : (SCRIPT[ar] || "");
+  }
+
+  function isDialectForm(ar) { return !!dialectOf(ar); }
+
+  function varietyCoverage() {
+    var v = variety();
+    if (v === "msa") return null;
+    var have = 0, total = 0;
+    LESSONS.forEach(function (l) {
+      l.phrases.forEach(function (p) {
+        total++;
+        if (DIALECT[p.ar] && DIALECT[p.ar][v]) have++;
+      });
+    });
+    return { have: have, total: total };
+  }
+
   function unlocked(lesson) {
     var idx = LESSONS.indexOf(lesson);
     if (idx <= 0) return true;
@@ -3847,7 +4119,7 @@
   }
 
   function writeRound(lesson, phrase) {
-    return { type: "write", points: 1, srcLesson: lesson, phrase: phrase, answer: phrase.ar, typed: "" };
+    return { type: "write", points: 1, srcLesson: lesson, phrase: phrase, answer: disp(phrase.ar), typed: "" };
   }
 
   function listenRound(lesson, phrase) {
@@ -3865,11 +4137,11 @@
   }
 
   function buildRound(lesson, phrase) {
-    var words = tokens(phrase.ar);
+    var words = tokens(disp(phrase.ar));
     var extras = [];
     shuffle(visiblePhrases(lesson)).forEach(function (p) {
       if (extras.length >= 2 || p === phrase) return;
-      var cand = shuffle(tokens(p.ar))[0];
+      var cand = shuffle(tokens(disp(p.ar)))[0];
       if (!cand || words.indexOf(cand) !== -1 || extras.indexOf(cand) !== -1) return;
       extras.push(cand);
     });
@@ -3903,7 +4175,7 @@
       type: "match",
       points: picks.length,
       pairs: picks,
-      left: shuffle(picks.map(function (p, i) { return { i: i, text: p.ar }; })),
+      left: shuffle(picks.map(function (p, i) { return { i: i, text: disp(p.ar) }; })),
       right: shuffle(picks.map(function (p, i) { return { i: i, text: p.en }; })),
       done: [],
       picked: null,
@@ -4727,6 +4999,30 @@
       "</div></div>";
   }
 
+  function varietyHTML(compact) {
+    var cur = variety();
+    var info = varietyInfo();
+    var cov = varietyCoverage();
+    var chips = VARIETIES.map(function (v) {
+      var on = v.key === cur;
+      return '<button class="chip vchip' + (on ? " is-on" : "") + '" data-act="variety" data-id="' + v.key +
+        '" aria-pressed="' + (on ? "true" : "false") + '" title="' + esc(v.where) + '">' +
+        '<span class="chip-tick" aria-hidden="true"></span>' + esc(v.label) + "</button>";
+    }).join("");
+
+    return '<div class="picker variety-pick">' +
+      '<div class="picker-head"><span>Which Arabic</span>' +
+      '<span class="picker-note">' + esc(compact ? "" : "pick before you study") + "</span></div>" +
+      '<div class="chips">' + chips + "</div>" +
+      '<p class="variety-where">' + esc(info.where) + "</p>" +
+      (cov
+        ? '<p class="variety-where">' + cov.have + " of " + cov.total +
+          " phrases have a distinct " + esc(info.label) +
+          " form so far; the rest are said the same way, or are still being filled in. Your progress is shared across all of them.</p>"
+        : "") +
+      "</div>";
+  }
+
   function pickerHTML(note) {
     var g = games();
     var on = GAMES.filter(function (x) { return g[x.key]; }).length;
@@ -4843,6 +5139,16 @@
       (people.list.length > 1 ? '<button class="chip" data-act="who-remove">Remove</button>' : "") +
       "</div>" +
 
+      '<div class="nav-group">Which Arabic</div>' +
+      VARIETIES.map(function (v) {
+        var on = v.key === variety();
+        return '<button class="nav-item nav-who' + (on ? " is-on" : "") + '" data-act="variety" data-id="' +
+          v.key + '" aria-pressed="' + (on ? "true" : "false") + '">' +
+          '<span class="nav-label">' + esc(v.label) + "</span>" +
+          '<span class="nav-note">' + esc(v.where) + "</span>" +
+          (on ? '<span class="who-tick" aria-hidden="true"></span>' : "") + "</button>";
+      }).join("") +
+
       '<div class="nav-group">Practise</div>' +
       '<button class="nav-item" data-act="nav-today"><span class="nav-label">Today</span>' +
       '<span class="nav-note">' + esc(todayCopy(todayPlan()).line) + "</span></button>" +
@@ -4916,6 +5222,7 @@
       (counts.total ? String(counts.weak) : "<small>&mdash;</small>") + "</dd></div>" +
       "</dl>" +
 
+      varietyHTML(false) +
       coreHTML() +
       todayHTML() +
       reviewHTML() +
@@ -4997,7 +5304,7 @@
         talk.options.map(function (o, i) {
           return '<button class="understood-opt' + (i === 0 && sure ? " is-lead" : "") +
             '" data-act="talk-pick" data-id="' + esc(o.p.ar) + '">' +
-            '<span class="ar">' + esc(o.p.ar) + "</span>" +
+            '<span class="ar">' + esc(disp(o.p.ar)) + "</span>" +
             '<span class="understood-en">' + esc(o.p.en) + "</span></button>";
         }).join("") +
         '<button class="understood-none" data-act="talk-none">None of these</button>' +
@@ -5060,7 +5367,7 @@
         if (q && normalise(ar).indexOf(q) === -1 && normalise(en).indexOf(q) === -1) return;
         hits++;
         rows += '<div class="pb-row">' + sayBtn(ar, true) +
-          '<span class="pb-text"><span class="ar">' + esc(ar) + "</span>" +
+          '<span class="pb-text"><span class="ar">' + esc(disp(ar)) + "</span>" +
           '<span class="pb-en">' + esc(en) + "</span></span></div>";
       });
       if (rows) groups += '<div class="pb-group"><h3>' + esc(group.title) + "</h3>" + rows + "</div>";
@@ -5100,6 +5407,7 @@
       lesson.phrases.length + " phrases" + (coreN ? " &#183; " + coreN + " core" : "") +
       " &#183; " + (r ? "best " + r.best + "%" : "not played yet") + "</p>" +
       "</div>" +
+      varietyHTML(true) +
       pickerHTML("choose what this lesson drills") +
       '<div class="btn-row">' +
       '<button class="btn btn-ghost" data-go="learn" data-id="' + lesson.id + '">Study the phrases</button>' +
@@ -5140,7 +5448,9 @@
     return topbarHTML(l.title + " &#183; study", pct, (learn.i + 1) + " / " + l.phrases.length) +
       '<div class="card flashcard fade-in">' +
       (p.core ? '<div><span class="core-tag">Core phrase</span></div>' : "") +
-      '<div class="say-row"><div class="flash-ar ar">' + esc(p.ar) + "</div>" + sayBtn(p.ar) + "</div>" +
+      '<div class="say-row"><div class="flash-ar ar">' + esc(disp(p.ar)) + "</div>" + sayBtn(p.ar) + "</div>" +
+      (isDialectForm(p.ar) ? '<div class="in-variety">' + esc(varietyInfo().label) +
+        ' &#183; fusha: <span class="ar">' + esc(p.ar) + "</span></div>" : "") +
       (learn.shown
         ? '<div class="flash-rule"></div><div class="flash-en">' + esc(p.en) + "</div>" + note + aside
         : '<div class="flash-hint">Tap reveal to see what it means</div>') +
@@ -5189,7 +5499,8 @@
       }
       return '<button class="' + cls + '" data-act="answer" data-value="' + esc(opt) + '"' +
         (checked ? " disabled" : "") + ">" +
-        '<span class="option-key">' + (i + 1) + "</span><span>" + esc(opt) + "</span></button>";
+        '<span class="option-key">' + (i + 1) + "</span><span>" +
+        esc(arabic ? disp(opt) : opt) + "</span></button>";
     }).join("") + "</div>";
   }
 
@@ -5198,14 +5509,14 @@
     return '<div class="prompt">' +
       '<div class="prompt-label">' + (t.toEnglish ? "What does this mean?" : "How do you say this?") + "</div>" +
       '<div class="say-row"><div class="prompt-main' + (t.toEnglish ? " ar" : "") + '">' +
-      esc(t.prompt) + "</div>" + hear + "</div></div>" +
+      esc(t.toEnglish ? disp(t.prompt) : t.prompt) + "</div>" + hear + "</div></div>" +
       optionsHTML(t.options, !t.toEnglish, t);
   }
 
   function dialogHTML(t) {
     return '<div class="prompt">' +
       '<div class="prompt-label">Someone says to you</div>' +
-      '<div class="say-row"><div class="prompt-main ar">' + esc(t.exchange.ask) + "</div>" +
+      '<div class="say-row"><div class="prompt-main ar">' + esc(disp(t.exchange.ask)) + "</div>" +
       sayBtn(t.exchange.ask, true) + "</div>" +
       '<div class="prompt-sub">' + esc(t.exchange.askEn) + "</div>" +
       '<div class="prompt-label" style="margin-top:22px">How do you reply?</div>' +
@@ -5229,7 +5540,7 @@
       '<div class="prompt-label">You were going for</div>' +
       '<div class="prompt-main">' + esc(t.phrase.en) + "</div>" +
       '<div class="say-row" style="margin-top:18px">' +
-      '<div class="prompt-main ar">' + esc(t.phrase.ar) + "</div>" + sayBtn(t.phrase.ar) + "</div>" +
+      '<div class="prompt-main ar">' + esc(disp(t.phrase.ar)) + "</div>" + sayBtn(t.phrase.ar) + "</div>" +
       "</div>" +
       heardHTML(t, t.phrase.ar) +
       (checked ? "" :
@@ -5268,7 +5579,7 @@
 
   function bubble(who, ar, en) {
     return '<div class="turn is-' + who + '">' +
-      '<div class="bubble"><span class="ar">' + esc(ar) + "</span>" +
+      '<div class="bubble"><span class="ar">' + esc(disp(ar)) + "</span>" +
       '<span class="bubble-en">' + esc(en) + "</span></div>" +
       sayBtn(ar, true) + "</div>";
   }
@@ -5350,6 +5661,11 @@
       '<div class="match-grid">' + rows + "</div>";
   }
 
+  function arabicAnswerFor(t) {
+    if (t.type === "say") return true;
+    return !((t.type === "quiz" && t.toEnglish) || t.type === "listen");
+  }
+
   function verdictHTML(t) {
     if (session.state !== "checked") return "";
     var last = session.i === session.tasks.length - 1;
@@ -5366,9 +5682,8 @@
           : already ? '<span class="aside-note">Set aside</span>' : "") +
         "</div>";
     } else {
-      var answer = t.type === "build" ? t.target.join(" ") : t.answer;
-      var arabicAnswer = !((t.type === "quiz" && t.toEnglish) || t.type === "listen");
-      if (t.type === "say") arabicAnswer = true;
+      var answer = t.type === "build" ? t.target.join(" ") : (arabicAnswerFor(t) ? disp(t.answer) : t.answer);
+      var arabicAnswer = arabicAnswerFor(t);
       msg = '<div class="verdict-msg no"><b>Not quite.</b>&nbsp;<span' +
         (arabicAnswer ? ' class="ar"' : "") + ">" + esc(answer) + "</span>" +
         (arabicAnswer ? sayBtn(answer, true) : "") + "</div>";
@@ -5419,7 +5734,7 @@
         if (seen[p.ar]) return;
         seen[p.ar] = true;
         rows += '<div class="miss">' + sayBtn(p.ar, true) +
-          '<span class="ar">' + esc(p.ar) + "</span>" +
+          '<span class="ar">' + esc(disp(p.ar)) + "</span>" +
           '<span class="miss-en">' + esc(p.en) + "</span></div>";
       });
       misses = '<div class="result-misses"><h3>Worth another look</h3>' + rows + "</div>";
@@ -5786,6 +6101,17 @@
         forgetAllKnown();
         render();
       }
+      return;
+    }
+    if (act === "variety") {
+      var vk = el.getAttribute("data-id");
+      if (vk !== variety()) {
+        stopSpeech();
+        session = null;
+        setVariety(vk);
+      }
+      navOpen = false;
+      render();
       return;
     }
     if (act === "today") { stopSpeech(); startToday(); return; }
