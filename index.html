@@ -639,6 +639,29 @@
   .pb-en { font-size: 13px; color: var(--ink-3); }
   .pb-empty { color: var(--ink-3); font-size: 14.5px; }
 
+  .word-undo {
+    margin-left: auto;
+    flex: none;
+    padding: 6px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-3);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+  }
+
+  .word-undo:hover { color: var(--accent-ink); background: var(--accent-soft); border-color: transparent; }
+
+  .round-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 11px;
+  }
+
   /* ---------- backup ---------- */
 
   .backup {
@@ -803,6 +826,21 @@
 
   .flash-note b { color: var(--ink); font-weight: 600; }
 
+  .gloss {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    border-radius: var(--r-sm);
+    background: var(--surface-2);
+    text-align: left;
+  }
+
+  .gloss-row { display: flex; align-items: baseline; gap: 8px; font-size: 13.5px; }
+  .gloss-row .ar { color: var(--ink); font-size: 15px; }
+  .gloss-eq { color: var(--ink-3); }
+  .gloss-en { color: var(--ink-2); }
+
   /* ---------- set aside ---------- */
 
   .aside-row { display: flex; flex-direction: column; gap: 6px; align-items: center; }
@@ -904,6 +942,17 @@
   .bubble .ar { font-size: 17px; line-height: 1.3; }
   .turn.is-you .bubble .ar { color: var(--accent-ink); }
   .bubble-en { font-size: 12.5px; color: var(--ink-3); }
+
+  .peek {
+    align-self: flex-start;
+    font-size: 12px;
+    color: var(--ink-3);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .peek:hover { color: var(--accent); }
+  .prompt-sub .peek { align-self: center; }
   .turn.is-you .bubble-en { color: var(--ink-2); }
   .turn .say { background: transparent; color: var(--ink-3); }
   .turn .say:hover:not(:disabled) { color: var(--accent); }
@@ -3266,6 +3315,125 @@
     }
   };
 
+  /* ============================================================
+     WORD GLOSSES - a phrase tells you what it means; this tells you
+     which bit means what, so the pieces can be reused in sentences
+     the course never taught you.
+     ============================================================ */
+
+  var GLOSS = {
+    "anà": "I", "ànta": "you (to a man)", "ànti": "you (to a woman)",
+    "hùwa": "he, it", "hìya": "she, it", "hàdha": "this (masculine)",
+    "hàdhihi": "this (feminine)", "man": "who", "mà": "what", "màdha": "what",
+    "àina": "where", "matà": "when", "kam": "how much, how many", "kèifa": "how",
+    "ày": "which", "hal": "makes it a yes/no question", "là": "no, not",
+    "naʿam": "yes", "wa": "and", "min": "from, of", "ilà": "to", "fi": "in",
+    "ʿalà": "on", "bi": "by, with", "maʿa": "with", "ʿìndi": "I have",
+    "ʿìndak": "you have", "ʿìndakum": "you have (plural)", "urìd": "I want",
+    "ahtàj": "I need", "ùhib": "I like, I love", "àfham": "I understand",
+    "àʿrif": "I know", "àdhhab": "I go", "tàdhhab": "you go", "àkul": "I eat",
+    "àshrab": "I drink", "àqra": "I read", "àktub": "I write", "àra": "I see",
+    "ìsmi": "my name", "ìsmuk": "your name", "ìsmuki": "your name (to a woman)",
+    "hàluk": "your condition", "khèir": "goodness, well",
+    "sabàh": "morning", "masà": "evening", "làila": "night", "yàum": "day",
+    "al-yàum": "today", "ghàdan": "tomorrow", "ams": "yesterday", "al-àn": "now",
+    "sàʿa": "hour, watch", "shùkran": "thank you", "ʿàfwan": "you are welcome",
+    "min fàdlik": "please", "lau samàht": "excuse me", "àsif": "sorry",
+    "tafàddal": "here you are, go ahead", "salàm": "peace", "salàma": "safety",
+    "liqà": "meeting", "bàit": "house", "matàr": "airport", "fùnduq": "hotel",
+    "mahàtta": "station", "màtʿam": "restaurant", "hammàm": "bathroom",
+    "sùq": "market", "màktab": "office", "màtbakh": "kitchen", "ghùrfa": "room",
+    "sìʿr": "price", "hisàb": "bill", "nùqud": "money", "ghàli": "expensive",
+    "ràkhis": "cheap", "kabìr": "big", "saghìr": "small", "jamìl": "beautiful",
+    "jadìd": "new", "qadìm": "old", "qarìb": "near", "baʿìd": "far",
+    "sarìʿ": "fast", "batì'": "slow", "hàrr": "hot", "bàrid": "cold",
+    "jàww": "air, weather", "tàqs": "weather", "shàms": "sun", "màtar": "rain",
+    "mà'": "water", "qàhwa": "coffee", "shày": "tea", "khubz": "bread",
+    "làhm": "meat", "sàmak": "fish", "dajàj": "chicken", "àruzz": "rice",
+    "jà'iʿ": "hungry", "ʿatshàn": "thirsty", "marìd": "ill", "taʿbàn": "tired",
+    "mashghùl": "busy", "àlam": "pain", "tabìb": "doctor", "dawà'": "medicine",
+    "ab": "father", "umm": "mother", "akh": "brother", "ukht": "sister",
+    "ìbn": "son", "zàuj": "husband", "ùsra": "family", "sadìq": "friend",
+    "yamìn": "right", "yasàr": "left", "tùl": "length, straight",
+    "hùna": "here", "hunàk": "there", "kathìr": "much, many", "qalìl": "little",
+    "fàqat": "only", "jìddan": "very", "àidan": "too, also", "bà's": "harm",
+    "mùmkin": "possible", "yùmkin": "it is possible", "masmùh": "allowed",
+    "mamnùʿ": "forbidden", "làhza": "a moment", "khudh": "take",
+    "khudhni": "take me", "sàʿidni": "help me", "musàʿada": "help",
+    "takàllam": "speak", "tatakàllam": "you speak", "ʿàrabi": "Arabic",
+    "al-ʿarabìyya": "Arabic", "inglizìyya": "English", "tàksi": "taxi",
+    "sayyàra": "car", "qitàr": "train", "hàfila": "bus", "tà'ira": "plane",
+    "tàdhkara": "ticket", "haqìba": "suitcase", "jawàz": "passport",
+    "safar": "travel", "mìftah": "key", "kitàb": "book", "hàtif": "phone",
+    "kùrsi": "chair", "tàwila": "table", "sarìr": "bed", "bàb": "door",
+    "làun": "colour", "mìhna": "job", "ʿàmal": "work", "shàrika": "company",
+    "kùntu": "I was", "dhahàbtu": "I went", "akàltu": "I ate",
+    "sa'": "will (future)", "mushkìla": "problem", "wàifài": "wifi",
+    "kàlima": "word", "sirr": "secret", "shùrta": "police",
+    "bikhèir": "well, in good shape", "al-hàmdu": "the praise", "lillàh": "to God",
+    "ʿaláikum": "upon you", "nùr": "light", "sàhlan": "at ease",
+    "àhlan": "welcome, hi", "marhàban": "hello", "tashàrraft": "pleased to meet you",
+    "jazìlan": "greatly", "qalìlan": "a little", "kathìran": "a lot",
+    "itàlya": "Italy", "misr": "Egypt", "lubnàn": "Lebanon",
+    "taskun": "you live", "àskun": "I live", "taʿmal": "you work",
+    "àʿmal": "I work", "muhàndis": "engineer", "mudàrris": "teacher",
+    "tàlib": "student", "sà'ih": "tourist", "sà'iq": "driver",
+    "hayawàn": "animal", "qìtta": "cat", "kalb": "dog", "hisàn": "horse",
+    "malàbis": "clothes", "qamìs": "shirt", "hidhà'": "shoes",
+    "fùsul": "seasons", "rabìʿ": "spring", "sàif": "summer",
+    "kharìf": "autumn", "shità": "winter", "thàlj": "snow", "rìh": "wind",
+    "mùshmis": "sunny", "mùmtir": "rainy", "ghà'im": "cloudy",
+    "sudàʿ": "headache", "hùmma": "fever", "rà's": "head", "bàtn": "stomach",
+    "hàlq": "throat", "yad": "hand", "rijl": "leg",
+    "saydalìyya": "chemist", "mustàshfa": "hospital", "ìkhwa": "brothers and sisters",
+    "raqm": "number", "hàtifiki": "your phone (to a woman)",
+    "ʿùmri": "my age", "ʿùmruk": "your age", "takhfìd": "discount",
+    "ʿàshar": "teen (eleven, twelve)", "mi'a": "hundred",
+    "haqìbati": "my suitcase", "safari": "my travel",
+    "màʿan": "together", "surùr": "pleasure", "latìfa": "kind (to a woman)",
+    "jamìla": "beautiful (to a woman)", "mashghùla": "busy (to a woman)",
+    "àsifa": "sorry (from a woman)", "bìdun": "without",
+    "dukhùl": "entering", "taswìr": "photography", "tàʿal": "come",
+    "ijlis": "sit down", "intàdhir": "wait", "hayyà": "come on",
+    "bina": "with us", "wasàlna": "we have arrived", "qif": "stop",
+    "màshyan": "on foot", "mìtro": "metro", "safìna": "ship",
+    "dàrraja": "bicycle", "bantalòn": "trousers", "fustàn": "dress",
+    "miʿtaf": "coat", "qùbbaʿa": "hat", "nadhdhàra": "glasses",
+    "shùbbak": "window", "nàum": "sleep", "ùsrati": "my family",
+    "sadìqi": "my friend", "àbi": "my father", "ùmmi": "my mother",
+    "àkhi": "my brother", "ùkhti": "my sister", "làdaik": "you have",
+    "fàʿalta": "you did", "fàʿaltu": "I did", "kàna": "it was",
+    "sharìbtu": "I drank", "katàbtu": "I wrote", "qarà'tu": "I read",
+    "ra'àitu": "I saw", "àlbas": "I wear", "talbas": "you wear",
+    "tùhib": "you like", "turìd": "you want", "tahtàj": "you need",
+    "tàʿrif": "you know", "tàqra": "you read", "nàshrab": "shall we drink",
+    "sa'àkhudh": "I will take", "sa'ufàkkir": "I will think about it",
+    "làzim": "must, need", "fàhim": "understanding"
+  };
+
+  // Strip the article and the punctuation, then look the word up.
+  function glossFor(word) {
+    var w = String(word).toLowerCase().replace(/[?!.,;:]/g, "").trim();
+    if (!w) return null;
+    if (GLOSS[w]) return GLOSS[w];
+    var bare = w.replace(/^(al|ash|as|at|ath|ar|an|az|ad)-/, "");
+    if (GLOSS[bare]) return GLOSS[bare];
+    if (GLOSS["al-" + bare]) return GLOSS["al-" + bare];
+    return null;
+  }
+
+  // Only worth showing when it explains more than the translation does.
+  function glossesFor(ar) {
+    var words = String(ar).split(/\s+/).filter(Boolean);
+    if (words.length < 2) return [];
+    var out = [];
+    words.forEach(function (w) {
+      var g = glossFor(w);
+      if (g) out.push({ word: w.replace(/[?!.,;:]/g, ""), gloss: g });
+    });
+    return out.length >= 2 ? out : [];
+  }
+
   var PASS = 70;
   var ROUNDS = 10;
   var REVIEW_ROUNDS = 12;
@@ -4955,14 +5123,16 @@
   function hashFor(v) {
     if (!v) return "#/";
     if (v.name === "phrasebook") return "#/phrasebook";
+    if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
     if (v.name === "learn") return "#/lesson/" + learn.lesson.id + "/study/" + (learn.i + 1);
     if (v.name === "play" || v.name === "result") {
-      var tail = v.name === "result" ? "/score" : "";
-      if (session.isReview) return "#/review" + tail;
-      if (session.isConvo) return "#/talk/" + session.convo.id + tail;
-      return "#/lesson/" + session.lesson.id + (v.name === "play" ? "/play" : "/score");
+      var scored = v.name === "result";
+      var step = scored ? "/score" : "/" + (session.i + 1);
+      if (session.isReview) return "#/review" + step;
+      if (session.isConvo) return "#/talk/" + session.convo.id + step;
+      return "#/lesson/" + session.lesson.id + (scored ? "/score" : "/play" + step);
     }
     return "#/";
   }
@@ -4990,6 +5160,15 @@
     applyingRoute = false;
   }
 
+  // Rounds you have already answered stay answered when you walk back
+  // to them, so nothing can be re-scored by using the back button.
+  function showRound(i) {
+    session.i = Math.min(Math.max(i, 0), session.tasks.length - 1);
+    var t = session.tasks[session.i];
+    session.state = t.settled ? "checked" : "asking";
+    session.lastRight = !!t.wasRight;
+  }
+
   function go(next, opts) {
     view = next;
     setHash(hashFor(next), opts && opts.replace);
@@ -5010,6 +5189,13 @@
       return;
     }
 
+    if (parts[0] === "words") {
+      session = null;
+      view = { name: "words" };
+      render();
+      return;
+    }
+
     if (parts[0] === "phrasebook") {
       session = null;
       pbQuery = "";
@@ -5019,7 +5205,13 @@
     }
 
     if (parts[0] === "review") {
-      var rs = parts[1] === "score" ? null : buildReview();
+      if (parts[1] === "score") {
+        if (session && session.isReview && session.finished) { view = { name: "result" }; render(); return; }
+        setHash("#/", true); session = null; view = { name: "home" }; render(); return;
+      }
+      var step = parseInt(parts[1], 10);
+      if (session && session.isReview && step) { showRound(step - 1); view = { name: "play" }; render(); return; }
+      var rs = buildReview();
       if (!rs) { setHash("#/", true); session = null; view = { name: "home" }; render(); return; }
       session = rs;
       view = { name: "play" };
@@ -5029,8 +5221,15 @@
 
     if (parts[0] === "talk") {
       var c = convoById(parts[1]);
+      if (parts[2] === "score" && session && session.isConvo && session.finished && session.convo === c) {
+        view = { name: "result" }; render(); return;
+      }
       if (!c || !convoOpen(c) || parts[2] === "score") {
         setHash("#/", true); session = null; view = { name: "home" }; render(); return;
+      }
+      var cstep = parseInt(parts[2], 10);
+      if (session && session.isConvo && session.convo === c && cstep) {
+        showRound(cstep - 1); view = { name: "play" }; render(); return;
       }
       session = buildConvo(c);
       view = { name: "play" };
@@ -5054,8 +5253,24 @@
       }
 
       if (parts[2] === "play") {
+        var lstep = parseInt(parts[3], 10);
+        if (session && !session.isReview && !session.isConvo && session.lesson === lesson && lstep) {
+          showRound(lstep - 1);
+          view = { name: "play" };
+          render();
+          return;
+        }
         session = buildSession(lesson);
         view = { name: "play" };
+        render();
+        return;
+      }
+
+      // A score you have just earned is still yours to look at; only a
+      // link to one with nothing behind it falls back to the lesson.
+      if (parts[2] === "score" && session && session.finished &&
+          !session.isReview && !session.isConvo && session.lesson === lesson) {
+        view = { name: "result" };
         render();
         return;
       }
@@ -5320,6 +5535,8 @@
       '<span class="nav-note">' + done + " of " + LESSONS.length + " lessons passed</span></button>" +
       '<button class="nav-item" data-act="nav-convos"><span class="nav-label">Conversations</span>' +
       '<span class="nav-note">' + CONVOS.length + " scripted exchanges</span></button>" +
+      '<button class="nav-item" data-go="words"><span class="nav-label">Your words</span>' +
+      '<span class="nav-note">' + (knownCount() + hiddenCount()) + " set aside or hidden</span></button>" +
       '<button class="nav-item" data-go="phrasebook"><span class="nav-label">Phrasebook</span>' +
       '<span class="nav-note">The lines worth having to hand</span></button>' +
       "</nav>";
@@ -5423,13 +5640,13 @@
       (hiddenCount()
         ? '<div class="foot"><span>' + hiddenCount() + " phrase" + (hiddenCount() === 1 ? "" : "s") +
           " hidden. They never come up." +
-          "</span><button class=\"link-btn\" data-act=\"unhide-all\">Show them again</button></div>"
+          "</span><button class=\"link-btn\" data-go=\"words\">See them</button></div>"
         : "") +
 
       (knownCount()
         ? '<div class="foot"><span>' + knownCount() + " phrase" + (knownCount() === 1 ? "" : "s") +
           " set aside. Each comes back once for a check." +
-          "</span><button class=\"link-btn\" data-act=\"unknow-all\">Bring them back</button></div>"
+          "</span><button class=\"link-btn\" data-go=\"words\">See them</button></div>"
         : "") +
 
       '<div class="foot"><span>Scores are stored in this browser only.</span>' +
@@ -5509,6 +5726,81 @@
       "</div>";
   }
 
+  // Every phrase you have taken out of rotation, and why, in one place.
+  function wordsIndex() {
+    var out = { known: [], hidden: [] };
+    var seen = {};
+    function once(l, ar) {
+      var k = l.id + "|" + ar;
+      if (seen[k]) return false;
+      seen[k] = true;
+      return true;
+    }
+    LESSONS.forEach(function (l) {
+      l.phrases.forEach(function (p) {
+        if (!once(l, p.ar)) return;
+        if (isHidden(l.id, p.ar)) { out.hidden.push({ ar: p.ar, en: p.en, lesson: l }); return; }
+        var rec = knownRec(l.id, p.ar);
+        if (rec) {
+          out.known.push({
+            ar: p.ar, en: p.en, lesson: l,
+            due: Math.max(0, RECHECK_AFTER - (runCount() - rec.at))
+          });
+        }
+      });
+      (l.dialogue || []).forEach(function (d) {
+        if (!once(l, d.reply)) return;
+        if (isHidden(l.id, d.reply)) { out.hidden.push({ ar: d.reply, en: d.en, lesson: l }); return; }
+        var r2 = knownRec(l.id, d.reply);
+        if (r2) {
+          out.known.push({
+            ar: d.reply, en: d.en, lesson: l,
+            due: Math.max(0, RECHECK_AFTER - (runCount() - r2.at))
+          });
+        }
+      });
+    });
+    return out;
+  }
+
+  function wordRow(it, act, label) {
+    return '<div class="pb-row">' + sayBtn(it.ar, true) +
+      '<span class="pb-text"><span class="ar">' + esc(disp(it.ar)) + "</span>" +
+      '<span class="pb-en">' + esc(it.en) + " &#183; lesson " + it.lesson.id + "</span></span>" +
+      '<button class="word-undo" data-act="' + act + '" data-id="' + esc(it.ar) +
+      '" data-lesson="' + it.lesson.id + '">' + esc(label) + "</button></div>";
+  }
+
+  function wordsHTML() {
+    var idx = wordsIndex();
+
+    var knownBlock = idx.known.length
+      ? '<div class="pb-group"><h3>Set aside &#183; ' + idx.known.length + "</h3>" +
+        '<p class="fold-lead">Out of rotation because you said you had them. Each comes back once for a check.</p>' +
+        idx.known.sort(function (a, b) { return a.due - b.due; }).map(function (it) {
+          return wordRow(it, "known", it.due === 0 ? "Due a check" : "Back in " + it.due);
+        }).join("") + "</div>"
+      : '<div class="pb-group"><h3>Set aside</h3>' +
+        '<p class="fold-lead">Nothing yet. Tick <b>I know this one</b> on a card or after a right answer.</p></div>';
+
+    var hiddenBlock = idx.hidden.length
+      ? '<div class="pb-group"><h3>Hidden &#183; ' + idx.hidden.length + "</h3>" +
+        '<p class="fold-lead">Gone for good, on purpose. They never come up anywhere.</p>' +
+        idx.hidden.map(function (it) { return wordRow(it, "hide", "Show again"); }).join("") + "</div>"
+      : '<div class="pb-group"><h3>Hidden</h3>' +
+        '<p class="fold-lead">Nothing hidden. Use <b>Not for me</b> on anything you will never need.</p></div>';
+
+    return topbarHTML("Your words") +
+      '<p class="pb-lead">What you have taken out of rotation, and how to put it back. Tap any line to hear it.</p>' +
+      knownBlock + hiddenBlock +
+      (idx.known.length || idx.hidden.length
+        ? '<div class="btn-row">' +
+          (idx.known.length ? '<button class="btn btn-ghost" data-act="unknow-all">Return all set aside</button>' : "") +
+          (idx.hidden.length ? '<button class="btn btn-ghost" data-act="unhide-all">Show all hidden</button>' : "") +
+          "</div>"
+        : "");
+  }
+
   function phrasebookHTML() {
     var q = normalise(pbQuery);
     var groups = "", hits = 0;
@@ -5568,6 +5860,15 @@
       "</div>";
   }
 
+  function glossHTML(ar) {
+    var parts = glossesFor(ar);
+    if (!parts.length) return "";
+    return '<div class="gloss">' + parts.map(function (g) {
+      return '<span class="gloss-row"><span class="ar">' + esc(g.word) + "</span>" +
+        '<span class="gloss-eq">=</span><span class="gloss-en">' + esc(g.gloss) + "</span></span>";
+    }).join("") + "</div>";
+  }
+
   function learnHTML() {
     var l = learn.lesson;
     var p = l.phrases[learn.i];
@@ -5605,7 +5906,8 @@
       (isDialectForm(p.ar) ? '<div class="in-variety">' + esc(varietyInfo().label) +
         ' &#183; fusha: <span class="ar">' + esc(p.ar) + "</span></div>" : "") +
       (learn.shown
-        ? '<div class="flash-rule"></div><div class="flash-en">' + esc(p.en) + "</div>" + note + aside
+        ? '<div class="flash-rule"></div><div class="flash-en">' + esc(p.en) + "</div>" +
+          glossHTML(p.ar) + note + aside
         : '<div class="flash-hint">Tap reveal to see what it means</div>') +
       "</div>" +
       '<div class="btn-row">' +
@@ -5671,7 +5973,10 @@
       '<div class="prompt-label">Someone says to you</div>' +
       '<div class="say-row"><div class="prompt-main ar">' + esc(disp(t.exchange.ask)) + "</div>" +
       sayBtn(t.exchange.ask, true) + "</div>" +
-      '<div class="prompt-sub">' + esc(t.exchange.askEn) + "</div>" +
+      '<div class="prompt-sub">' +
+      (session.state === "checked" || t.peeked
+        ? esc(t.exchange.askEn)
+        : '<button class="peek" data-act="peek">What does that mean?</button>') + "</div>" +
       '<div class="prompt-label" style="margin-top:22px">How do you reply?</div>' +
       "</div>" + optionsHTML(t.options, true, t);
   }
@@ -5730,10 +6035,12 @@
       "</div>" + optionsHTML(t.options, false, t);
   }
 
-  function bubble(who, ar, en) {
+  function bubble(who, ar, en, hideEn) {
     return '<div class="turn is-' + who + '">' +
       '<div class="bubble"><span class="ar">' + esc(disp(ar)) + "</span>" +
-      '<span class="bubble-en">' + esc(en) + "</span></div>" +
+      (hideEn
+        ? '<button class="peek" data-act="peek">What does that mean?</button>'
+        : '<span class="bubble-en">' + esc(en) + "</span>") + "</div>" +
       sayBtn(ar, true) + "</div>";
   }
 
@@ -5756,7 +6063,7 @@
       var past = t.convo.turns[i];
       lines += bubble("them", past.say, past.sayEn) + bubble("you", past.reply, past.replyEn);
     }
-    lines += bubble("them", t.turn.say, t.turn.sayEn);
+    lines += bubble("them", t.turn.say, t.turn.sayEn, !checked && !t.peeked);
     if (checked) lines += bubble("you", t.turn.reply, t.turn.replyEn);
 
     return (t.idx === 0 ? '<p class="convo-setting">' + esc(t.convo.setting) + "</p>" : "") +
@@ -5819,21 +6126,38 @@
     return !((t.type === "quiz" && t.toEnglish) || t.type === "listen");
   }
 
+  // Setting a phrase aside or hiding it should be possible wherever you
+  // meet it, not only on the study card. Only "I know this" is withheld
+  // after a wrong answer, because you plainly did not.
+  function roundControls(t) {
+    var ph = t.phrase || (t.exchange ? { ar: t.exchange.reply } : null);
+    if (!ph || !ph.ar) return "";
+    var lsn = lessonOf(t, ph);
+    if (!lsn) return "";
+    if (isHidden(lsn.id, ph.ar)) {
+      return '<div class="round-controls"><span class="aside-note">Hidden. It will not come up again.</span>' +
+        '<button class="aside aside-hide is-off" data-act="hide" data-id="' + esc(ph.ar) +
+        '" data-lesson="' + lsn.id + '">Show it again</button></div>';
+    }
+    var known = !!knownRec(lsn.id, ph.ar);
+    var bits = "";
+    if (session.lastRight && !t.isRetry) {
+      bits += '<button class="aside' + (known ? " is-on" : "") + '" data-act="known" data-id="' + esc(ph.ar) +
+        '" data-lesson="' + lsn.id + '"><span class="aside-tick" aria-hidden="true"></span>' +
+        (known ? "Set aside" : "I know this one") + "</button>";
+    }
+    bits += '<button class="aside aside-hide" data-act="hide" data-id="' + esc(ph.ar) +
+      '" data-lesson="' + lsn.id + '">Not for me</button>';
+    return '<div class="round-controls">' + bits + "</div>";
+  }
+
   function verdictHTML(t) {
     if (session.state !== "checked") return "";
     var last = session.i === session.tasks.length - 1;
     var msg;
     if (session.lastRight) {
       // Getting it right is the honest moment to say you have it.
-      var ph = t.phrase;
-      var lsn = ph ? lessonOf(t, ph) : null;
-      var already = lsn && knownRec(lsn.id, ph.ar);
-      msg = '<div class="verdict-msg ok"><b>Correct.</b>' +
-        (lsn && !already && !t.isRetry
-          ? '<button class="aside aside-inline" data-act="known" data-id="' + esc(ph.ar) +
-            '" data-lesson="' + lsn.id + '"><span class="aside-tick" aria-hidden="true"></span>I know this one</button>'
-          : already ? '<span class="aside-note">Set aside</span>' : "") +
-        "</div>";
+      msg = '<div class="verdict-msg ok"><b>Correct.</b></div>';
     } else {
       var answer = t.type === "build" ? t.target.join(" ") : (arabicAnswerFor(t) ? disp(t.answer) : t.answer);
       var arabicAnswer = arabicAnswerFor(t);
@@ -5842,7 +6166,7 @@
         (arabicAnswer ? sayBtn(answer, true) : "") + "</div>";
     }
     var ending = last && (session.retried || session.missed.length === 0);
-    return '<div class="verdict">' + msg +
+    return '<div class="verdict">' + msg + roundControls(t) +
       '<button class="btn btn-wide" data-act="next">' +
       (ending ? "See your score" : "Continue") + "</button></div>";
   }
@@ -5949,6 +6273,8 @@
   function settle(task, right, phrase) {
     session.state = "checked";
     session.lastRight = right;
+    task.settled = true;
+    task.wasRight = right;
     if (right && task.points > 0) session.earned += 1;
     if (!right && phrase && !task.isRetry) noteMiss(task, phrase);
     scorePhrase(task, right, phrase);
@@ -6015,6 +6341,10 @@
   }
 
   function finish() {
+    // Walking back to the last round and forward again must not score
+    // the session twice.
+    if (session.finished) { go({ name: "result" }, { replace: true }); return; }
+    session.finished = true;
     var score = Math.round(session.earned / session.max * 100);
     // Sessions are the clock the spot checks run on.
     store.runs = runCount() + 1;
@@ -6054,8 +6384,7 @@
     if (session.i >= session.tasks.length - 1) { finish(); return; }
     session.i++;
     session.state = "asking";
-    render();
-    window.scrollTo(0, 0);
+    go({ name: "play" });
   }
 
   /* ============================================================
@@ -6069,6 +6398,7 @@
     if (view.name === "play") return playHTML();
     if (view.name === "result") return resultHTML();
     if (view.name === "phrasebook") return phrasebookHTML();
+    if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
   }
@@ -6134,6 +6464,7 @@
       stopSpeech();
       if (dest === "home") { session = null; go({ name: "home" }); return; }
       if (dest === "phrasebook") { pbQuery = ""; go({ name: "phrasebook" }); return; }
+      if (dest === "words") { go({ name: "words" }); return; }
       if (dest === "talk") { talk = newTalk(); go({ name: "talk" }); return; }
       if (dest === "lesson") { go({ name: "lesson", lesson: lessonById(el.getAttribute("data-id")) }); return; }
       if (dest === "learn") {
@@ -6240,8 +6571,10 @@
     }
     if (act === "hide") {
       var har = el.getAttribute("data-id");
-      if (!learn) return;
-      toggleHidden(learn.lesson.id, har);
+      var hlid = el.getAttribute("data-lesson");
+      var hlsn = hlid ? lessonById(hlid) : (learn ? learn.lesson : null);
+      if (!hlsn) return;
+      toggleHidden(hlsn.id, har);
       render();
       return;
     }
@@ -6413,6 +6746,12 @@
     if (act === "convo-confirm") {
       if (session.state === "checked") return;
       answer(el.getAttribute("data-id"));
+      return;
+    }
+    if (act === "peek") {
+      // Looking is allowed; it just should not be the default.
+      session.tasks[session.i].peeked = true;
+      render();
       return;
     }
     if (act === "say-reveal") {
