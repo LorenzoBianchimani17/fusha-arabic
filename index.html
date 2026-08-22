@@ -5413,6 +5413,7 @@
     if (v.name === "you") return "#/you";
     if (v.name === "moment") return "#/moment";
     if (v.name === "twins") return "#/twins";
+    if (v.name === "asked") return "#/asked";
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -5490,6 +5491,14 @@
       session = null;
       pbQuery = "";
       view = { name: "phrasebook" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "asked") {
+      session = null;
+      asked = newAsked(null);
+      view = { name: "asked" };
       render();
       return;
     }
@@ -5840,6 +5849,7 @@
     var done = finishedLessons().length;
     var openSentences = combos().length;
     var openSits = openMoments().length;
+    var openAsks = askPool().length;
     var openPairs = openTwins().length;
     var undecided = twinsToDecide().length;
     var g = games();
@@ -5901,6 +5911,11 @@
       '<div class="nav-group">Speak</div>' +
       '<button class="nav-item" data-go="talk"><span class="nav-label">Free talk</span>' +
       '<span class="nav-note">Say anything; it answers from the lessons you choose</span></button>' +
+      '<button class="nav-item' + (openAsks ? "" : " is-off") + '" data-go="asked"' +
+      (openAsks ? "" : " disabled") + '><span class="nav-label">What are they asking?</span>' +
+      '<span class="nav-note">' + (openAsks
+        ? openAsks + " questions, by ear, just the kind of question"
+        : "Pass a lesson with a question in it") + "</span></button>" +
       '<button class="nav-item' + (openSits ? "" : " is-off") + '" data-go="moment"' +
       (openSits ? "" : " disabled") + '><span class="nav-label">What would you say?</span>' +
       '<span class="nav-note">' + (openSits
@@ -6062,6 +6077,7 @@
   var pbQuery = "";
   var made = null;
   var moment = null;
+  var asked = null;
 
   function talkHTML() {
     var lines = talk.turns.map(function (t) {
@@ -7014,9 +7030,11 @@
     return {
       m: m,
       typed: "",
+      heard: null,
       checked: false,
       right: false,
       matched: null,
+      spoken: false,
       shown: false,
       got: prev ? prev.got : 0,
       run: prev ? prev.run : 0
@@ -7036,24 +7054,41 @@
     return hit;
   }
 
+  // More than one answer is right, so the microphone is judged against
+  // all of them and keeps the best.
+  function heardMoment(list) {
+    var best = { text: (list && list[0]) || "", score: 0, ar: null };
+    (list || []).forEach(function (said) {
+      moment.m.ok.forEach(function (ar) {
+        var sc = heardScore(said, spk(ar) || "");
+        if (sc > best.score) best = { text: said, score: sc, ar: ar };
+      });
+    });
+    return best;
+  }
+
+  function settleMoment(right, matched) {
+    moment.matched = matched || null;
+    moment.right = !!right;
+    moment.checked = true;
+    moment.run += 1;
+    if (!right) return;
+    moment.got += 1;
+    var lid = lessonTeaching(matched);
+    if (lid) bumpStrength(lid, matched, true);
+    save();
+    speak(matched);
+  }
+
   function checkMoment() {
     if (!moment || moment.checked) return;
     var field = app.querySelector('[data-act="moment-typing"]');
     if (field) moment.typed = field.value;
     if (!normalise(moment.typed)) return;
-    moment.matched = momentMatch(moment.typed);
-    moment.right = !!moment.matched;
-    moment.checked = true;
-    moment.run += 1;
-    if (moment.right) {
-      moment.got += 1;
-      // Producing it cold is the hardest way to remember a phrase, so it
-      // counts for that phrase the same as any round does.
-      var lid = lessonTeaching(moment.matched);
-      if (lid) bumpStrength(lid, moment.matched, true);
-      save();
-      speak(moment.matched);
-    }
+    // Producing it cold is the hardest way to remember a phrase, so it
+    // counts for that phrase the same as any round does.
+    var hit = momentMatch(moment.typed);
+    settleMoment(!!hit, hit);
     render();
   }
 
@@ -7063,6 +7098,36 @@
     moment.checked = true;
     moment.run += 1;
     render();
+  }
+
+  function listenMoment() {
+    if (!moment || moment.checked || ears.busy) return;
+    moment.heard = null;
+    moment.spoken = true;
+    listenOnce(function (list) {
+      var best = heardMoment(list);
+      moment.heard = best;
+      // Close enough to one of them is an answer, and saying it is
+      // harder than typing it.
+      if (best.ar && best.score >= HEARD_OK) { settleMoment(true, best.ar); return; }
+      render();
+    }, function () { render(); }, function () { render(); });
+  }
+
+  // What it made of you, when it was not close enough to count.
+  function momentHeardHTML() {
+    if (!moment.heard || moment.checked) return "";
+    if (!moment.heard.text) {
+      return '<div class="heard is-none">Nothing came through. Say it again, or type it.</div>';
+    }
+    var near = nearestTranslit(moment.heard.text);
+    return '<div class="heard">' +
+      '<span class="heard-label">It heard</span>' +
+      '<span class="heard-text ar">' + esc(near.text || "-") + "</span>" +
+      '<span class="heard-note">Not one of the answers, but recognisers are shaky on Arabic. ' +
+      "Put it in the box and check it if that is what you said.</span>" +
+      '<button class="heard-yes" data-act="moment-use" data-id="' + esc(near.text || "") + '">' +
+      '<span class="aside-tick" aria-hidden="true"></span>That is what I said</button></div>';
   }
 
   function momentHTML() {
@@ -7111,6 +7176,10 @@
       ' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"' +
       ' aria-label="Say something that works"' + (mo.checked ? " disabled" : "") + ">" +
       (mo.checked ? "" :
+        (canHear()
+          ? '<div class="mic-row">' + micBtn("Say it into the mic", ears.busy) + "</div>"
+          : mo.spoken ? micNote() : "") +
+        momentHeardHTML() +
         '<div class="btn-row">' +
         '<button class="btn btn-ghost" data-act="moment-show">I have no idea</button>' +
         '<button class="btn" data-act="moment-check">Check</button></div>') +
@@ -7302,6 +7371,186 @@
   }
 
   /* ============================================================
+     WHAT ARE THEY ASKING?
+
+     In a real conversation you do not catch the whole question. You
+     catch the word at the front of it and work out the rest from where
+     you are standing. Àina and you look around; kam and you reach for
+     your wallet; hal and a nod will do. This drill asks for nothing
+     else: not what the sentence means, only what is being asked of
+     you.
+     ============================================================ */
+
+  var ASK_KINDS = [
+    { key: "where", en: "Where something is", word: "àina" },
+    { key: "wherefrom", en: "Where you are from", word: "min àina" },
+    { key: "whereto", en: "Where you are going", word: "ilà àina" },
+    { key: "when", en: "When", word: "matà" },
+    { key: "howmuch", en: "How much, or how many", word: "kam" },
+    { key: "what", en: "What", word: "mà, màdha" },
+    { key: "who", en: "Who", word: "man" },
+    { key: "how", en: "How", word: "kèifa" },
+    { key: "yesno", en: "Something you can answer yes or no", word: "hal" },
+    { key: "which", en: "Which one of them", word: "ày" },
+    { key: "choice", en: "One or the other", word: "... am ..." },
+    { key: "backatyou", en: "The same question, back at you", word: "wa ànta, wa ànti" }
+  ];
+
+  function askKindByKey(k) {
+    for (var i = 0; i < ASK_KINDS.length; i++) if (ASK_KINDS[i].key === k) return ASK_KINDS[i];
+    return null;
+  }
+
+  // Off the first word alone, which is the whole point of the drill.
+  function askKind(ar) {
+    if (String(ar).indexOf("?") === -1) return null;
+    var w = normalise(ar).split(" ");
+    // People put the polite opener in front of the question all the
+    // time, and the ear has to look past it.
+    if (w[0] === "lau" && (w[1] === "samaht" || w[1] === "samahti")) w = w.slice(2);
+    if (w[0] === "hal") return "yesno";
+    if (w[0] === "ay") return "which";
+
+    if (w[0] === "aina") return "where";
+    if (w[0] === "min" && w[1] === "aina") return "wherefrom";
+    if (w[0] === "ila" && w[1] === "aina") return "whereto";
+    if (w[0] === "mata") return "when";
+    if (w[0] === "kam" || w[0] === "bikam") return "howmuch";
+    if (w[0] === "ma" || w[0] === "madha") return "what";
+    if (w[0] === "man") return "who";
+    if (w[0] === "keifa") return "how";
+    // "And you?" can come after an answer rather than open the sentence.
+    for (var i = 0; i < w.length - 1; i++) {
+      if (w[i] === "wa" && (w[i + 1] === "anta" || w[i + 1] === "anti")) return "backatyou";
+    }
+    // Neither word is a question word: the "or" in the middle is what
+    // makes it one.
+    if (w.indexOf("am") > 0) return "choice";
+    return null;
+  }
+
+  // Every question the course has actually taught you, from wherever it
+  // taught it: a phrase, a line of dialogue or a conversation.
+  function askPool() {
+    var out = [], seen = {};
+    function add(ar, en, done) {
+      if (!done || !ar || seen[ar]) return;
+      var kind = askKind(ar);
+      if (!kind || !spk(ar)) return;
+      seen[ar] = true;
+      out.push({ ar: ar, en: en, kind: kind });
+    }
+    LESSONS.forEach(function (l) {
+      var r = recordOf(l.id);
+      var done = !!(r && r.done);
+      l.phrases.forEach(function (p) { add(p.ar, p.en, done); });
+      (l.dialogue || []).forEach(function (d) { add(d.ask, d.askEn, done); });
+    });
+    CONVOS.forEach(function (c) {
+      if (!convoOpen(c)) return;
+      c.turns.forEach(function (t) { add(t.say, t.sayEn, true); });
+    });
+    return out;
+  }
+
+  function newAsked(prev) {
+    var pool = askPool();
+    if (!pool.length) return null;
+    var q = shuffle(pool)[0];
+    if (prev && pool.length > 1) {
+      var g = 0;
+      while (g++ < 8 && q.ar === prev.q.ar) q = shuffle(pool)[0];
+    }
+
+    // The wrong answers are kinds of question the course has taught you
+    // too, so this stays a listening test rather than a guessing one.
+    var kinds = [];
+    pool.forEach(function (o) { if (kinds.indexOf(o.kind) === -1) kinds.push(o.kind); });
+    var wrong = shuffle(kinds.filter(function (k) { return k !== q.kind; })).slice(0, 3);
+    if (wrong.length < 3) {
+      shuffle(ASK_KINDS).forEach(function (k) {
+        if (wrong.length >= 3 || k.key === q.kind || wrong.indexOf(k.key) !== -1) return;
+        wrong.push(k.key);
+      });
+    }
+
+    return {
+      q: q,
+      options: shuffle(wrong.concat([q.kind])),
+      chosen: null,
+      checked: false,
+      right: false,
+      played: false,
+      got: prev ? prev.got : 0,
+      run: prev ? prev.run : 0
+    };
+  }
+
+  function answerAsked(key) {
+    if (!asked || asked.checked) return;
+    asked.chosen = key;
+    asked.right = key === asked.q.kind;
+    asked.checked = true;
+    asked.run += 1;
+    if (asked.right) asked.got += 1;
+    render();
+  }
+
+  function askedHTML() {
+    if (!asked) {
+      return topbarHTML("What are they asking?") +
+        '<p class="pb-lead">You will not catch the whole question. You will catch the word at the front, and ' +
+        'that is enough to know what to do. Pass a lesson with a question in it and this opens.</p>' +
+        '<div class="btn-row"><button class="btn" data-go="home">Back to the lessons</button></div>';
+    }
+
+    var a = asked;
+    var heard = canSpeak();
+
+    var opts = '<div class="options">' + a.options.map(function (key, i) {
+      var k = askKindByKey(key);
+      var cls = "option";
+      if (a.checked) {
+        if (key === a.q.kind) cls += " is-right";
+        else if (key === a.chosen) cls += " is-wrong";
+        else cls += " is-dim";
+      }
+      return '<button class="' + cls + '" data-act="asked-answer" data-value="' + esc(key) + '"' +
+        (a.checked ? " disabled" : "") + ">" +
+        '<span class="option-key">' + (i + 1) + "</span><span>" + esc(k ? k.en : key) + "</span></button>";
+    }).join("") + "</div>";
+
+    var stage = heard
+      ? '<div class="listen-stage">' +
+        '<button class="say say-lg" data-act="say" data-say="' + esc(a.q.ar) + '"' +
+        ' aria-label="Play the question again">' + SPEAKER_SVG + "</button></div>" +
+        '<div class="prompt-sub">' + (a.checked ? esc(disp(a.q.ar)) : "tap to hear it again") + "</div>"
+      : '<div class="prompt-main ar">' + esc(disp(a.q.ar)) + "</div>" +
+        '<div class="prompt-sub">no Arabic voice on this device, so you get it in writing</div>';
+
+    var kind = askKindByKey(a.q.kind);
+
+    return topbarHTML("What are they asking?", null, a.run ? a.got + "/" + a.run : "") +
+      '<p class="pb-lead">Not what the question means. Only what is being asked of you, which is all you need ' +
+      'to answer it.</p>' +
+      '<div class="prompt"><div class="prompt-label">' +
+      (heard ? "Listen to the question" : "Read the question") + "</div>" + stage + "</div>" +
+      opts +
+      (a.checked
+        ? '<div class="verdict">' +
+          (a.right
+            ? '<div class="verdict-msg ok"><b>Yes.</b>&nbsp;<span>' + esc(kind ? kind.word : "") + "</span></div>"
+            : '<div class="verdict-msg no"><b>It was ' + esc(kind ? kind.en.toLowerCase() : "") +
+              '.</b>&nbsp;<span>' + esc(kind ? kind.word : "") + "</span></div>") +
+          '<div class="why"><div class="pb-row">' + sayBtn(a.q.ar, true) +
+          '<span class="pb-text"><span class="ar">' + esc(disp(a.q.ar)) + "</span>" +
+          '<span class="pb-en">' + esc(a.q.en || "") + "</span></span></div>" +
+          (glossesFor(disp(a.q.ar)).length ? glossHTML(a.q.ar) : "") + "</div>" +
+          '<button class="btn btn-wide" data-act="asked-next">Another question</button></div>'
+        : "");
+  }
+
+  /* ============================================================
      LESSON, STUDY
      ============================================================ */
 
@@ -7385,8 +7634,13 @@
       '<div class="card flashcard fade-in">' +
       (p.core ? '<div><span class="core-tag">Core phrase</span></div>' : "") +
       '<div class="say-row"><div class="flash-ar ar">' + esc(disp(p.ar)) + "</div>" + sayBtn(p.ar) + "</div>" +
-      (isDialectForm(p.ar) ? '<div class="in-variety">' + esc(varietyInfo().label) +
-        ' &#183; fusha: <span class="ar">' + esc(p.ar) + "</span></div>" : "") +
+      // Silence here was making fus-ha look like the dialect you chose.
+      (variety() === "msa" ? ""
+        : isDialectForm(p.ar)
+          ? '<div class="in-variety">' + esc(varietyInfo().label) +
+            ' &#183; fusha: <span class="ar">' + esc(p.ar) + "</span></div>"
+          : '<div class="in-variety">fus&#183;ha &#183; no ' + esc(varietyInfo().label) +
+            " form written for this one yet</div>") +
       (learn.shown
         ? '<div class="flash-rule"></div><div class="flash-en">' + esc(p.en) + "</div>" +
           glossHTML(p.ar) + note + aside
@@ -7958,6 +8212,7 @@
     if (view.name === "you") return youHTML();
     if (view.name === "moment") return momentHTML();
     if (view.name === "twins") return twinsHTML();
+    if (view.name === "asked") return askedHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -7987,6 +8242,10 @@
           search.setSelectionRange(search.value.length, search.value.length);
         }
       }
+      return;
+    }
+    if (view.name === "asked") {
+      if (asked && !asked.played && canSpeak()) { asked.played = true; speak(asked.q.ar); }
       return;
     }
     if (view.name === "moment") {
@@ -8067,6 +8326,7 @@
       if (dest === "you") { session = null; go({ name: "you" }); return; }
       if (dest === "moment") { session = null; moment = newMoment(null); go({ name: "moment" }); return; }
       if (dest === "twins") { session = null; go({ name: "twins" }); return; }
+      if (dest === "asked") { session = null; asked = newAsked(null); go({ name: "asked" }); return; }
       if (dest === "talk") { talk = newTalk(); go({ name: "talk" }); return; }
       if (dest === "lesson") { go({ name: "lesson", lesson: lessonById(el.getAttribute("data-id")) }); return; }
       if (dest === "learn") {
@@ -8337,6 +8597,11 @@
     }
     if (act === "mic") {
       if (view.name === "talk") return;
+      if (view.name === "asked") {
+      if (asked && !asked.played && canSpeak()) { asked.played = true; speak(asked.q.ar); }
+      return;
+    }
+    if (view.name === "moment") { listenMoment(); return; }
       var tm = session && session.tasks[session.i];
       if (!tm || session.state === "checked" || ears.busy) return;
       tm.heard = null;
@@ -8434,7 +8699,14 @@
       if (window.confirm("Ask you to produce all of them again?")) { unpassiveAll(); render(); }
       return;
     }
+    if (act === "asked-answer") { answerAsked(el.getAttribute("data-value")); return; }
+    if (act === "asked-next") { stopSpeech(); asked = newAsked(asked); render(); return; }
     if (act === "moment-check") { checkMoment(); return; }
+    if (act === "moment-use") {
+      if (moment && !moment.checked) { moment.typed = el.getAttribute("data-id") || ""; moment.heard = null; }
+      render();
+      return;
+    }
     if (act === "moment-show") { showMoment(); return; }
     if (act === "moment-next") { stopSpeech(); moment = newMoment(moment); render(); return; }
     if (act === "you-name") {
