@@ -672,6 +672,20 @@
   .pb-more { color: var(--ink-3); font-size: 13px; margin: -12px 0 26px; }
   .make-note { color: var(--ink-3); font-size: 13px; margin: 10px 0 0; }
 
+  .twin-group { margin-bottom: 30px; }
+  .twin { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .twin:last-of-type { border-bottom: 0; }
+  .twin-line { display: flex; align-items: center; gap: 12px; }
+  .twin.is-off .ar { color: var(--ink-3); }
+  .twin.is-off .pb-tag { color: var(--accent); border-color: var(--accent); }
+
+  .twin-note {
+    margin: 6px 0 2px 40px;
+    color: var(--ink-3);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
   .moment-ok { margin: 14px 0 4px; text-align: left; }
 
   .moment-ok h3 {
@@ -4573,7 +4587,10 @@
      ============================================================ */
 
   function quizRound(lesson, phrase) {
-    var toEnglish = Math.random() < 0.5;
+    // Asked in English, a parked phrase would be exactly the choice you
+    // said you did not want to make. Asked in Arabic, it is the reason
+    // you kept it.
+    var toEnglish = isPassive(phrase.ar) || Math.random() < 0.5;
     var field = toEnglish ? "en" : "ar";
     var wrong = distractors(visiblePhrases(lesson), phrase[field], field, 3);
     if (wrong.length < 3) return null;
@@ -4635,6 +4652,7 @@
   }
 
   function dialogRound(lesson, exchange) {
+    if (isPassive(exchange.reply)) return null;
     var wrong = distractors(lesson.dialogue, exchange.reply, "reply", 2);
     if (wrong.length < 2) return null;
     return {
@@ -4666,6 +4684,10 @@
   // drawing so a single-game review never draws unusable material.
   function canMake(item, type) {
     var p = item.phrase || item;
+    if (PRODUCING[type]) {
+      var said = type === "dialog" ? (item.exchange && item.exchange.reply) : p.ar;
+      if (!said || isPassive(said)) return false;
+    }
     if (type === "dialog") return !!item.exchange;
     if (type === "build") {
       var n = tokens(p.ar).length;
@@ -4676,6 +4698,7 @@
   }
 
   function makeRound(lesson, item, type) {
+    if (!canMake(item, type)) return null;
     var p = item.phrase || item;
     if (type === "dialog") return item.exchange ? dialogRound(lesson, item.exchange) : null;
     if (type === "build") return canMake(item, "build") ? buildRound(lesson, p) : null;
@@ -4830,7 +4853,7 @@
     // A core phrase has to come out of you, not just be recognised, so
     // it leads with a producing game. Alternating the two matters: Say
     // you mark yourself and are kind about it, Write is marked for you.
-    if (item.core) {
+    if (item.core && !isPassive((item.phrase || item).ar)) {
       var produce = ["say", "write"].filter(function (t) { return usable.indexOf(t) !== -1; });
       if (produce.length) {
         var lead = shuffle(produce)[0];
@@ -5389,6 +5412,7 @@
     if (v.name === "make") return "#/make";
     if (v.name === "you") return "#/you";
     if (v.name === "moment") return "#/moment";
+    if (v.name === "twins") return "#/twins";
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -5466,6 +5490,13 @@
       session = null;
       pbQuery = "";
       view = { name: "phrasebook" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "twins") {
+      session = null;
+      view = { name: "twins" };
       render();
       return;
     }
@@ -5733,6 +5764,18 @@
       "</button>";
   }
 
+  function twinsCardHTML() {
+    var n = twinsToDecide().length;
+    if (!n) return "";
+    return '<button class="review" data-go="twins">' +
+      '<span class="review-body">' +
+      '<span class="eyebrow">One job, several phrases</span>' +
+      '<span class="review-title">Decide which one you will say</span>' +
+      '<span class="review-meta">' + n + " group" + (n === 1 ? "" : "s") +
+      " where the course has taught you more than one way. Keep one, recognise the rest.</span></span>" +
+      '<span class="lesson-lock" aria-hidden="true">&rarr;</span></button>';
+  }
+
   function momentCardHTML() {
     var n = openMoments().length;
     if (!n) return "";
@@ -5797,6 +5840,8 @@
     var done = finishedLessons().length;
     var openSentences = combos().length;
     var openSits = openMoments().length;
+    var openPairs = openTwins().length;
+    var undecided = twinsToDecide().length;
     var g = games();
     var drills = GAMES.map(function (x) {
       var why = null;
@@ -5872,6 +5917,11 @@
       '<span class="nav-note">' + done + " of " + LESSONS.length + " lessons passed</span></button>" +
       '<button class="nav-item" data-act="nav-convos"><span class="nav-label">Conversations</span>' +
       '<span class="nav-note">' + CONVOS.length + " scripted exchanges</span></button>" +
+      '<button class="nav-item' + (openPairs ? "" : " is-off") + '" data-go="twins"' +
+      (openPairs ? "" : " disabled") + '><span class="nav-label">One job, several phrases</span>' +
+      '<span class="nav-note">' + (openPairs
+        ? (undecided ? undecided + " still to choose" : "All chosen; change your mind here")
+        : "Pass a lesson to open this") + "</span></button>" +
       '<button class="nav-item" data-go="words"><span class="nav-label">Your words</span>' +
       '<span class="nav-note">' + (knownCount() + hiddenCount()) + " set aside or hidden</span></button>" +
       '<button class="nav-item" data-go="phrasebook"><span class="nav-label">Phrasebook</span>' +
@@ -5936,6 +5986,7 @@
       reviewHTML() +
       momentCardHTML() +
       makeCardHTML() +
+      twinsCardHTML() +
 
       // Everything else is here when you want it and out of the way when
       // you do not. One screen with five things shouting at once is how
@@ -6092,7 +6143,7 @@
 
   // Every phrase you have taken out of rotation, and why, in one place.
   function wordsIndex() {
-    var out = { known: [], hidden: [] };
+    var out = { known: [], hidden: [], passive: [] };
     var seen = {};
     function once(l, ar) {
       var k = l.id + "|" + ar;
@@ -6104,6 +6155,7 @@
       l.phrases.forEach(function (p) {
         if (!once(l, p.ar)) return;
         if (isHidden(l.id, p.ar)) { out.hidden.push({ ar: p.ar, en: p.en, lesson: l }); return; }
+        if (isPassive(p.ar)) out.passive.push({ ar: p.ar, en: p.en, lesson: l });
         var rec = knownRec(l.id, p.ar);
         if (rec) {
           out.known.push({
@@ -6115,6 +6167,7 @@
       (l.dialogue || []).forEach(function (d) {
         if (!once(l, d.reply)) return;
         if (isHidden(l.id, d.reply)) { out.hidden.push({ ar: d.reply, en: d.en, lesson: l }); return; }
+        if (isPassive(d.reply)) out.passive.push({ ar: d.reply, en: d.en, lesson: l });
         var r2 = knownRec(l.id, d.reply);
         if (r2) {
           out.known.push({
@@ -6154,12 +6207,22 @@
       : '<div class="pb-group"><h3>Hidden</h3>' +
         '<p class="fold-lead">Nothing hidden. Use <b>Not for me</b> on anything you will never need.</p></div>';
 
+    var passiveBlock = idx.passive.length
+      ? '<div class="pb-group"><h3>Recognise only &#183; ' + idx.passive.length + "</h3>" +
+        '<p class="fold-lead">You are never asked to produce these, only to understand them. They still come ' +
+        "up in the quiz, the listening and the matching.</p>" +
+        idx.passive.map(function (it) { return wordRow(it, "passive", "Say it too"); }).join("") + "</div>"
+      : '<div class="pb-group"><h3>Recognise only</h3>' +
+        '<p class="fold-lead">Nothing parked. When two phrases do the same job, ' +
+        "<b>One job, several phrases</b> lets you keep one and only recognise the other.</p></div>";
+
     return topbarHTML("Your words") +
       '<p class="pb-lead">What you have taken out of rotation, and how to put it back. Tap any line to hear it.</p>' +
-      knownBlock + hiddenBlock +
-      (idx.known.length || idx.hidden.length
+      knownBlock + passiveBlock + hiddenBlock +
+      (idx.known.length || idx.hidden.length || idx.passive.length
         ? '<div class="btn-row">' +
           (idx.known.length ? '<button class="btn btn-ghost" data-act="unknow-all">Return all set aside</button>' : "") +
+          (idx.passive.length ? '<button class="btn btn-ghost" data-act="unpassive-all">Ask for all of them again</button>' : "") +
           (idx.hidden.length ? '<button class="btn btn-ghost" data-act="unhide-all">Show all hidden</button>' : "") +
           "</div>"
         : "");
@@ -6341,8 +6404,9 @@
     var out = [];
     FRAMES.forEach(function (f) {
       if (!done[f.needs]) return;
+      if (isPassive(f.stem)) return;
       f.words.forEach(function (w) {
-        if (!SCRIPT[w]) return;
+        if (!SCRIPT[w] || isPassive(w)) return;
         var lid = lessonTeaching(w);
         if (!lid || !done[lid]) return;
         if (alreadyTaught(f.stem + " " + midSentence(w))) return;
@@ -6930,6 +6994,7 @@
   // answer it. Which lesson that is comes from the answers themselves.
   function momentOpen(m) {
     return m.ok.some(function (ar) {
+      if (isPassive(ar)) return false;
       var lid = lessonTeaching(ar);
       var r = lid && recordOf(lid);
       return !!(r && r.done);
@@ -7053,6 +7118,190 @@
   }
 
   /* ============================================================
+     ONE JOB, SEVERAL PHRASES
+
+     The course teaches four ways to say hello and five ways to say
+     goodbye, because you will hear all of them. You only ever need to
+     say one. So the choice here is not learn it or drop it: it is
+     "keep asking me to produce this" against "only ever ask me to
+     recognise it". Nothing is lost either way, and a phrase you park
+     still turns up in the games that test understanding, which is
+     exactly what you need it for.
+     ============================================================ */
+
+  var TWINS = [
+    {
+      id: "hello",
+      title: "Saying hello",
+      why: "Marhàban is never wrong, with anyone. As-salàmu ʿaláikum is warmer but has its own reply to remember, and àhlan is mostly what you say back.",
+      keep: "Marhàban",
+      members: ["Marhàban", "As-salàmu ʿaláikum", "Àhlan", "Àhlan wa sàhlan"]
+    },
+    {
+      id: "bye",
+      title: "Saying goodbye",
+      why: "Maʿa salàma is the everyday one and covers every parting. The rest are warmer, more final or more religious, and you will hear them far more often than you need to say them.",
+      keep: "Maʿa salàma",
+      members: ["Maʿa salàma", "Ilà al-liqà", "Ilà al-liqà qarìban", "Wadàʿan", "Fi amàn Allàh"]
+    },
+    {
+      id: "fine",
+      title: "Answering how are you",
+      why: "Al-hàmdu lillàh is what you will hear back nine times out of ten, and it works whatever the truth is. Anà bikhèir is the plain one.",
+      keep: "Al-hàmdu lillàh",
+      members: ["Al-hàmdu lillàh", "Anà bikhèir", "Là bà's"]
+    },
+    {
+      id: "polite",
+      title: "Being polite about a request",
+      why: "Min fàdlik goes on the end of what you are asking for. Lau samàht is for getting attention before you ask. ʿÀfwan does both at a pinch, and is also how you answer thank you.",
+      keep: "Min fàdlik",
+      members: ["Min fàdlik", "Lau samàht", "ʿÀfwan", "Lau samàhti"]
+    },
+    {
+      id: "thanks",
+      title: "Thanking someone",
+      why: "Shùkran covers everything. Jazìlan only adds weight, for when someone has really gone out of their way.",
+      keep: "Shùkran",
+      members: ["Shùkran", "Shùkran jazìlan"]
+    },
+    {
+      id: "metoo",
+      title: "Saying me too",
+      why: "The same phrase with and without the and. Either is fine; pick the one your mouth prefers.",
+      keep: "Anà àidan",
+      members: ["Anà àidan", "Wa anà àidan"]
+    },
+    {
+      id: "night",
+      title: "Saying good night",
+      why: "Tùsbih ʿalà khèir is the one you say. Làila saʿìda is mostly the answer coming back.",
+      keep: "Tùsbih ʿalà khèir",
+      members: ["Tùsbih ʿalà khèir", "Làila saʿìda"]
+    },
+    {
+      id: "howmuch",
+      title: "Asking the price",
+      why: "Kam hàdha? points at the thing in your hand. Kam as-sìʿr? asks about the price in the abstract. Pointing wins arguments.",
+      keep: "Kam hàdha?",
+      members: ["Kam hàdha?", "Kam as-sìʿr?"]
+    },
+    {
+      id: "dear",
+      title: "Saying it is too expensive",
+      why: "Hàdha kathìr, that is too much, is about this price. Ghàli is about the thing itself, and jìddan turns it up.",
+      keep: "Hàdha kathìr",
+      members: ["Hàdha kathìr", "Ghàli", "Ghàli jìddan"]
+    },
+    {
+      id: "no",
+      title: "Getting out of a sale",
+      why: "Sa'ufàkkir, I will think about it, ends it without anyone losing face. Là urìd is blunter. Là, shùkran is the polite everyday no.",
+      keep: "Sa'ufàkkir",
+      members: ["Sa'ufàkkir", "Là, shùkran", "Là urìd"]
+    }
+  ];
+
+  /* ---------- recognise only ---------- */
+
+  // Keyed on the phrase itself, not on the lesson: the same words in
+  // two lessons are still the one thing you have decided not to say.
+  function isPassive(ar) {
+    return !!(store.passive || {})[ar];
+  }
+
+  function togglePassive(ar) {
+    if (!store.passive) store.passive = {};
+    if (store.passive[ar]) delete store.passive[ar];
+    else store.passive[ar] = true;
+    save();
+  }
+
+  function passiveCount() { return Object.keys(store.passive || {}).length; }
+
+  function unpassiveAll() { store.passive = {}; save(); }
+
+  // Producing it and recognising it are different jobs. These are the
+  // games that make you produce.
+  var PRODUCING = { build: true, say: true, write: true, dialog: true };
+
+  function twinReached(t) {
+    return t.members.filter(function (ar) {
+      var lid = lessonTeaching(ar);
+      var r = lid && recordOf(lid);
+      return !!(r && r.done);
+    });
+  }
+
+  function openTwins() {
+    return TWINS.filter(function (t) { return twinReached(t).length > 1; });
+  }
+
+  // A group is still asking you to choose while more than one of the
+  // phrases you have reached is in full rotation.
+  function twinsToDecide() {
+    return openTwins().filter(function (t) {
+      return twinReached(t).filter(function (ar) { return !isPassive(ar); }).length > 1;
+    });
+  }
+
+  function keepOnly(t, keep) {
+    if (!store.passive) store.passive = {};
+    twinReached(t).forEach(function (ar) {
+      if (ar === keep) delete store.passive[ar];
+      else store.passive[ar] = true;
+    });
+    save();
+  }
+
+  function twinsHTML() {
+    var open = openTwins();
+    if (!open.length) {
+      return topbarHTML("One job, several phrases") +
+        '<p class="pb-lead">The course teaches four ways to say hello and five ways to say goodbye, because you ' +
+        'will hear all of them. You only need to say one. Pass a couple of lessons and the choices turn up here.</p>' +
+        '<div class="btn-row"><button class="btn" data-go="home">Back to the lessons</button></div>';
+    }
+
+    var groups = open.map(function (t) {
+      var reached = twinReached(t);
+      var live = reached.filter(function (ar) { return !isPassive(ar); });
+      var keep = reached.indexOf(t.keep) !== -1 ? t.keep : reached[0];
+
+      var rows = reached.map(function (ar) {
+        var off = isPassive(ar);
+        var note = noteFor(ar);
+        return '<div class="twin' + (off ? " is-off" : "") + '">' +
+          '<div class="twin-line">' + sayBtn(ar, true) +
+          '<span class="pb-text"><span class="ar">' + esc(disp(ar)) + "</span>" +
+          '<span class="pb-en">' + esc(englishFor(ar) || "") + "</span></span>" +
+          '<button class="pb-tag" data-act="passive" data-id="' + esc(ar) + '">' +
+          (off ? "Say it too" : "Recognise only") + "</button></div>" +
+          (note ? '<div class="twin-note">' + note + "</div>" : "") + "</div>";
+      }).join("");
+
+      return '<div class="pb-group twin-group"><h3>' + esc(t.title) + "</h3>" +
+        '<p class="fold-lead">' + esc(t.why) + "</p>" + rows +
+        (live.length > 1
+          ? '<div class="btn-row"><button class="btn btn-ghost" data-act="twin-keep" data-id="' +
+            esc(t.id) + '" data-value="' + esc(keep) + '">Keep ' + esc(disp(keep)) +
+            ", recognise the rest</button></div>"
+          : '<p class="make-note">One to say, ' + (reached.length - 1) +
+            " to recognise. That is the whole point.</p>") +
+        "</div>";
+    }).join("");
+
+    return topbarHTML("One job, several phrases") +
+      '<p class="pb-lead">Several phrases here do the same job. Keep the one you will actually say and put the ' +
+      'others on <b>recognise only</b>: they stop asking you to produce them, and go on turning up in the games ' +
+      'that test whether you understood. Nothing is deleted, and you can undo any of it here or in Your words.</p>' +
+      groups +
+      (passiveCount()
+        ? '<div class="btn-row"><button class="btn btn-ghost" data-act="unpassive-all">Put them all back in rotation</button></div>'
+        : "");
+  }
+
+  /* ============================================================
      LESSON, STUDY
      ============================================================ */
 
@@ -7110,18 +7359,25 @@
 
     var known = !!knownRec(l.id, p.ar);
     var hidden = isHidden(l.id, p.ar);
+    var only = isPassive(p.ar);
     var aside = '<div class="aside-row"><div class="aside-pair">' +
       (hidden ? "" :
         '<button class="aside' + (known ? " is-on" : "") + '" data-act="known" data-id="' + esc(p.ar) + '"' +
         ' aria-pressed="' + (known ? "true" : "false") + '">' +
         '<span class="aside-tick" aria-hidden="true"></span>' +
         (known ? "Set aside" : "I know this one") + "</button>") +
+      (hidden ? "" :
+        '<button class="aside' + (only ? " is-on" : "") + '" data-act="passive" data-id="' + esc(p.ar) + '"' +
+        ' aria-pressed="' + (only ? "true" : "false") + '">' +
+        '<span class="aside-tick" aria-hidden="true"></span>' +
+        (only ? "Recognise only" : "I will not say this one") + "</button>") +
       '<button class="aside aside-hide' + (hidden ? " is-off" : "") + '" data-act="hide" data-id="' + esc(p.ar) + '"' +
       ' aria-pressed="' + (hidden ? "true" : "false") + '">' +
       (hidden ? "Hidden" : "Not for me") + "</button>" +
       "</div>" +
       (hidden
         ? '<span class="aside-note">Hidden for good. It will not come up anywhere.</span>'
+        : only ? '<span class="aside-note">You are asked to understand this one, never to produce it.</span>'
         : known ? '<span class="aside-note">Out of rotation. It will come back once for a check.</span>' : "") +
       "</div>";
 
@@ -7422,6 +7678,10 @@
         '" data-lesson="' + lsn.id + '"><span class="aside-tick" aria-hidden="true"></span>' +
         (known ? "Set aside" : "I know this one") + "</button>";
     }
+    var onlyR = isPassive(ph.ar);
+    bits += '<button class="aside' + (onlyR ? " is-on" : "") + '" data-act="passive" data-id="' + esc(ph.ar) +
+      '"><span class="aside-tick" aria-hidden="true"></span>' +
+      (onlyR ? "Recognise only" : "I will not say this one") + "</button>";
     bits += '<button class="aside aside-hide" data-act="hide" data-id="' + esc(ph.ar) +
       '" data-lesson="' + lsn.id + '">Not for me</button>';
     return '<div class="round-controls">' + bits + "</div>";
@@ -7697,6 +7957,7 @@
     if (view.name === "make") return makeHTML();
     if (view.name === "you") return youHTML();
     if (view.name === "moment") return momentHTML();
+    if (view.name === "twins") return twinsHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -7805,6 +8066,7 @@
       if (dest === "make") { session = null; made = newMake(null); go({ name: "make" }); return; }
       if (dest === "you") { session = null; go({ name: "you" }); return; }
       if (dest === "moment") { session = null; moment = newMoment(null); go({ name: "moment" }); return; }
+      if (dest === "twins") { session = null; go({ name: "twins" }); return; }
       if (dest === "talk") { talk = newTalk(); go({ name: "talk" }); return; }
       if (dest === "lesson") { go({ name: "lesson", lesson: lessonById(el.getAttribute("data-id")) }); return; }
       if (dest === "learn") {
@@ -8161,6 +8423,17 @@
     if (act === "make-hint") { if (made) made.hint = true; render(); return; }
     if (act === "make-check") { checkMake(); return; }
     if (act === "make-answer") { answerMake(el.getAttribute("data-value")); return; }
+    if (act === "passive") { togglePassive(el.getAttribute("data-id")); render(); return; }
+    if (act === "twin-keep") {
+      var tw = null, tid = el.getAttribute("data-id");
+      TWINS.forEach(function (x) { if (x.id === tid) tw = x; });
+      if (tw) { keepOnly(tw, el.getAttribute("data-value")); render(); }
+      return;
+    }
+    if (act === "unpassive-all") {
+      if (window.confirm("Ask you to produce all of them again?")) { unpassiveAll(); render(); }
+      return;
+    }
     if (act === "moment-check") { checkMoment(); return; }
     if (act === "moment-show") { showMoment(); return; }
     if (act === "moment-next") { stopSpeech(); moment = newMoment(moment); render(); return; }
