@@ -654,6 +654,24 @@
   .pb-en { font-size: 13px; color: var(--ink-3); }
   .pb-empty { color: var(--ink-3); font-size: 14.5px; }
 
+  .pb-tag {
+    margin-left: auto;
+    flex: none;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .06em;
+    color: var(--ink-3);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  .pb-tag:hover { color: var(--ink); border-color: var(--accent); }
+  .pb-more { color: var(--ink-3); font-size: 13px; margin: -12px 0 26px; }
+  .make-note { color: var(--ink-3); font-size: 13px; margin: 10px 0 0; }
+
   .word-undo {
     margin-left: auto;
     flex: none;
@@ -667,6 +685,22 @@
   }
 
   .word-undo:hover { color: var(--accent-ink); background: var(--accent-soft); border-color: transparent; }
+
+  .why {
+    padding: 11px 14px;
+    margin-bottom: 11px;
+    border-radius: var(--r-md);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--accent);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    text-align: left;
+  }
+
+  .why b { color: var(--ink); font-weight: 600; }
+  .why .gloss { background: transparent; padding: 0; }
 
   .round-controls {
     display: flex;
@@ -3383,7 +3417,7 @@
     "al-ʿarabìyya": "Arabic", "inglizìyya": "English", "tàksi": "taxi",
     "sayyàra": "car", "qitàr": "train", "hàfila": "bus", "tà'ira": "plane",
     "tàdhkara": "ticket", "haqìba": "suitcase", "jawàz": "passport",
-    "safar": "travel", "mìftah": "key", "kitàb": "book", "hàtif": "phone",
+    "safar": "travel", "sàfar": "travel", "ʿasìr": "juice", "àrnab": "rabbit", "mìftah": "key", "kitàb": "book", "hàtif": "phone",
     "kùrsi": "chair", "tàwila": "table", "sarìr": "bed", "bàb": "door",
     "làun": "colour", "mìhna": "job", "ʿàmal": "work", "shàrika": "company",
     "kùntu": "I was", "dhahàbtu": "I went", "akàltu": "I ate",
@@ -4125,10 +4159,14 @@
     return d ? d[0] : ar;
   }
 
+  // Sentences you compose on the Make screen are not in the course, so
+  // their script is assembled from the parts and kept here.
+  var MADE = {};
+
   // What to hand the speech engine for it.
   function spk(ar) {
     var d = dialectOf(ar);
-    return d ? d[1] : (SCRIPT[ar] || "");
+    return d ? d[1] : (SCRIPT[ar] || MADE[ar] || "");
   }
 
   function isDialectForm(ar) { return !!dialectOf(ar); }
@@ -4676,6 +4714,7 @@
       isDrill: fields.isDrill || null,
       isConvo: !!fields.isConvo,
       isFollow: !!fields.isFollow,
+      isFixup: !!fields.isFixup,
       isToday: !!fields.isToday,
       convo: fields.convo || null,
       reviewPool: fields.reviewPool || 0,
@@ -4919,6 +4958,31 @@
     }
     if (!picked.length) return null;
     return newSession({ isReview: true, isDrill: type, reviewPool: pool.length, tasks: picked });
+  }
+
+  // Straight from the score screen, on exactly what you just got wrong,
+  // while you still remember getting it wrong.
+  function buildFixup(missed) {
+    var seen = {}, items = [];
+    missed.forEach(function (m) {
+      if (!m.lesson || seen[m.ar]) return;
+      seen[m.ar] = true;
+      items.push({ ar: m.ar, en: m.en, lesson: m.lesson, phrase: { ar: m.ar, en: m.en }, s: 0 });
+    });
+    if (!items.length) return null;
+
+    var asking = askingGames();
+    var types = asking.length ? asking : ["quiz"];
+    var tasks = [];
+    items.forEach(function (item) {
+      var options = typeFor(item, types);
+      for (var i = 0; i < options.length; i++) {
+        var r = makeRound(item.lesson, item, options[i]);
+        if (r) { tasks.push(r); return; }
+      }
+    });
+    if (!tasks.length) return null;
+    return newSession({ isReview: true, isFixup: true, reviewPool: 0, tasks: tasks });
   }
 
   /* ---------- what to do today ---------- */
@@ -5292,6 +5356,7 @@
   function hashFor(v) {
     if (!v) return "#/";
     if (v.name === "phrasebook") return "#/phrasebook";
+    if (v.name === "make") return "#/make";
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -5369,6 +5434,14 @@
       session = null;
       pbQuery = "";
       view = { name: "phrasebook" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "make") {
+      session = null;
+      made = newMake(null);
+      view = { name: "make" };
       render();
       return;
     }
@@ -5613,6 +5686,20 @@
       "</button>";
   }
 
+  // The one thing on the home screen that is not the course repeating
+  // itself back at you.
+  function makeCardHTML() {
+    var n = combos().length;
+    if (!n) return "";
+    return '<button class="review" data-go="make">' +
+      '<span class="review-body">' +
+      '<span class="eyebrow">Make a sentence</span>' +
+      '<span class="review-title">Say something new</span>' +
+      '<span class="review-meta">' + n +
+      " sentences built from patterns and words you know, none of them taught as a phrase.</span></span>" +
+      '<span class="lesson-lock" aria-hidden="true">&rarr;</span></button>';
+  }
+
   function convosHTML() {
     var done = store.convos || {};
     var rows = CONVOS.map(function (c) {
@@ -5649,6 +5736,7 @@
   // Everything the app can do, in one list, reachable from any screen.
   function navHTML() {
     var done = finishedLessons().length;
+    var openSentences = combos().length;
     var g = games();
     var drills = GAMES.map(function (x) {
       var why = null;
@@ -5703,6 +5791,11 @@
       '<div class="nav-group">Speak</div>' +
       '<button class="nav-item" data-go="talk"><span class="nav-label">Free talk</span>' +
       '<span class="nav-note">Say anything; it answers from the lessons you choose</span></button>' +
+      '<button class="nav-item' + (openSentences ? "" : " is-off") + '" data-go="make"' +
+      (openSentences ? "" : " disabled") + '><span class="nav-label">Make a sentence</span>' +
+      '<span class="nav-note">' + (openSentences
+        ? openSentences + " you have never been taught"
+        : "Pass a lesson to open this") + "</span></button>" +
 
       '<div class="nav-group">Learn</div>' +
       '<button class="nav-item" data-act="nav-course"><span class="nav-label">The course</span>' +
@@ -5760,10 +5853,10 @@
       '<dl class="stats">' +
       '<div class="stat"><dt>Lessons</dt><dd>' + doneCount + "<small> / " + LESSONS.length + "</small></dd></div>" +
       '<div class="stat"><dt>Mastered</dt><dd>' +
-      (counts.total ? counts.mastered + "<small> / " + counts.total + "</small>" : "<small>&mdash;</small>") +
+      (counts.total ? counts.mastered + "<small> / " + counts.total + "</small>" : "<small>-</small>") +
       "</dd></div>" +
       '<div class="stat"><dt>Needs work</dt><dd>' +
-      (counts.total ? String(counts.weak) : "<small>&mdash;</small>") +
+      (counts.total ? String(counts.weak) : "<small>-</small>") +
       (counts.fading ? '<small> +' + counts.fading + " fading</small>" : "") + "</dd></div>" +
       "</dl>" +
 
@@ -5771,6 +5864,7 @@
       coreHTML() +
       todayHTML() +
       reviewHTML() +
+      makeCardHTML() +
 
       // Everything else is here when you want it and out of the way when
       // you do not. One screen with five things shouting at once is how
@@ -5844,6 +5938,7 @@
      ============================================================ */
 
   var pbQuery = "";
+  var made = null;
 
   function talkHTML() {
     var lines = talk.turns.map(function (t) {
@@ -5998,6 +6093,40 @@
         : "");
   }
 
+  // The phrasebook is 40 hand-picked lines. Everything you have been
+  // taught is nine times that, and until now the search box could not
+  // see any of it.
+  var COURSE = null;
+  function courseIndex() {
+    if (COURSE) return COURSE;
+    COURSE = [];
+    var seen = {};
+    function add(ar, en, lesson) {
+      if (!ar || !en || seen[ar]) return;
+      seen[ar] = true;
+      COURSE.push({ ar: ar, en: en, lesson: lesson });
+    }
+    LESSONS.forEach(function (l) {
+      l.phrases.forEach(function (p) { add(p.ar, p.en, l); });
+      (l.dialogue || []).forEach(function (d) {
+        add(d.ask, d.askEn, l);
+        add(d.reply, d.en, l);
+      });
+    });
+    return COURSE;
+  }
+
+  var COURSE_HITS = 24;
+
+  function courseSearch(q, skip) {
+    return courseIndex().filter(function (item) {
+      if (skip[item.ar]) return false;
+      return normalise(item.ar).indexOf(q) !== -1 ||
+        normalise(disp(item.ar)).indexOf(q) !== -1 ||
+        normalise(item.en).indexOf(q) !== -1;
+    });
+  }
+
   function phrasebookHTML() {
     var q = normalise(pbQuery);
     var groups = "", hits = 0;
@@ -6015,12 +6144,269 @@
       if (rows) groups += '<div class="pb-group"><h3>' + esc(group.title) + "</h3>" + rows + "</div>";
     });
 
+    // A search runs on past the phrasebook, into every phrase and every
+    // line of dialogue in the course.
+    var more = "";
+    if (q) {
+      var shown = {};
+      PHRASEBOOK.forEach(function (g) { g.lines.forEach(function (ar) { shown[ar] = true; }); });
+      var found = courseSearch(q, shown);
+      if (found.length) {
+        var rest = "";
+        found.slice(0, COURSE_HITS).forEach(function (item) {
+          hits++;
+          rest += '<div class="pb-row">' + sayBtn(item.ar, true) +
+            '<span class="pb-text"><span class="ar">' + esc(disp(item.ar)) + "</span>" +
+            '<span class="pb-en">' + esc(item.en) + "</span></span>" +
+            '<button class="pb-tag" data-go="lesson" data-id="' + item.lesson.id +
+            '" aria-label="Go to lesson ' + item.lesson.id + ', ' + esc(item.lesson.title) +
+            '">L' + item.lesson.id + "</button></div>";
+        });
+        more = '<div class="pb-group"><h3>Elsewhere in the course</h3>' + rest + "</div>" +
+          (found.length > COURSE_HITS
+            ? '<p class="pb-more">' + (found.length - COURSE_HITS) +
+              " more. Narrow it down a little.</p>"
+            : "");
+      }
+    }
+
     return topbarHTML("Phrasebook") +
-      '<p class="pb-lead">The lines worth having to hand. Nothing here is locked, and the speaker works on every one.</p>' +
+      '<p class="pb-lead">The lines worth having to hand, and a search that reaches every phrase in the course. Nothing here is locked, and the speaker works on every one.</p>' +
       '<input class="pb-search" data-act="search" type="text" value="' + esc(pbQuery) + '"' +
-      ' placeholder="Search English or Arabic" autocomplete="off" autocorrect="off"' +
-      ' autocapitalize="off" spellcheck="false" aria-label="Search the phrasebook">' +
-      (hits ? groups : '<p class="pb-empty">Nothing matches &ldquo;' + esc(pbQuery) + "&rdquo;.</p>");
+      ' placeholder="Search the whole course, English or Arabic" autocomplete="off" autocorrect="off"' +
+      ' autocapitalize="off" spellcheck="false" aria-label="Search every phrase in the course">' +
+      (hits ? groups + more : '<p class="pb-empty">Nothing matches &ldquo;' + esc(pbQuery) + "&rdquo;.</p>");
+  }
+
+  /* ============================================================
+     MAKING SENTENCES THE COURSE NEVER TAUGHT YOU
+
+     Ten patterns, each one lifted from a phrase the lessons already
+     teach, with the last word taken out. Into the gap goes any word
+     you have been taught. Nothing here is generated: the patterns and
+     the words that may fill them were gone through by hand, and the
+     script of each stem is cut from the taught phrase it came from.
+     ============================================================ */
+
+  var FRAMES = [
+    { stem: "Urìd", ar: "أُرِيدُ", en: "I want ___", needs: 9,
+      words: ["Shày", "Qàhwa", "ʿAsìr", "Khubz", "Àruzz", "Làhm", "Dajàj", "Sàmak",
+        "Tàdhkara", "Ghùrfa", "Sayyàra", "Dàrraja", "Kitàb", "Hàtif", "Dawà'", "Haqìba", "Sàʿa"] },
+
+    { stem: "Ahtàj", ar: "أَحْتَاجُ", en: "I need ___", needs: 16,
+      words: ["Dawà'", "Tàksi", "Ghùrfa", "Tàdhkara", "Nùqud", "Mà'", "Kùrsi",
+        "Hàtif", "Sayyàra", "Haqìba", "Kitàb"] },
+
+    { stem: "ʿÌndi", ar: "عِنْدِي", en: "I have ___", needs: 7,
+      words: ["Qìtta", "Kalb", "Hisàn", "Àrnab", "Sayyàra", "Dàrraja", "Kitàb", "Hàtif",
+        "Sàʿa", "Tàdhkara", "Ghùrfa", "Nùqud", "Haqìba", "Kùrsi", "Tàwila", "Sarìr", "Dawà'"] },
+
+    { stem: "Àina", ar: "أَيْنَ", en: "Where is ___?", needs: 10, q: true,
+      words: ["Al-fùnduq", "Al-matàr", "Al-qitàr", "Al-hàfila", "Al-bàit", "Al-màtbakh",
+        "Al-bàb", "Al-mìftah", "Al-màktab", "As-sùq", "Al-mìtro", "Ash-shùbbak"] },
+
+    { stem: "Ùhib", ar: "أُحِبُّ", en: "I like ___", needs: 14,
+      words: ["Ar-rabìʿ", "As-sàif", "Al-kharìf", "Ash-shità", "Ash-shàms",
+        "Al-màtar", "Ath-thàlj", "As-sàfar", "As-sùq"] },
+
+    { stem: "Àkul", ar: "آكُلُ", en: "I eat ___", needs: 16,
+      words: ["Khubz", "Àruzz", "Làhm", "Dajàj", "Sàmak"] },
+
+    { stem: "Àshrab", ar: "أَشْرَبُ", en: "I drink ___", needs: 16,
+      words: ["Mà'", "Shày", "Qàhwa", "ʿAsìr"] },
+
+    { stem: "Àdhhab ilà", ar: "أَذْهَبُ إِلَى", en: "I am going to ___", needs: 16,
+      words: ["Al-fùnduq", "Al-matàr", "As-sùq", "Al-màktab", "Al-bàit"] },
+
+    { stem: "Khudhni ilà", ar: "خُذْنِي إِلَى", en: "Take me to ___", needs: 26,
+      words: ["Al-fùnduq", "Al-matàr", "Al-bàit", "As-sùq", "Al-màktab", "Al-mìtro"] },
+
+    { stem: "Bikàm ilà", ar: "بِكَمْ إِلَى", en: "How much to ___?", needs: 26, q: true,
+      words: ["Al-fùnduq", "Al-matàr", "Al-bàit", "As-sùq", "Al-màktab", "Al-mìtro"] }
+  ];
+
+  // A word taught on its own is written with a capital. Dropped into a
+  // sentence it is not the first word any more.
+  function midSentence(w) {
+    return String(w).replace(/[A-Za-z\u00c0-\u024f]/, function (ch) { return ch.toLowerCase(); });
+  }
+
+  var TAUGHT_STARTS = null;
+
+  // A combination that the course already says outright is not a new
+  // sentence, so it never comes up here.
+  function alreadyTaught(plain) {
+    if (!TAUGHT_STARTS) {
+      TAUGHT_STARTS = [];
+      LESSONS.forEach(function (l) {
+        l.phrases.forEach(function (p) { TAUGHT_STARTS.push(p.ar); });
+        (l.dialogue || []).forEach(function (d) {
+          TAUGHT_STARTS.push(d.ask);
+          TAUGHT_STARTS.push(d.reply);
+        });
+      });
+    }
+    return TAUGHT_STARTS.some(function (k) { return k.indexOf(plain) === 0; });
+  }
+
+  var WORD_LESSON = null;
+
+  function lessonTeaching(ar) {
+    if (!WORD_LESSON) {
+      WORD_LESSON = {};
+      LESSONS.forEach(function (l) {
+        l.phrases.forEach(function (p) { if (!WORD_LESSON[p.ar]) WORD_LESSON[p.ar] = l.id; });
+      });
+    }
+    return WORD_LESSON[ar] || null;
+  }
+
+  // Only patterns and words from lessons you have passed, so the screen
+  // never asks you for a word you have not met.
+  function combos() {
+    var done = {};
+    finishedLessons().forEach(function (l) { done[l.id] = true; });
+    var out = [];
+    FRAMES.forEach(function (f) {
+      if (!done[f.needs]) return;
+      f.words.forEach(function (w) {
+        if (!SCRIPT[w]) return;
+        var lid = lessonTeaching(w);
+        if (!lid || !done[lid]) return;
+        if (alreadyTaught(f.stem + " " + midSentence(w))) return;
+        out.push({ frame: f, word: w });
+      });
+    });
+    return out;
+  }
+
+  // Half in one Arabic and half in another would be nonsense, so a
+  // dialect sentence is only built when both halves have a form in it.
+  function compose(c) {
+    var f = c.frame, w = c.word;
+    var ds = dialectOf(f.stem), dw = dialectOf(w);
+    var both = !!(ds && dw);
+    var stemT = both ? ds[0] : f.stem, stemS = both ? ds[1] : f.ar;
+    var wordT = midSentence(both ? dw[0] : w), wordS = both ? dw[1] : SCRIPT[w];
+    var ar = stemT + " " + wordT + (f.q ? "?" : "");
+    MADE[ar] = stemS + " " + wordS + (f.q ? "؟" : "");
+    return {
+      ar: ar,
+      en: f.en.replace("___", (englishFor(w) || w).toLowerCase()),
+      pattern: stemT + " …",
+      patternEn: f.en.replace("___", "…"),
+      msa: !both
+    };
+  }
+
+  function newMake(prev) {
+    var pool = combos();
+    if (!pool.length) return null;
+
+    // Half the dialects only cover a handful of these words. Lean toward
+    // the ones that do come out in your dialect, without shutting out
+    // the rest, which fall back to fus·ha and say so.
+    if (variety() !== "msa") {
+      var native = pool.filter(function (o) {
+        return dialectOf(o.frame.stem) && dialectOf(o.word);
+      });
+      if (native.length && Math.random() < 0.5) pool = native;
+    }
+
+    var c = shuffle(pool)[0];
+    if (prev && pool.length > 1) {
+      var g = 0;
+      while (g++ < 8 && c.frame === prev.c.frame && c.word === prev.c.word) c = shuffle(pool)[0];
+    }
+    var s = compose(c);
+    var words = tokens(s.ar);
+    var extras = [];
+    shuffle(pool).forEach(function (o) {
+      if (extras.length >= 3 || o === c) return;
+      var cand = shuffle(tokens(compose(o).ar))[0];
+      if (!cand || words.indexOf(cand) !== -1 || extras.indexOf(cand) !== -1) return;
+      extras.push(cand);
+    });
+    return {
+      c: c,
+      s: s,
+      target: words,
+      tiles: shuffle(words.concat(extras)).map(function (word, i) { return { id: i, word: word }; }),
+      picked: [],
+      checked: false,
+      right: false,
+      hint: false,
+      got: prev ? prev.got : 0,
+      run: prev ? prev.run : 0
+    };
+  }
+
+  function checkMake() {
+    if (!made || made.checked) return;
+    var said = made.picked.map(function (id) { return made.tiles[id].word; }).join(" ");
+    made.right = normalise(said) === normalise(made.target.join(" "));
+    made.checked = true;
+    made.run += 1;
+    if (made.right) made.got += 1;
+    if (made.right) speak(made.s.ar);
+    render();
+  }
+
+  function makeHTML() {
+    if (!made) {
+      return topbarHTML("Make a sentence") +
+        '<p class="pb-lead">This is where you stop repeating the course and start speaking. ' +
+        'Pass a lesson or two first: the patterns and the words both have to be ones you have met.</p>' +
+        '<div class="btn-row"><button class="btn" data-go="home">Back to the lessons</button></div>';
+    }
+
+    var m = made;
+    var slotCls = "slot" + (m.picked.length ? "" : " is-empty") +
+      (m.checked ? (m.right ? " is-right" : " is-wrong") : "");
+
+    var slot = m.picked.map(function (id) {
+      return '<button class="tile in-slot" data-act="make-unpick" data-id="' + id + '"' +
+        (m.checked ? " disabled" : "") + ">" + esc(m.tiles[id].word) + "</button>";
+    }).join("");
+
+    var bank = m.tiles.map(function (tile) {
+      var spent = m.picked.indexOf(tile.id) !== -1;
+      return '<button class="tile' + (spent ? " is-spent" : "") + '" data-act="make-pick" data-id="' +
+        tile.id + '"' + (spent || m.checked ? " disabled" : "") +
+        (spent ? ' tabindex="-1" aria-hidden="true"' : "") + ">" + esc(tile.word) + "</button>";
+    }).join("");
+
+    var sub = m.hint || m.checked
+      ? '<div class="prompt-sub">' + esc(m.s.pattern) + " = " + esc(m.s.patternEn) + "</div>"
+      : '<div class="prompt-sub"><button class="peek" data-act="make-hint">Give me the pattern</button></div>';
+
+    var body;
+    if (m.checked) {
+      var gloss = glossesFor(m.s.ar).length ? '<div class="why">' + glossHTML(m.s.ar) + "</div>" : "";
+      body = '<div class="verdict">' +
+        (m.right
+          ? '<div class="verdict-msg ok"><b>Correct.</b>&nbsp;<span class="ar">' + esc(m.s.ar) + "</span>" +
+            sayBtn(m.s.ar, true) + "</div>"
+          : '<div class="verdict-msg no"><b>Not quite.</b>&nbsp;<span class="ar">' +
+            esc(m.target.join(" ")) + "</span>" + sayBtn(m.s.ar, true) + "</div>") +
+        gloss +
+        (m.s.msa && variety() !== "msa"
+          ? '<p class="make-note">No ' + esc(varietyInfo().label) + ' form for one of these words, so this one is in fus&#183;ha.</p>'
+          : "") +
+        '<button class="btn btn-wide" data-act="make-next">Another one</button></div>';
+    } else {
+      body = '<div class="btn-row"><button class="btn btn-wide" data-act="make-check"' +
+        (m.picked.length === m.target.length ? "" : " disabled") + ">Check</button></div>";
+    }
+
+    return topbarHTML("Make a sentence", null, m.run ? m.got + "/" + m.run : "") +
+      '<p class="pb-lead">Not one of these is a phrase from the lessons. Each is a pattern you have been taught ' +
+      'with a word you have been taught dropped into it, which is how you will actually speak.</p>' +
+      '<div class="prompt"><div class="prompt-label">Say this in Arabic</div>' +
+      '<div class="prompt-main">' + esc(m.s.en) + "</div>" + sub + "</div>" +
+      '<div class="' + slotCls + '">' + slot + "</div>" +
+      '<div class="bank">' + bank + "</div>" +
+      body;
   }
 
   /* ============================================================
@@ -6133,7 +6519,8 @@
       t.type === "listen" ? listenHTML(t) :
       t.type === "follow" ? followHTML(t) :
       t.type === "convoturn" ? convoTurnHTML(t) : dialogHTML(t);
-    var title = session.isFollow ? session.convo.title + " \u00b7 listening"
+    var title = session.isFixup ? "Fixing what you missed"
+      : session.isFollow ? session.convo.title + " \u00b7 listening"
       : session.isDrill ? (gameByKey(session.isDrill) || {}).label + " only"
       : session.isReview ? "Mixed review"
       : session.isConvo ? session.convo.title
@@ -6340,6 +6727,33 @@
       '<div class="match-grid">' + rows + "</div>";
   }
 
+  var NOTES = null;
+
+  // The 58 explanations in the lessons were only ever visible on a study
+  // card you chose to open. The moment you get that phrase wrong is when
+  // the rule is worth reading.
+  function noteFor(ar) {
+    if (!NOTES) {
+      NOTES = {};
+      LESSONS.forEach(function (l) {
+        l.phrases.forEach(function (p) { if (p.note && !NOTES[p.ar]) NOTES[p.ar] = p.note; });
+      });
+    }
+    return NOTES[ar] || null;
+  }
+
+  function whyHTML(t) {
+    var ph = t.phrase || (t.exchange ? { ar: t.exchange.reply } : null);
+    if (!ph || !ph.ar) return "";
+    var n = noteFor(ph.ar);
+    if (!n) {
+      // No rule written for it, but the pieces still explain themselves.
+      var g = glossesFor(disp(ph.ar));
+      return g.length ? '<div class="why">' + glossHTML(ph.ar) + "</div>" : "";
+    }
+    return '<div class="why">' + n + "</div>";
+  }
+
   function arabicAnswerFor(t) {
     if (t.type === "say") return true;
     return !((t.type === "quiz" && t.toEnglish) || t.type === "listen");
@@ -6385,7 +6799,8 @@
         (arabicAnswer ? sayBtn(answer, true) : "") + "</div>";
     }
     var ending = last && (session.retried || session.missed.length === 0);
-    return '<div class="verdict">' + msg + roundControls(t) +
+    return '<div class="verdict">' + msg +
+      (session.lastRight ? "" : whyHTML(t)) + roundControls(t) +
       '<button class="btn btn-wide" data-act="next">' +
       (ending ? "See your score" : "Continue") + "</button></div>";
   }
@@ -6401,7 +6816,11 @@
     var next = lesson ? LESSONS[LESSONS.indexOf(lesson) + 1] : null;
 
     var line;
-    if (session.isFollow) {
+    if (session.isFixup) {
+      line = passed
+        ? "All of them, second time round."
+        : "Some are still slipping. They will come round again on their own.";
+    } else if (session.isFollow) {
       line = passed
         ? "You followed it without seeing a word of it. That is the hard half."
         : "Play it through once more and listen for the shape rather than every word.";
@@ -6437,15 +6856,20 @@
           '<span class="ar">' + esc(disp(p.ar)) + "</span>" +
           '<span class="miss-en">' + esc(p.en) + "</span></div>";
       });
-      misses = '<div class="result-misses"><h3>Worth another look</h3>' + rows + "</div>";
+      var n = Object.keys(seen).length;
+      misses = '<div class="result-misses"><h3>Worth another look</h3>' + rows +
+        '<div class="btn-row" style="margin-top:14px"><button class="btn btn-wide" data-act="fixup">' +
+        "Fix these " + n + " now</button></div></div>";
     }
 
-    var eyebrow = session.isConvo ? "Conversation over"
+    var eyebrow = session.isFixup ? "Patched up"
+      : session.isConvo ? "Conversation over"
       : session.isReview ? "Review complete"
       : (passed ? "Lesson complete" : "Not there yet");
     var tone = session.isReview || session.isConvo ? "review" : (passed ? "pass" : "fail");
 
-    var again = session.isConvo
+    var again = session.isFixup ? ""
+      : session.isConvo
       ? '<button class="btn btn-ghost" data-go="convo" data-id="' + esc(session.convo.id) + '">Run it again</button>'
       : session.isReview
         ? '<button class="btn btn-ghost" data-go="review">Review again</button>'
@@ -6456,7 +6880,8 @@
         ? '<button class="btn" data-go="lesson" data-id="' + next.id + '">Next lesson</button>'
         : '<button class="btn" data-go="home">Back to lessons</button>';
 
-    return topbarHTML(session.isConvo ? session.convo.title
+    return topbarHTML(session.isFixup ? "Fixing what you missed"
+      : session.isConvo ? session.convo.title
       : session.isDrill ? (gameByKey(session.isDrill) || {}).label + " only"
       : session.isReview ? "Mixed review" : lesson.title) +
       '<div class="card result fade-in">' +
@@ -6572,7 +6997,11 @@
     // Sessions are the clock the spot checks run on.
     store.runs = runCount() + 1;
     store.lastDay = today();
-    if (session.isReview) {
+    if (session.isFixup) {
+      // Strengths already moved as each answer landed. A three-phrase
+      // patch is not a review run and must not stand as one.
+      save();
+    } else if (session.isReview) {
       var rv = store.review || { best: 0, runs: 0 };
       rv.runs += 1;
       if (score > rv.best) rv.best = score;
@@ -6622,6 +7051,7 @@
     if (view.name === "play") return playHTML();
     if (view.name === "result") return resultHTML();
     if (view.name === "phrasebook") return phrasebookHTML();
+    if (view.name === "make") return makeHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -6717,6 +7147,7 @@
       if (dest === "home") { session = null; go({ name: "home" }); return; }
       if (dest === "phrasebook") { pbQuery = ""; go({ name: "phrasebook" }); return; }
       if (dest === "words") { go({ name: "words" }); return; }
+      if (dest === "make") { session = null; made = newMake(null); go({ name: "make" }); return; }
       if (dest === "talk") { talk = newTalk(); go({ name: "talk" }); return; }
       if (dest === "lesson") { go({ name: "lesson", lesson: lessonById(el.getAttribute("data-id")) }); return; }
       if (dest === "learn") {
@@ -6861,6 +7292,11 @@
       }
       navOpen = false;
       render();
+      return;
+    }
+    if (act === "fixup") {
+      var f = session && buildFixup(session.missed);
+      if (f) { stopSpeech(); session = f; go({ name: "play" }); }
       return;
     }
     if (act === "today") { stopSpeech(); startToday(); return; }
@@ -7050,6 +7486,24 @@
       return;
     }
     if (act === "check-build") { checkBuild(); return; }
+    if (act === "make-pick") {
+      var mp = Number(el.getAttribute("data-id"));
+      if (made && !made.checked && made.picked.indexOf(mp) === -1 &&
+        made.picked.length < made.target.length) made.picked.push(mp);
+      render();
+      return;
+    }
+    if (act === "make-unpick") {
+      var mu = Number(el.getAttribute("data-id"));
+      if (made && !made.checked) {
+        made.picked = made.picked.filter(function (x) { return x !== mu; });
+      }
+      render();
+      return;
+    }
+    if (act === "make-hint") { if (made) made.hint = true; render(); return; }
+    if (act === "make-check") { checkMake(); return; }
+    if (act === "make-next") { stopSpeech(); made = newMake(made); render(); return; }
     if (act === "match") { matchTap(el.getAttribute("data-side"), Number(el.getAttribute("data-i"))); return; }
     if (act === "next") { stopSpeech(); advance(); return; }
   });
