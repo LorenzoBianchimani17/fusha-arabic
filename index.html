@@ -433,6 +433,21 @@
 
   .lesson-lock { color: var(--ink-3); font-size: 14px; }
 
+  .convo-follow {
+    float: right;
+    margin: 4px 0 0 8px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    position: relative;
+    z-index: 1;
+  }
+
+  .convo-follow:hover { filter: brightness(.95); }
+
   /* ---------- today ---------- */
 
   .today {
@@ -1051,6 +1066,10 @@
   .scope-cell:hover { border-color: var(--line-strong); color: var(--ink-2); }
   .scope-cell.is-on { color: var(--accent-ink); background: var(--accent-soft); border-color: transparent; font-weight: 600; }
   .scope-list { margin: 12px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-3); }
+
+  details.guide.suggest { margin: 0 0 14px; }
+  details.guide.suggest > summary { font-size: 12.5px; text-transform: none; letter-spacing: .02em; }
+  details.guide.suggest .fold-body { display: flex; flex-direction: column; gap: 7px; }
 
   .talk-input { display: flex; align-items: center; gap: 10px; }
   .talk-field { flex: 1; font-size: 17px; padding: 12px 14px; }
@@ -3595,6 +3614,22 @@
     return "No Arabic voice is installed on this device.";
   }
 
+  // Slow is a crutch worth having for a new phrase and worth dropping
+  // for a familiar one, because natural speed is what you will meet.
+  function rateFor(translit) {
+    if (store.speed === "slow") return 0.75;
+    if (store.speed === "normal") return 1;
+    var best = null;
+    LESSONS.forEach(function (l) {
+      var has = l.phrases.some(function (p) { return p.ar === translit || p.f === translit; }) ||
+        (l.dialogue || []).some(function (d) { return d.ask === translit || d.reply === translit; });
+      if (!has) return;
+      var s = strengthOf(l.id, translit);
+      if (s !== null && (best === null || s > best)) best = s;
+    });
+    return best !== null && best >= 3 ? 1 : 0.75;
+  }
+
   function speak(translit) {
     if (!canSpeak()) return;
     var text = spk(translit);
@@ -3603,7 +3638,7 @@
     var u = new window.SpeechSynthesisUtterance(text);
     u.voice = speech.voice;
     u.lang = speech.voice.lang;
-    u.rate = 0.8;
+    u.rate = rateFor(translit);
     u.pitch = 1;
     speech.playing = translit;
     u.onend = u.onerror = function () {
@@ -4175,15 +4210,57 @@
 
   /* ---------- per-phrase strength ---------- */
 
+  /* ---------- the clock ---------- */
+
+  // Everything below counts days, not sessions. Counting sessions meant
+  // eight rounds in one evening satisfied a check meant to land a week
+  // later, and a phrase mastered once stayed mastered for ever.
+  var DAY = 86400000;
+
+  function today() {
+    try { return Math.floor(Date.now() / DAY); } catch (e) { return 0; }
+  }
+
+  function daysSince(day) {
+    if (typeof day !== "number") return null;
+    return Math.max(0, today() - day);
+  }
+
+  // How long a phrase should hold at each strength, roughly the usual
+  // expanding schedule: a day, then three, a week, a fortnight, a month.
+  var HOLDS = [0, 1, 3, 7, 16, 35];
+
+  function holdFor(s) { return HOLDS[Math.max(0, Math.min(HOLDS.length - 1, s))]; }
+
   var MAX_STRENGTH = 5;
   var MASTERED = 4;
   var WEAK = 2;
 
   function phraseKey(lessonId, ar) { return lessonId + "|" + ar; }
 
+  function rawStrength(lessonId, ar) {
+    return (store.str || {})[phraseKey(lessonId, ar)] || null;
+  }
+
+  // What you know now, not what you knew the day you last practised.
+  // A phrase left alone past its holding time slips back a step for
+  // every further holding time that passes.
   function strengthOf(lessonId, ar) {
-    var rec = (store.str || {})[phraseKey(lessonId, ar)];
-    return rec ? rec.s : null;          // null means never seen
+    var rec = rawStrength(lessonId, ar);
+    if (!rec) return null;
+    var s = rec.s;
+    var since = daysSince(rec.day);
+    if (since === null) return s;
+    while (s > 0 && since > holdFor(s)) {
+      since -= holdFor(s);
+      s--;
+    }
+    return s;
+  }
+
+  function isFading(lessonId, ar) {
+    var rec = rawStrength(lessonId, ar);
+    return !!rec && strengthOf(lessonId, ar) < rec.s;
   }
 
   function bumpStrength(lessonId, ar, right) {
@@ -4191,10 +4268,13 @@
     if (!store.str) store.str = {};
     var k = phraseKey(lessonId, ar);
     var rec = store.str[k] || { s: 0, n: 0 };
+    var now = strengthOf(lessonId, ar);      // after any fading
+    if (now !== null) rec.s = now;
     rec.n += 1;
     // Right climbs one step; wrong drops two, so a phrase you keep
     // missing stays in rotation instead of ageing out.
     rec.s = right ? Math.min(MAX_STRENGTH, rec.s + 1) : Math.max(0, rec.s - 2);
+    rec.day = today();
     store.str[k] = rec;
   }
 
@@ -4204,7 +4284,7 @@
   // but not for good: it comes back once, much later, for a spot check.
   // People reliably overrate what they know right after seeing it, and
   // a permanent tick would quietly retire things you would now fail.
-  var RECHECK_AFTER = 8;        // sessions before a spot check comes due
+  var RECHECK_AFTER = 10;       // days before a set-aside phrase is checked
   var CHECKS_PER_SESSION = 2;   // how many overdue checks a session leads with
   var REPLIES_PER_SESSION = 2;  // guaranteed conversation rounds, when there are any
 
@@ -4216,8 +4296,16 @@
 
   function setKnown(lessonId, ar) {
     if (!store.known) store.known = {};
-    store.known[phraseKey(lessonId, ar)] = { at: runCount() };
+    store.known[phraseKey(lessonId, ar)] = { day: today() };
     save();
+  }
+
+  // Records written before the app could tell the time have no day on
+  // them; treat those as due rather than as never due.
+  function knownAge(rec) {
+    if (!rec) return null;
+    var d = daysSince(rec.day);
+    return d === null ? RECHECK_AFTER : d;
   }
 
   function clearKnown(lessonId, ar) {
@@ -4227,7 +4315,7 @@
   }
 
   // Asleep now, but due to be checked again.
-  function isDueCheck(rec) { return !!rec && (runCount() - rec.at) >= RECHECK_AFTER; }
+  function isDueCheck(rec) { return !!rec && knownAge(rec) >= RECHECK_AFTER; }
 
   function knownCount() {
     return Object.keys(store.known || {}).length;
@@ -4304,6 +4392,7 @@
       phrasesOf(l).forEach(function (item) {
         if (isHidden(l.id, item.ar)) return;
         item.s = strengthOf(l.id, item.ar);
+        item.fading = isFading(l.id, item.ar);
         var rec = knownRec(l.id, item.ar);
         item.known = !!rec;
         item.dueCheck = isDueCheck(rec);
@@ -4315,14 +4404,15 @@
 
   function progressCounts() {
     var all = studied();
-    var mastered = 0, weak = 0;
+    var mastered = 0, weak = 0, fading = 0;
     all.forEach(function (i) {
       if (i.known) { mastered++; return; }
       if (i.s === null) return;
+      if (i.fading) fading++;
       if (i.s >= MASTERED) mastered++;
       else if (i.s <= WEAK) weak++;
     });
-    return { total: all.length, mastered: mastered, weak: weak, known: knownCount() };
+    return { total: all.length, mastered: mastered, weak: weak, fading: fading, known: knownCount() };
   }
 
   /* ---------- the core ---------- */
@@ -4585,6 +4675,7 @@
       isReview: !!fields.isReview,
       isDrill: fields.isDrill || null,
       isConvo: !!fields.isConvo,
+      isFollow: !!fields.isFollow,
       isToday: !!fields.isToday,
       convo: fields.convo || null,
       reviewPool: fields.reviewPool || 0,
@@ -4779,6 +4870,7 @@
       phrasesOf(l).forEach(function (item) {
         if (isHidden(l.id, item.ar)) return;
         item.s = strengthOf(l.id, item.ar);
+        item.fading = isFading(l.id, item.ar);
         var rec = knownRec(l.id, item.ar);
         item.known = !!rec;
         item.dueCheck = isDueCheck(rec);
@@ -4855,20 +4947,30 @@
     return { kind: "polish", next: null };
   }
 
+  function lastSeenLine() {
+    var d = daysSince(store.lastDay);
+    if (d === null) return "";
+    if (d === 0) return "";
+    if (d === 1) return "Yesterday was your last go. ";
+    if (d < 7) return "It has been " + d + " days. ";
+    if (d < 30) return "It has been a couple of weeks. ";
+    return "It has been a while. ";
+  }
+
   function todayCopy(plan) {
     if (plan.kind === "first") {
       return { line: "Start with lesson " + plan.next.id + ", " + plan.next.title.toLowerCase() + ".", cta: "Begin" };
     }
     if (plan.kind === "core") {
       return {
-        line: plan.left + " core phrase" + (plan.left === 1 ? "" : "s") + " still to lock in" +
+        line: lastSeenLine() + plan.left + " core phrase" + (plan.left === 1 ? "" : "s") + " still to lock in" +
           (plan.next ? ", then lesson " + plan.next.id : "") + ".",
         cta: "Start"
       };
     }
     if (plan.kind === "revise") {
       return {
-        line: "Core is solid. " + plan.weak + " other phrase" + (plan.weak === 1 ? "" : "s") + " to revisit" +
+        line: lastSeenLine() + "Core is solid. " + plan.weak + " other phrase" + (plan.weak === 1 ? "" : "s") + " to revisit" +
           (plan.next ? ", then lesson " + plan.next.id : "") + ".",
         cta: "Start"
       };
@@ -5017,6 +5119,28 @@
 
   var talk = null;
 
+  // What answers the line now on the table, drawn from the lessons in
+  // play, so a suggestion is never a word you have not been given.
+  function suggestionsAfter(ar) {
+    var idx = talkIndex();
+    var out = [];
+    var direct = idx.replyTo[ar];
+    if (direct) out.push({ ar: direct.ar, en: direct.en });
+    // Anything else that is known to follow this line elsewhere.
+    idx.all.forEach(function (p) {
+      if (out.length >= 3) return;
+      if (p.ar === ar) return;
+      if (out.some(function (x) { return x.ar === p.ar; })) return;
+      if (idx.nextAfter[p.ar] && idx.nextAfter[p.ar].ar === ar) out.push({ ar: p.ar, en: p.en });
+    });
+    if (!out.length) {
+      shuffle(Object.keys(idx.replyTo)).slice(0, 2).forEach(function (k) {
+        out.push({ ar: k, en: englishFor(k) });
+      });
+    }
+    return out.slice(0, 3);
+  }
+
   function newTalk() {
     var was = talk && talk.pickOpen;
     var idx = talkIndex();
@@ -5026,6 +5150,7 @@
       draft: "",
       heard: null,
       options: [],
+      suggest: was === undefined ? suggestionsAfter(open.ar) : suggestionsAfter(open.ar),
       stuck: 0,
       pickOpen: !!was
     };
@@ -5042,13 +5167,16 @@
       talk.stuck = 0;
       talk.turns.push({ who: "them", ar: r.line.ar, en: r.line.en, why: r.why });
     } else {
-      // It genuinely has no follow-up. It says so, in Arabic, and
-      // then opens a fresh thread rather than dying.
+      // It genuinely has no follow-up. It says so, in Arabic, and then
+      // opens a fresh thread rather than dying.
       talk.stuck++;
       talk.turns.push({ who: "them", ar: "Là àfham", en: "I do not understand" });
       var open = shuffle(talkIndex().openers)[0];
       if (open) talk.turns.push({ who: "them", ar: open.ar, en: open.en });
     }
+    // Whatever happened, show what you could have said here. A wall you
+    // are shown a way over teaches something; a wall alone does not.
+    talk.suggest = suggestionsAfter(talk.turns[talk.turns.length - 1].ar);
     talk.draft = "";
     talk.heard = null;
     talk.options = [];
@@ -5070,6 +5198,47 @@
   function convoById(id) {
     for (var i = 0; i < CONVOS.length; i++) if (CONVOS[i].id === id) return CONVOS[i];
     return null;
+  }
+
+  // The whole exchange at natural speed, then questions about it. The
+  // other games test one phrase at a time; following a conversation you
+  // cannot pause is a different skill, and the one you actually need.
+  function buildFollow(convo) {
+    var lines = [];
+    convo.turns.forEach(function (t) {
+      lines.push({ who: "them", ar: t.say, en: t.sayEn });
+      lines.push({ who: "you", ar: t.reply, en: t.replyEn });
+    });
+
+    // Ask about lines from the exchange, with wrong answers taken from
+    // the other conversations so they are plausible but not in this one.
+    var elsewhere = [];
+    CONVOS.forEach(function (c) {
+      if (c === convo) return;
+      c.turns.forEach(function (t) { elsewhere.push(t.sayEn, t.replyEn); });
+    });
+    var mine = lines.map(function (l) { return l.en; });
+
+    var asked = shuffle(lines).slice(0, Math.min(3, lines.length));
+    var tasks = asked.map(function (line, i) {
+      var wrong = [];
+      shuffle(elsewhere).forEach(function (e) {
+        if (wrong.length >= 3 || mine.indexOf(e) !== -1 || wrong.indexOf(e) !== -1) return;
+        wrong.push(e);
+      });
+      return {
+        type: "follow",
+        points: 1,
+        convo: convo,
+        lines: lines,
+        played: false,
+        first: i === 0,
+        answer: line.en,
+        options: shuffle(wrong.concat([line.en]))
+      };
+    });
+
+    return newSession({ isConvo: true, isFollow: true, convo: convo, tasks: tasks });
   }
 
   function buildConvo(convo) {
@@ -5459,14 +5628,19 @@
       var right = best !== null
         ? '<span class="lesson-score">' + best + "%</span>"
         : '<span class="lesson-lock" aria-hidden="true">' + (open ? "&rarr;" : "&#9679;") + "</span>";
-      return '<button class="lesson' + (open ? "" : " is-locked") + '" data-go="convo" data-id="' +
+      var follow = open && canSpeak()
+        ? '<button class="convo-follow" data-go="follow" data-id="' + esc(c.id) +
+          '" title="Hear the whole thing and answer questions">Listen through</button>'
+        : "";
+      return follow +
+        '<button class="lesson' + (open ? "" : " is-locked") + '" data-go="convo" data-id="' +
         esc(c.id) + '"' + (open ? "" : " disabled") + ">" +
         '<span class="lesson-num convo-num" aria-hidden="true">&#8220;&#8221;</span>' +
         '<span class="lesson-body"><span class="lesson-title">' + esc(c.title) + "</span>" +
         '<span class="lesson-meta">' + esc(meta) + "</span></span>" + right + "</button>";
     }).join("");
 
-    return '<p class="fold-lead">Whole exchanges, start to finish.</p>' +
+    return '<p class="fold-lead">Whole exchanges, start to finish. Where there is a voice you can also hear one played through and answer on what you caught.</p>' +
       '<div class="track">' + rows + "</div>";
   }
 
@@ -5589,7 +5763,8 @@
       (counts.total ? counts.mastered + "<small> / " + counts.total + "</small>" : "<small>&mdash;</small>") +
       "</dd></div>" +
       '<div class="stat"><dt>Needs work</dt><dd>' +
-      (counts.total ? String(counts.weak) : "<small>&mdash;</small>") + "</dd></div>" +
+      (counts.total ? String(counts.weak) : "<small>&mdash;</small>") +
+      (counts.fading ? '<small> +' + counts.fading + " fading</small>" : "") + "</dd></div>" +
       "</dl>" +
 
       varietyHTML(false) +
@@ -5625,6 +5800,17 @@
         : "<p><b>" + esc(speakWhy()) + "</b> The speaker buttons stay switched off rather than mispronouncing the phrases with an English voice.</p>" +
           "<p>On Windows: Settings &rsaquo; Time &amp; language &rsaquo; Speech, add an Arabic voice. On iOS and macOS: Settings &rsaquo; Accessibility &rsaquo; Spoken Content &rsaquo; Voices. Chrome on Linux generally ships no Arabic voice at all.</p>") +
       "<p>It is a synthesizer, not a native speaker. Treat it as a guide to the shape of the word, not as the last word on pronunciation.</p>" +
+      '<div class="picker" style="margin:14px 0 0"><div class="picker-head"><span>Speed</span></div>' +
+      '<div class="chips">' + [
+        { k: "auto", l: "Automatic", t: "Slow while a phrase is new, natural once you know it" },
+        { k: "slow", l: "Always slow", t: "Every phrase slowed down" },
+        { k: "normal", l: "Always natural", t: "Full speed, the way you will hear it" }
+      ].map(function (o2) {
+        var on = (store.speed || "auto") === o2.k;
+        return '<button class="chip schip' + (on ? " is-on" : "") + '" data-act="speed" data-id="' + o2.k +
+          '" aria-pressed="' + (on ? "true" : "false") + '" title="' + esc(o2.t) + '">' +
+          '<span class="chip-tick" aria-hidden="true"></span>' + esc(o2.l) + "</button>";
+      }).join("") + "</div></div>" +
       "</div></details>" +
 
       '<details class="guide"><summary>Back up your progress</summary><div class="guide-body">' +
@@ -5707,11 +5893,22 @@
       '<p class="scope-list">' + esc(idx.lessons.map(function (l) { return l.title; }).join(" &#183; ")) + "</p>" +
       "</div></details>";
 
+    var hint = "";
+    if (talk.suggest && talk.suggest.length && !talk.options.length) {
+      hint = '<details class="guide suggest"' + (talk.hintOpen ? " open" : "") + '>' +
+        '<summary>Stuck? Things you could say<span class="fold-count">' + talk.suggest.length + "</span></summary>" +
+        '<div class="fold-body">' + talk.suggest.map(function (o2) {
+          return '<button class="understood-opt" data-act="talk-pick" data-id="' + esc(o2.ar) + '">' +
+            '<span class="ar">' + esc(disp(o2.ar)) + "</span>" +
+            '<span class="understood-en">' + esc(o2.en) + "</span></button>";
+        }).join("") + "</div></details>";
+    }
+
     return topbarHTML("Free talk") +
       '<p class="pb-lead">Say something and it answers. It only ever uses phrases from the lessons you have put in play, so anything it says back is something you can learn.</p>' +
       scopeUI +
       '<div class="transcript talk-log">' + lines + "</div>" +
-      understood +
+      understood + hint +
       micNote() +
       '<div class="talk-input">' +
       (canHear() ? micBtn("Say something", ears.busy).replace('data-act="mic"', 'data-act="talk-mic"') : "") +
@@ -5744,7 +5941,7 @@
         if (rec) {
           out.known.push({
             ar: p.ar, en: p.en, lesson: l,
-            due: Math.max(0, RECHECK_AFTER - (runCount() - rec.at))
+            due: Math.max(0, RECHECK_AFTER - knownAge(rec))
           });
         }
       });
@@ -5755,7 +5952,7 @@
         if (r2) {
           out.known.push({
             ar: d.reply, en: d.en, lesson: l,
-            due: Math.max(0, RECHECK_AFTER - (runCount() - r2.at))
+            due: Math.max(0, RECHECK_AFTER - knownAge(r2))
           });
         }
       });
@@ -5776,9 +5973,9 @@
 
     var knownBlock = idx.known.length
       ? '<div class="pb-group"><h3>Set aside &#183; ' + idx.known.length + "</h3>" +
-        '<p class="fold-lead">Out of rotation because you said you had them. Each comes back once for a check.</p>' +
+        '<p class="fold-lead">Out of rotation because you said you had them. Each comes back for a check about ' + RECHECK_AFTER + " days later.</p>" +
         idx.known.sort(function (a, b) { return a.due - b.due; }).map(function (it) {
-          return wordRow(it, "known", it.due === 0 ? "Due a check" : "Back in " + it.due);
+          return wordRow(it, "known", it.due === 0 ? "Due a check" : "Back in " + it.due + "d");
         }).join("") + "</div>"
       : '<div class="pb-group"><h3>Set aside</h3>' +
         '<p class="fold-lead">Nothing yet. Tick <b>I know this one</b> on a card or after a right answer.</p></div>';
@@ -5934,8 +6131,10 @@
       t.type === "say" ? sayHTML(t) :
       t.type === "write" ? writeHTML(t) :
       t.type === "listen" ? listenHTML(t) :
+      t.type === "follow" ? followHTML(t) :
       t.type === "convoturn" ? convoTurnHTML(t) : dialogHTML(t);
-    var title = session.isDrill ? (gameByKey(session.isDrill) || {}).label + " only"
+    var title = session.isFollow ? session.convo.title + " \u00b7 listening"
+      : session.isDrill ? (gameByKey(session.isDrill) || {}).label + " only"
       : session.isReview ? "Mixed review"
       : session.isConvo ? session.convo.title
       : session.lesson.title;
@@ -6054,6 +6253,26 @@
     });
     if (!best || bestScore < 0.34) return null;
     return { act: "convo-confirm", id: best, label: "Yes, I said " + best };
+  }
+
+  function followHTML(t) {
+    var checked = session.state === "checked";
+    return '<div class="prompt">' +
+      '<div class="prompt-label">Listen to the whole exchange</div>' +
+      '<div class="listen-stage">' +
+      '<button class="say say-lg" data-act="replay" aria-label="Play it again">' + SPEAKER_SVG + "</button>" +
+      "</div>" +
+      '<div class="prompt-sub">' +
+      (canSpeak() ? "tap to hear it again, at normal speed" : "no Arabic voice on this device") + "</div>" +
+      '<div class="prompt-label" style="margin-top:22px">Which of these was said?</div>' +
+      "</div>" +
+      optionsHTML(t.options, false, t) +
+      (checked
+        ? '<details class="guide suggest" open><summary>The exchange</summary><div class="fold-body">' +
+          '<div class="transcript">' + t.lines.map(function (l) {
+            return bubble(l.who, l.ar, l.en);
+          }).join("") + "</div></div></details>"
+        : "");
   }
 
   function convoTurnHTML(t) {
@@ -6182,7 +6401,11 @@
     var next = lesson ? LESSONS[LESSONS.indexOf(lesson) + 1] : null;
 
     var line;
-    if (session.isConvo) {
+    if (session.isFollow) {
+      line = passed
+        ? "You followed it without seeing a word of it. That is the hard half."
+        : "Play it through once more and listen for the shape rather than every word.";
+    } else if (session.isConvo) {
       line = passed
         ? "You held the whole conversation. Try it again later without the options in front of you."
         : "Read the exchange through again, then replay it; the reply always follows from what was just said.";
@@ -6348,6 +6571,7 @@
     var score = Math.round(session.earned / session.max * 100);
     // Sessions are the clock the spot checks run on.
     store.runs = runCount() + 1;
+    store.lastDay = today();
     if (session.isReview) {
       var rv = store.review || { best: 0, runs: 0 };
       rv.runs += 1;
@@ -6444,11 +6668,39 @@
     }
 
     if (t.type === "listen" && !t.played) { t.played = true; speak(t.phrase.ar); }
+    if (t.type === "follow" && !t.played) { t.played = true; playRun(t.lines); }
+  }
+
+  // Speak a whole exchange back to back, so it arrives the way speech
+  // does rather than one card at a time.
+  var playingRun = null;
+
+  function playRun(lines, done) {
+    if (!canSpeak()) { done && done(); return; }
+    stopSpeech();
+    var i = 0;
+    playingRun = {};
+    var mine = playingRun;
+    function next() {
+      if (mine !== playingRun) return;
+      if (i >= lines.length) { playingRun = null; done && done(); return; }
+      var line = lines[i++];
+      var text = spk(line.ar);
+      if (!text) { next(); return; }
+      var u = new window.SpeechSynthesisUtterance(text);
+      u.voice = speech.voice;
+      u.lang = speech.voice.lang;
+      u.rate = store.speed === "slow" ? 0.75 : 1;
+      u.onend = u.onerror = next;
+      window.speechSynthesis.speak(u);
+    }
+    next();
   }
 
   function stopSpeech() {
     if (speech.supported) window.speechSynthesis.cancel();
     speech.playing = null;
+    playingRun = null;
   }
 
   app.addEventListener("click", function (ev) {
@@ -6480,6 +6732,11 @@
       if (dest === "review") {
         var rs = buildReview();
         if (rs) { session = rs; go({ name: "play" }); }
+        return;
+      }
+      if (dest === "follow") {
+        var fc = convoById(el.getAttribute("data-id"));
+        if (fc && convoOpen(fc)) { session = buildFollow(fc); go({ name: "play" }); }
         return;
       }
       if (dest === "convo") {
@@ -6587,6 +6844,12 @@
         forgetAllKnown();
         render();
       }
+      return;
+    }
+    if (act === "speed") {
+      store.speed = el.getAttribute("data-id");
+      save();
+      render();
       return;
     }
     if (act === "variety") {
@@ -6746,6 +7009,11 @@
     if (act === "convo-confirm") {
       if (session.state === "checked") return;
       answer(el.getAttribute("data-id"));
+      return;
+    }
+    if (act === "replay") {
+      var tr = session.tasks[session.i];
+      if (tr && tr.lines) playRun(tr.lines);
       return;
     }
     if (act === "peek") {
