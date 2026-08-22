@@ -672,6 +672,32 @@
   .pb-more { color: var(--ink-3); font-size: 13px; margin: -12px 0 26px; }
   .make-note { color: var(--ink-3); font-size: 13px; margin: 10px 0 0; }
 
+  .moment-ok { margin: 14px 0 4px; text-align: left; }
+
+  .moment-ok h3 {
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .pb-row.is-yours .ar { color: var(--good); }
+  span.pb-tag { cursor: default; }
+
+  .you-row { margin: 0 0 20px; }
+  .you-head { display: flex; align-items: baseline; gap: 10px; }
+  .you-label {
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .you-value { font-size: 17px; margin-top: 4px; }
+  .you-value.is-empty { color: var(--ink-3); font-size: 14.5px; font-style: italic; }
+  .you-card { padding: 20px 22px; margin: 26px 0 0; }
+  .you-card .pb-row:last-of-type { border-bottom: 0; }
+
   .word-undo {
     margin-left: auto;
     flex: none;
@@ -4155,6 +4181,8 @@
 
   // What to show on screen for a phrase whose key is `ar`.
   function disp(ar) {
+    var p = personalOf(ar);
+    if (p) return p[0];
     var d = dialectOf(ar);
     return d ? d[0] : ar;
   }
@@ -4165,6 +4193,8 @@
 
   // What to hand the speech engine for it.
   function spk(ar) {
+    var p = personalOf(ar);
+    if (p) return p[1];
     var d = dialectOf(ar);
     return d ? d[1] : (SCRIPT[ar] || MADE[ar] || "");
   }
@@ -5357,6 +5387,8 @@
     if (!v) return "#/";
     if (v.name === "phrasebook") return "#/phrasebook";
     if (v.name === "make") return "#/make";
+    if (v.name === "you") return "#/you";
+    if (v.name === "moment") return "#/moment";
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -5434,6 +5466,21 @@
       session = null;
       pbQuery = "";
       view = { name: "phrasebook" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "moment") {
+      session = null;
+      moment = newMoment(null);
+      view = { name: "moment" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "you") {
+      session = null;
+      view = { name: "you" };
       render();
       return;
     }
@@ -5686,6 +5733,18 @@
       "</button>";
   }
 
+  function momentCardHTML() {
+    var n = openMoments().length;
+    if (!n) return "";
+    return '<button class="review" data-go="moment">' +
+      '<span class="review-body">' +
+      '<span class="eyebrow">What would you say?</span>' +
+      '<span class="review-title">The situation, not the sentence</span>' +
+      '<span class="review-meta">' + n +
+      " situations with no English to translate. More than one answer works.</span></span>" +
+      '<span class="lesson-lock" aria-hidden="true">&rarr;</span></button>';
+  }
+
   // The one thing on the home screen that is not the course repeating
   // itself back at you.
   function makeCardHTML() {
@@ -5737,6 +5796,7 @@
   function navHTML() {
     var done = finishedLessons().length;
     var openSentences = combos().length;
+    var openSits = openMoments().length;
     var g = games();
     var drills = GAMES.map(function (x) {
       var why = null;
@@ -5769,6 +5829,11 @@
       (people.list.length > 1 ? '<button class="chip" data-act="who-remove">Remove</button>' : "") +
       "</div>" +
 
+      '<button class="nav-item" data-go="you"><span class="nav-label">Your own answers</span>' +
+      '<span class="nav-note">' + (yourLines().length
+        ? yourLines().length + " of the four questions answered as you"
+        : "Name, country, job and age, in your words") + "</span></button>" +
+
       '<div class="nav-group">Which Arabic</div>' +
       VARIETIES.map(function (v) {
         var on = v.key === variety();
@@ -5791,6 +5856,11 @@
       '<div class="nav-group">Speak</div>' +
       '<button class="nav-item" data-go="talk"><span class="nav-label">Free talk</span>' +
       '<span class="nav-note">Say anything; it answers from the lessons you choose</span></button>' +
+      '<button class="nav-item' + (openSits ? "" : " is-off") + '" data-go="moment"' +
+      (openSits ? "" : " disabled") + '><span class="nav-label">What would you say?</span>' +
+      '<span class="nav-note">' + (openSits
+        ? openSits + " situations, no English to translate"
+        : "Pass a lesson to open this") + "</span></button>" +
       '<button class="nav-item' + (openSentences ? "" : " is-off") + '" data-go="make"' +
       (openSentences ? "" : " disabled") + '><span class="nav-label">Make a sentence</span>' +
       '<span class="nav-note">' + (openSentences
@@ -5864,6 +5934,7 @@
       coreHTML() +
       todayHTML() +
       reviewHTML() +
+      momentCardHTML() +
       makeCardHTML() +
 
       // Everything else is here when you want it and out of the way when
@@ -5939,6 +6010,7 @@
 
   var pbQuery = "";
   var made = null;
+  var moment = null;
 
   function talkHTML() {
     var lines = talk.turns.map(function (t) {
@@ -6300,7 +6372,8 @@
   }
 
   function newMake(prev) {
-    var pool = combos();
+    var full = combos();
+    var pool = full;
     if (!pool.length) return null;
 
     // Half the dialects only cover a handful of these words. Lean toward
@@ -6319,6 +6392,44 @@
       while (g++ < 8 && c.frame === prev.c.frame && c.word === prev.c.word) c = shuffle(pool)[0];
     }
     var s = compose(c);
+
+    // Producing a sentence and understanding one are two different
+    // skills, and the second is the one you need most of the time.
+    // They take turns.
+    var hear = !!(canSpeak() && prev && !prev.hear);
+
+    var m = {
+      c: c,
+      s: s,
+      hear: hear,
+      played: false,
+      checked: false,
+      right: false,
+      hint: false,
+      got: prev ? prev.got : 0,
+      run: prev ? prev.run : 0
+    };
+
+    if (hear) {
+      // One wrong answer keeps the pattern and changes the word, the
+      // other keeps the word and changes the pattern, so hearing half
+      // the sentence is not enough.
+      var wrong = [];
+      function offer(list) {
+        var pick = shuffle(list)[0];
+        if (!pick) return;
+        var en = compose(pick).en;
+        if (en !== s.en && wrong.indexOf(en) === -1) wrong.push(en);
+      }
+      offer(full.filter(function (o) { return o.frame === c.frame && o.word !== c.word; }));
+      offer(full.filter(function (o) { return o.word === c.word && o.frame !== c.frame; }));
+      var guard = 0;
+      while (wrong.length < 3 && guard++ < 40) offer(full);
+      m.options = shuffle(wrong.slice(0, 3).concat([s.en]));
+      m.chosen = null;
+      return m;
+    }
+
     var words = tokens(s.ar);
     var extras = [];
     shuffle(pool).forEach(function (o) {
@@ -6327,18 +6438,20 @@
       if (!cand || words.indexOf(cand) !== -1 || extras.indexOf(cand) !== -1) return;
       extras.push(cand);
     });
-    return {
-      c: c,
-      s: s,
-      target: words,
-      tiles: shuffle(words.concat(extras)).map(function (word, i) { return { id: i, word: word }; }),
-      picked: [],
-      checked: false,
-      right: false,
-      hint: false,
-      got: prev ? prev.got : 0,
-      run: prev ? prev.run : 0
-    };
+    m.target = words;
+    m.tiles = shuffle(words.concat(extras)).map(function (word, i) { return { id: i, word: word }; });
+    m.picked = [];
+    return m;
+  }
+
+  function answerMake(en) {
+    if (!made || made.checked || !made.hear) return;
+    made.chosen = en;
+    made.right = en === made.s.en;
+    made.checked = true;
+    made.run += 1;
+    if (made.right) made.got += 1;
+    render();
   }
 
   function checkMake() {
@@ -6352,6 +6465,40 @@
     render();
   }
 
+  // The made sentence read out with nothing on screen: the only place
+  // in the app where you meet a sentence the way you will meet it in
+  // the street, with no English in front of it.
+  function makeHearHTML(m) {
+    var opts = '<div class="options">' + m.options.map(function (opt, i) {
+      var cls = "option";
+      if (m.checked) {
+        if (opt === m.s.en) cls += " is-right";
+        else if (opt === m.chosen) cls += " is-wrong";
+        else cls += " is-dim";
+      }
+      return '<button class="' + cls + '" data-act="make-answer" data-value="' + esc(opt) + '"' +
+        (m.checked ? " disabled" : "") + ">" +
+        '<span class="option-key">' + (i + 1) + "</span><span>" + esc(opt) + "</span></button>";
+    }).join("") + "</div>";
+
+    return topbarHTML("Make a sentence", null, m.run ? m.got + "/" + m.run : "") +
+      '<p class="pb-lead">Same sentences, the other way round. Nothing is written down: you get it by ear or not at all.</p>' +
+      '<div class="prompt"><div class="prompt-label">Listen, then choose the meaning</div>' +
+      '<div class="listen-stage">' +
+      '<button class="say say-lg" data-act="say" data-say="' + esc(m.s.ar) + '"' +
+      ' aria-label="Play it again">' + SPEAKER_SVG + "</button></div>" +
+      '<div class="prompt-sub">' + (m.checked ? esc(m.s.ar) : "tap to hear it again") + "</div></div>" +
+      opts +
+      (m.checked
+        ? '<div class="verdict">' +
+          (m.right
+            ? '<div class="verdict-msg ok"><b>Correct.</b></div>'
+            : '<div class="verdict-msg no"><b>Not quite.</b>&nbsp;<span>' + esc(m.s.en) + "</span></div>") +
+          (glossesFor(m.s.ar).length ? '<div class="why">' + glossHTML(m.s.ar) + "</div>" : "") +
+          '<button class="btn btn-wide" data-act="make-next">Another one</button></div>'
+        : "");
+  }
+
   function makeHTML() {
     if (!made) {
       return topbarHTML("Make a sentence") +
@@ -6361,6 +6508,8 @@
     }
 
     var m = made;
+    if (m.hear) return makeHearHTML(m);
+
     var slotCls = "slot" + (m.picked.length ? "" : " is-empty") +
       (m.checked ? (m.right ? " is-right" : " is-wrong") : "");
 
@@ -6407,6 +6556,500 @@
       '<div class="' + slotCls + '">' + slot + "</div>" +
       '<div class="bank">' + bank + "</div>" +
       body;
+  }
+
+  /* ============================================================
+     YOUR OWN ANSWERS
+
+     Four questions come up in every first conversation, and the course
+     answers all four for a man called Marco. Tell it who you are and it
+     answers them for you instead, everywhere: on the flashcard, in the
+     games, in the conversations. The phrase keys never change, so your
+     progress is untouched by changing your mind about your job.
+     ============================================================ */
+
+  var COUNTRIES = [
+    { key: "it", en: "Italy", ar: "Itàlya", s: "إِيطَالْيَا" },
+    { key: "fr", en: "France", ar: "Faransa", s: "فَرَنْسَا" },
+    { key: "es", en: "Spain", ar: "Isbànya", s: "إِسْبَانْيَا" },
+    { key: "de", en: "Germany", ar: "Almànya", s: "أَلْمَانْيَا" },
+    { key: "uk", en: "England", ar: "Ingiltra", s: "إِنْجِلْتِرَا" },
+    { key: "us", en: "America", ar: "Amrìka", s: "أَمْرِيكَا" },
+    { key: "ch", en: "Switzerland", ar: "Suìsra", s: "سْوِيسْرَا" },
+    { key: "nl", en: "the Netherlands", ar: "Hulànda", s: "هُولَنْدَا" },
+    { key: "be", en: "Belgium", ar: "Bèljika", s: "بِلْجِيكَا" },
+    { key: "pl", en: "Poland", ar: "Bulànda", s: "بُولَنْدَا" },
+    { key: "ro", en: "Romania", ar: "Rumànya", s: "رُومَانْيَا" },
+    { key: "gr", en: "Greece", ar: "Al-Yunàn", s: "الْيُونَان" },
+    { key: "tr", en: "Turkey", ar: "Tùrkya", s: "تُرْكِيَا" },
+    { key: "lb", en: "Lebanon", ar: "Lubnàn", s: "لُبْنَان" },
+    { key: "eg", en: "Egypt", ar: "Misr", s: "مِصْر" },
+    { key: "ma", en: "Morocco", ar: "Al-Mághrib", s: "الْمَغْرِب" },
+    { key: "tn", en: "Tunisia", ar: "Tùnis", s: "تُونِس" },
+    { key: "jo", en: "Jordan", ar: "Al-Ùrdun", s: "الْأُرْدُنّ" },
+    { key: "sy", en: "Syria", ar: "Sùrya", s: "سُورْيَا" },
+    { key: "br", en: "Brazil", ar: "Al-Barazìl", s: "الْبَرَازِيل" },
+    { key: "in", en: "India", ar: "Al-Hind", s: "الْهِنْد" },
+    { key: "cn", en: "China", ar: "As-Sìn", s: "الصِّين" }
+  ];
+
+  var JOBS = [
+    { key: "engineer", en: "an engineer", ar: "muhàndis", s: "مُهَنْدِس", far: "muhàndisa", fs: "مُهَنْدِسَة" },
+    { key: "programmer", en: "a programmer", ar: "mubàrmij", s: "مُبَرْمِج", far: "mubàrmija", fs: "مُبَرْمِجَة" },
+    { key: "doctor", en: "a doctor", ar: "tabìb", s: "طَبِيب", far: "tabìba", fs: "طَبِيبَة" },
+    { key: "nurse", en: "a nurse", ar: "mumàrrid", s: "مُمَرِّض", far: "mumàrrida", fs: "مُمَرِّضَة" },
+    { key: "teacher", en: "a teacher", ar: "mudàrris", s: "مُدَرِّس", far: "mudàrrisa", fs: "مُدَرِّسَة" },
+    { key: "student", en: "a student", ar: "tàlib", s: "طَالِب", far: "tàliba", fs: "طَالِبَة" },
+    { key: "clerk", en: "an office worker", ar: "mùwadhdhaf", s: "مُوَظَّف", far: "mùwadhdhafa", fs: "مُوَظَّفَة" },
+    { key: "accountant", en: "an accountant", ar: "muhàsib", s: "مُحَاسِب", far: "muhàsiba", fs: "مُحَاسِبَة" },
+    { key: "lawyer", en: "a lawyer", ar: "muhàmi", s: "مُحَامِي", far: "muhàmiya", fs: "مُحَامِيَة" },
+    { key: "journalist", en: "a journalist", ar: "sahàfi", s: "صَحَافِي", far: "sahàfiya", fs: "صَحَافِيَة" },
+    { key: "cook", en: "a cook", ar: "tàbbakh", s: "طَبَّاخ", far: "tabbàkha", fs: "طَبَّاخَة" },
+    { key: "driver", en: "a driver", ar: "sà'iq", s: "سَائِق", far: "sà'iqa", fs: "سَائِقَة" },
+    { key: "retired", en: "retired", ar: "mutaqàʿid", s: "مُتَقَاعِد", far: "mutaqàʿida", fs: "مُتَقَاعِدَة" }
+  ];
+
+  // Every number below is one the course teaches on its own; the tens
+  // and units are joined the way lesson 19 joins them in "wàhid wa
+  // ʿishrùn", where the "wa" leans on the word after it.
+  var UNITS = [null,
+    { ar: "wàhid", s: "وَاحِد" }, { ar: "ithnàn", s: "اِثْنَان" }, { ar: "thalàtha", s: "ثَلَاثَة" },
+    { ar: "àrbaʿa", s: "أَرْبَعَة" }, { ar: "khàmsa", s: "خَمْسَة" }, { ar: "sìtta", s: "سِتَّة" },
+    { ar: "sàbʿa", s: "سَبْعَة" }, { ar: "thamàniya", s: "ثَمَانِيَة" }, { ar: "tìsʿa", s: "تِسْعَة" }];
+
+  var TENS = {
+    10: { ar: "ʿàshara", s: "عَشَرَة" }, 11: { ar: "àhad ʿàshar", s: "أَحَدَ عَشَر" },
+    12: { ar: "ithnà ʿàshar", s: "اثْنَا عَشَر" }, 20: { ar: "ʿishrùn", s: "عِشْرُون" },
+    30: { ar: "thalathùn", s: "ثَلَاثُون" }, 40: { ar: "arbaʿùn", s: "أَرْبَعُون" },
+    50: { ar: "khamsùn", s: "خَمْسُون" }, 60: { ar: "sittùn", s: "سِتُّون" },
+    70: { ar: "sabʿùn", s: "سَبْعُون" }, 80: { ar: "thamanùn", s: "ثَمَانُون" },
+    90: { ar: "tisʿùn", s: "تِسْعُون" }, 100: { ar: "mi'a", s: "مِائَة" }
+  };
+
+  // Thirteen to nineteen are not in the course and their agreement is a
+  // trap, so they are left alone rather than guessed at.
+  function numberWords(n) {
+    n = Math.floor(Number(n));
+    if (!(n > 0)) return null;
+    if (TENS[n]) return TENS[n];
+    if (n < 10) return UNITS[n];
+    if (n < 20 || n > 99) return null;
+    var unit = UNITS[n % 10], ten = TENS[Math.floor(n / 10) * 10];
+    if (!unit || !ten) return null;
+    return { ar: unit.ar + " wa " + ten.ar, s: unit.s + " وَ" + ten.s };
+  }
+
+  // A name is the one thing here the course cannot have taught. Letter
+  // by letter into Arabic, long vowels throughout, which is how names
+  // are written in Arabic anyway. It is a guide for the speaker, and
+  // you never see it.
+  var LETTERS = {
+    a: "ا", b: "ب", c: "ك", d: "د", e: "ي", f: "ف", g: "ج", h: "ه", i: "ي",
+    j: "ج", k: "ك", l: "ل", m: "م", n: "ن", o: "و", p: "ب", q: "ق", r: "ر",
+    s: "س", t: "ت", u: "و", v: "ف", w: "و", x: "كس", y: "ي", z: "ز"
+  };
+
+  var PAIRS = { kh: "خ", sh: "ش", th: "ث", ch: "تش", gh: "غ", ph: "ف", ck: "ك", qu: "كو" };
+
+  function nameScript(name) {
+    var w = String(name || "").toLowerCase()
+      .replace(/[àáâä]/g, "a").replace(/[èéêë]/g, "e").replace(/[ìíîï]/g, "i")
+      .replace(/[òóôö]/g, "o").replace(/[ùúûü]/g, "u").replace(/ç/g, "s")
+      .replace(/[^a-z ]/g, "");
+    var out = "", i = 0;
+    while (i < w.length) {
+      var two = w.slice(i, i + 2);
+      if (PAIRS[two]) { out += PAIRS[two]; i += 2; continue; }
+      var ch = w.charAt(i);
+      if (ch === " ") { out += " "; i++; continue; }
+      if (ch === w.charAt(i + 1)) { i++; continue; }   // a doubled letter is written once
+      out += LETTERS[ch] || "";
+      i++;
+    }
+    return out.trim();
+  }
+
+  var PERSONAL = [
+    { key: "Ismì Marco", field: "name", stem: "Ismì", stemS: "اسْمِي", en: "My name is " },
+    { key: "Anà min Itàlya", field: "from", stem: "Anà min", stemS: "أَنَا مِنْ", en: "I am from " },
+    { key: "Anà muhàndis", field: "job", stem: "Anà", stemS: "أَنَا", en: "I am " },
+    { key: "ʿÙmri thalathùn", field: "age", stem: "ʿÙmri", stemS: "عُمْرِي", en: "I am " }
+  ];
+
+  function you() { return store.you || {}; }
+
+  function countryByKey(k) {
+    for (var i = 0; i < COUNTRIES.length; i++) if (COUNTRIES[i].key === k) return COUNTRIES[i];
+    return null;
+  }
+
+  function jobByKey(k) {
+    for (var i = 0; i < JOBS.length; i++) if (JOBS[i].key === k) return JOBS[i];
+    return null;
+  }
+
+  // What the slot is filled with, if you have said.
+  function yourAnswer(field) {
+    var y = you();
+    if (field === "name") {
+      var n = String(y.name || "").trim();
+      var s = nameScript(n);
+      return n && s ? { ar: n, s: s, en: n } : null;
+    }
+    if (field === "from") {
+      var c = countryByKey(y.from);
+      return c ? { ar: c.ar, s: c.s, en: c.en } : null;
+    }
+    if (field === "job") {
+      var j = jobByKey(y.job);
+      if (!j) return null;
+      var f = y.gender === "f";
+      return { ar: f ? j.far : j.ar, s: f ? j.fs : j.s, en: j.en };
+    }
+    if (field === "age") {
+      var w = numberWords(y.age);
+      return w ? { ar: w.ar, s: w.s, en: String(Math.floor(Number(y.age))) } : null;
+    }
+    return null;
+  }
+
+  // The whole set, minus anything that would land on a phrase the course
+  // already teaches: two identical phrases in one lesson would break the
+  // games that pick between them.
+  function yourLines() {
+    var out = [];
+    PERSONAL.forEach(function (p) {
+      var v = yourAnswer(p.field);
+      if (!v) return;
+      var ar = p.stem + " " + v.ar;
+      if (ar === p.key || alreadyTaught(ar)) return;
+      out.push({ key: p.key, ar: ar, s: p.stemS + " " + v.s, en: p.en + v.en, field: p.field });
+    });
+    return out;
+  }
+
+  var YOU_MAP = null, YOU_KEY = null;
+
+  function youKey() {
+    var y = you();
+    return [y.name || "", y.from || "", y.job || "", y.age || "", y.gender || ""].join("|");
+  }
+
+  function personalOf(ar) {
+    if (YOU_KEY !== youKey()) applyPersonal();
+    return YOU_MAP[ar] || null;
+  }
+
+  // The English lives on the lesson data itself, because it travels into
+  // quiz options and answers long before anything is drawn. Swapping it
+  // there keeps one version of the truth; the originals are kept so it
+  // can always be put back.
+  var EN_ORIG = null;
+
+  function englishSlots() {
+    if (EN_ORIG) return EN_ORIG;
+    EN_ORIG = [];
+    var keys = {};
+    PERSONAL.forEach(function (p) { keys[p.key] = true; });
+    LESSONS.forEach(function (l) {
+      l.phrases.forEach(function (p) { if (keys[p.ar]) EN_ORIG.push({ o: p, en: p.en, ar: p.ar }); });
+      (l.dialogue || []).forEach(function (d) {
+        if (keys[d.reply]) EN_ORIG.push({ o: d, en: d.en, ar: d.reply });
+      });
+    });
+    CONVOS.forEach(function (c) {
+      c.turns.forEach(function (t) {
+        if (keys[t.reply]) EN_ORIG.push({ o: t, en: t.replyEn, ar: t.reply, isConvo: true });
+      });
+    });
+    return EN_ORIG;
+  }
+
+  function applyPersonal() {
+    YOU_KEY = youKey();
+    YOU_MAP = {};
+    var byKey = {};
+    yourLines().forEach(function (line) {
+      YOU_MAP[line.key] = [line.ar, line.s];
+      byKey[line.key] = line;
+    });
+    englishSlots().forEach(function (slot) {
+      var line = byKey[slot.ar];
+      var en = line ? line.en : slot.en;
+      if (slot.isConvo) slot.o.replyEn = en;
+      else slot.o.en = en;
+    });
+    ENGLISH = null;
+    TALK = null;
+    TALK_KEY = null;
+  }
+
+  function setYou(field, value) {
+    var y = store.you || {};
+    if (value === null || value === "") delete y[field];
+    else y[field] = value;
+    store.you = y;
+    save();
+    applyPersonal();
+  }
+
+  function youHTML() {
+    var y = you();
+    var lines = yourLines();
+
+    function row(label, value, act, note) {
+      return '<div class="you-row"><div class="you-head"><span class="you-label">' + esc(label) + "</span>" +
+        '<button class="peek" data-act="' + act + '">' + (value ? "Change" : "Say") + "</button></div>" +
+        '<div class="you-value' + (value ? "" : " is-empty") + '">' + esc(value || note) + "</div></div>";
+    }
+
+    var age = numberWords(y.age);
+    var job = jobByKey(y.job);
+    var country = countryByKey(y.from);
+
+    var chips = function (list, act, on, label) {
+      return '<div class="you-row"><div class="you-head"><span class="you-label">' + esc(label) +
+        "</span></div><div class=\"chips\">" + list.map(function (o) {
+          var is = o.key === on;
+          return '<button class="chip' + (is ? " is-on" : "") + '" data-act="' + act + '" data-id="' +
+            esc(o.key) + '" aria-pressed="' + (is ? "true" : "false") + '">' +
+            '<span class="chip-tick" aria-hidden="true"></span>' + esc(o.en) + "</button>";
+        }).join("") + "</div></div>";
+    };
+
+    var preview = lines.length
+      ? '<div class="card you-card"><div class="eyebrow">What you can answer</div>' +
+        lines.map(function (line) {
+          return '<div class="pb-row">' + sayBtn(line.ar, true) +
+            '<span class="pb-text"><span class="ar">' + esc(line.ar) + "</span>" +
+            '<span class="pb-en">' + esc(line.en) + "</span></span></div>";
+        }).join("") +
+        '<p class="make-note">These four now stand in for Marco&rsquo;s wherever the course asks them: ' +
+        "on the flashcards, in the games and in the conversations.</p></div>"
+      : '<p class="pb-empty">Nothing set yet. Answer one and it takes Marco&rsquo;s place straight away.</p>';
+
+    return topbarHTML("Your own answers") +
+      '<p class="pb-lead">Four questions turn up in every first conversation, and the course answers all four ' +
+      'for a man called Marco. Say who you are and it answers them as you.</p>' +
+      row("Your name", y.name || "", "you-name", "the course says Marco") +
+      chips(COUNTRIES, "you-from", y.from, "Where you are from") +
+      '<div class="you-row"><div class="you-head"><span class="you-label">Speaking as</span></div>' +
+      '<div class="chips">' + [{ key: "m", en: "A man" }, { key: "f", en: "A woman" }].map(function (o) {
+        var is = (y.gender || "m") === o.key;
+        return '<button class="chip' + (is ? " is-on" : "") + '" data-act="you-gender" data-id="' + o.key +
+          '" aria-pressed="' + (is ? "true" : "false") + '">' +
+          '<span class="chip-tick" aria-hidden="true"></span>' + o.en + "</button>";
+      }).join("") + "</div>" +
+      '<p class="make-note">Arabic marks it on the job, not on the name: ' +
+      esc((job || JOBS[0]).ar) + " for a man, " + esc((job || JOBS[0]).far) + " for a woman.</p></div>" +
+      chips(JOBS, "you-job", y.job, "What you do") +
+      row("Your age", age ? String(Math.floor(Number(y.age))) : "", "you-age",
+        "the course says thirty") +
+      (y.age && !age
+        ? '<p class="make-note">Thirteen to nineteen are not in the course and their grammar is a trap, ' +
+          "so that one is left as it is.</p>"
+        : "") +
+      preview +
+      (country || job || y.name
+        ? '<div class="btn-row"><button class="btn btn-ghost" data-act="you-clear">Clear all of it</button></div>'
+        : "");
+  }
+
+  /* ============================================================
+     WHAT WOULD YOU SAY?
+
+     Every other screen hands you an English sentence and asks for the
+     Arabic. Nobody does that to you in the street. Here you get the
+     situation and nothing else, and more than one answer is right,
+     because more than one answer is right in life. Everything accepted
+     is a phrase the course teaches; nothing is invented.
+     ============================================================ */
+
+  var MOMENTS = [
+    { en: "A shopkeeper looks up as you walk in.", ok: ["Marhàban", "As-salàmu ʿaláikum", "Àhlan"] },
+    { en: "He says as-salàmu ʿaláikum first.", ok: ["Wa ʿaláikum as-salàm"] },
+    { en: "Nine in the morning, and you pass a neighbour.", ok: ["Sabàh al-khèir", "Marhàban"] },
+    { en: "He answers sabàh al-khèir. Now what?", ok: ["Sabàh an-nùr"] },
+    { en: "You arrive somewhere in the evening.", ok: ["Masà al-khèir"] },
+    { en: "Someone asks kèifa hàluk? and you are fine.", ok: ["Anà bikhèir", "Al-hàmdu lillàh", "Là bà's"] },
+    { en: "You have answered. Now you want to ask them back.", ok: ["Wa ànta?", "Kèifa hàluk?"] },
+    { en: "Someone hands you your coffee.", ok: ["Shùkran", "Shùkran jazìlan"] },
+    { en: "You have just been thanked.", ok: ["ʿÀfwan"] },
+    { en: "You need to get past someone in a narrow street.", ok: ["Lau samàht", "ʿÀfwan"] },
+    { en: "You are about to ask a stranger something, before anything else.", ok: ["Min fàdlik", "Lau samàht"] },
+    { en: "You have just been introduced to someone.", ok: ["Tashàrraft"] },
+    { en: "Someone asks your name.", ok: ["Ismì Marco"] },
+    { en: "Someone asks where you are from.", ok: ["Anà min Itàlya"] },
+    { en: "Someone asks what you do.", ok: ["Anà muhàndis"] },
+    { en: "Someone asks how old you are.", ok: ["ʿÙmri thalathùn"] },
+    { en: "They ask whether you speak Arabic, and you can manage a bit.", ok: ["Naʿam, qalìlan", "Qalìlan fàqat"] },
+    { en: "You have been walking for twenty minutes and you need a toilet.", ok: ["Àina al-hammàm?"] },
+    { en: "You are lost and looking for the station.", ok: ["Àina al-mahàtta?"] },
+    { en: "It is dinner time and you want somewhere to eat.", ok: ["Àina al-màtʿam?"] },
+    { en: "Someone is pointing and talking, and you have not understood a word.", ok: ["Là àfham"] },
+    { en: "You understood some of it, but they are going far too fast.", ok: ["Takàllam bibut'"] },
+    { en: "Your hands are full and you cannot manage the door.", ok: ["Sàʿidni, min fàdlik"] },
+    { en: "You are on the pavement with a suitcase and no taxi.", ok: ["Urìd tàksi"] },
+    { en: "You are in the taxi and you are going to the airport.", ok: ["Khudhni ilà al-matàr"] },
+    { en: "Before you get in, you want to know what it will cost to the hotel.", ok: ["Bikàm ilà al-fùnduq?"] },
+    { en: "This is your street. Anywhere here will do.", ok: ["Qif hùna, min fàdlik"] },
+    { en: "You want to know how long the journey takes.", ok: ["Kam sàʿa?"] },
+    { en: "You are at a stall and you want to know the price.", ok: ["Kam as-sìʿr?", "Kam hàdha?"] },
+    { en: "The price he says is three times what it should be.", ok: ["Hàdha kathìr", "Ghàli jìddan"] },
+    { en: "You are haggling and you want him to come down.", ok: ["Hal ʿìndak takhfìd?"] },
+    { en: "You have decided to buy it.", ok: ["Sa'àkhudh hàdha", "Urìd hàdha"] },
+    { en: "You have decided against it, and you do not want a scene.", ok: ["Sa'ufàkkir", "Là, shùkran", "Là urìd"] },
+    { en: "A waiter is waiting and you are thirsty.", ok: ["Urìd mà', min fàdlik", "Anà ʿatshàn"] },
+    { en: "You have finished eating and you want to pay.", ok: ["Al-hisàb, min fàdlik"] },
+    { en: "You are checking into a hotel and you want the wifi.", ok: ["Hal ʿìndakum wàifài?"] },
+    { en: "The light in the room does not come on.", ok: ["Hàdha là yàʿmal"] },
+    { en: "You cannot get into your room and the key is gone.", ok: ["Àina al-mìftah?"] },
+    { en: "Your bag is not where you left it.", ok: ["Fàqadtu haqìbati"] },
+    { en: "Worse than the bag: your passport.", ok: ["Fàqadtu jawàz safari"] },
+    { en: "You need the police, and quickly.", ok: ["Àina ash-shùrta?"] },
+    { en: "You have had a headache since this morning.", ok: ["ʿÌndi sudàʿ"] },
+    { en: "You are ill enough that this needs a doctor.", ok: ["Ahtàj tabìb", "Anà marìd"] },
+    { en: "You are in pain and pointing at the spot.", ok: ["ʿÌndi àlam hùna", "ʿÌndi àlam"] },
+    { en: "You want the chemist.", ok: ["Àina as-saydalìyya?"] },
+    { en: "There is a courtyard you would like to photograph.", ok: ["Hal yùmkin at-taswìr?", "Hal yùmkin?"] },
+    { en: "Someone is holding a door open for you to go in first.", ok: ["Shùkran", "Tafàddal"] },
+    { en: "You are asking a woman whether she speaks English.", ok: ["Hal tatakàllamìn al-inglizìyya?"] },
+    { en: "She has invited you for a coffee and you would like to.", ok: ["Bikùll surùr", "Naʿam"] },
+    { en: "She has asked for your number and you would rather not.", ok: ["Là, shùkran"] },
+    { en: "You are leaving the shop.", ok: ["Maʿa salàma", "Ilà al-liqà", "Shùkran"] },
+    { en: "You will see them again tomorrow.", ok: ["Ilà al-ghad"] },
+    { en: "It is late, you are going to bed, your host is still up.", ok: ["Tùsbih ʿalà khèir"] },
+    { en: "You want to know what time it is.", ok: ["Kam as-sàʿa?"] },
+    { en: "You are on the platform and nobody has said when the train comes.", ok: ["Matà al-qitàr?"] },
+    { en: "Someone has apologised for a mix-up and it is genuinely fine.", ok: ["Là bà's", "ʿÀfwan"] },
+    { en: "You have knocked something over in a shop.", ok: ["Àsif"] },
+    { en: "Someone is telling you to hurry and you need a second.", ok: ["Làhza min fàdlik", "Intàdhir làhza"] }
+  ];
+
+  // A situation is worth asking once you have passed a lesson that can
+  // answer it. Which lesson that is comes from the answers themselves.
+  function momentOpen(m) {
+    return m.ok.some(function (ar) {
+      var lid = lessonTeaching(ar);
+      var r = lid && recordOf(lid);
+      return !!(r && r.done);
+    });
+  }
+
+  function openMoments() { return MOMENTS.filter(momentOpen); }
+
+  function newMoment(prev) {
+    var pool = openMoments();
+    if (!pool.length) return null;
+    var m = shuffle(pool)[0];
+    if (prev && pool.length > 1) {
+      var g = 0;
+      while (g++ < 8 && m === prev.m) m = shuffle(pool)[0];
+    }
+    return {
+      m: m,
+      typed: "",
+      checked: false,
+      right: false,
+      matched: null,
+      shown: false,
+      got: prev ? prev.got : 0,
+      run: prev ? prev.run : 0
+    };
+  }
+
+  // Anything on the list counts, in the spelling you have been shown or
+  // in the fus·ha underneath it.
+  function momentMatch(typed) {
+    var said = normalise(typed);
+    if (!said) return null;
+    var hit = null;
+    moment.m.ok.forEach(function (ar) {
+      if (hit) return;
+      if (said === normalise(disp(ar)) || said === normalise(ar)) hit = ar;
+    });
+    return hit;
+  }
+
+  function checkMoment() {
+    if (!moment || moment.checked) return;
+    var field = app.querySelector('[data-act="moment-typing"]');
+    if (field) moment.typed = field.value;
+    if (!normalise(moment.typed)) return;
+    moment.matched = momentMatch(moment.typed);
+    moment.right = !!moment.matched;
+    moment.checked = true;
+    moment.run += 1;
+    if (moment.right) {
+      moment.got += 1;
+      // Producing it cold is the hardest way to remember a phrase, so it
+      // counts for that phrase the same as any round does.
+      var lid = lessonTeaching(moment.matched);
+      if (lid) bumpStrength(lid, moment.matched, true);
+      save();
+      speak(moment.matched);
+    }
+    render();
+  }
+
+  function showMoment() {
+    if (!moment || moment.checked) return;
+    moment.shown = true;
+    moment.checked = true;
+    moment.run += 1;
+    render();
+  }
+
+  function momentHTML() {
+    if (!moment) {
+      return topbarHTML("What would you say?") +
+        '<p class="pb-lead">The situation, and nothing else: no English sentence to translate, because nobody ' +
+        'hands you one in the street. Pass a lesson and the first situations open.</p>' +
+        '<div class="btn-row"><button class="btn" data-go="home">Back to the lessons</button></div>';
+    }
+
+    var mo = moment;
+    var cls = "type-in" + (mo.checked ? (mo.right ? " is-right" : " is-wrong") : "");
+
+    var answers = mo.checked
+      ? '<div class="moment-ok"><h3>' +
+        (mo.m.ok.length > 1 ? "Any of these" : "What to say") + "</h3>" +
+        mo.m.ok.map(function (ar) {
+          var mine = ar === mo.matched;
+          return '<div class="pb-row' + (mine ? " is-yours" : "") + '">' + sayBtn(ar, true) +
+            '<span class="pb-text"><span class="ar">' + esc(disp(ar)) + "</span>" +
+            '<span class="pb-en">' + esc(englishFor(ar) || "") + "</span></span>" +
+            (mine ? '<span class="pb-tag">yours</span>' : "") + "</div>";
+        }).join("") + "</div>"
+      : "";
+
+    var verdict = mo.checked
+      ? '<div class="verdict">' +
+        (mo.right
+          ? '<div class="verdict-msg ok"><b>That works.</b></div>'
+          : mo.shown
+            ? '<div class="verdict-msg no"><b>Here it is.</b></div>'
+            : '<div class="verdict-msg no"><b>Not one of these.</b>&nbsp;<span>' +
+              esc(mo.typed) + "</span></div>") +
+        answers +
+        '<button class="btn btn-wide" data-act="moment-next">Another situation</button></div>'
+      : "";
+
+    return topbarHTML("What would you say?", null, mo.run ? mo.got + "/" + mo.run : "") +
+      '<p class="pb-lead">No English sentence to translate. Read what is happening and say something that ' +
+      'works. Usually more than one thing does.</p>' +
+      '<div class="prompt"><div class="prompt-label">You are here</div>' +
+      '<div class="prompt-main">' + esc(mo.m.en) + "</div>" +
+      '<div class="prompt-sub">in these letters, not Arabic script &#183; accents and capitals do not matter</div>' +
+      "</div>" +
+      '<input class="' + cls + '" data-act="moment-typing" type="text" value="' + esc(mo.typed) + '"' +
+      ' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"' +
+      ' aria-label="Say something that works"' + (mo.checked ? " disabled" : "") + ">" +
+      (mo.checked ? "" :
+        '<div class="btn-row">' +
+        '<button class="btn btn-ghost" data-act="moment-show">I have no idea</button>' +
+        '<button class="btn" data-act="moment-check">Check</button></div>') +
+      verdict;
   }
 
   /* ============================================================
@@ -7052,12 +7695,15 @@
     if (view.name === "result") return resultHTML();
     if (view.name === "phrasebook") return phrasebookHTML();
     if (view.name === "make") return makeHTML();
+    if (view.name === "you") return youHTML();
+    if (view.name === "moment") return momentHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
   }
 
   function render() {
+    if (YOU_KEY !== youKey()) applyPersonal();
     app.innerHTML = navHTML() + screenHTML();
     markPlaying();
     afterRender();
@@ -7080,6 +7726,15 @@
           search.setSelectionRange(search.value.length, search.value.length);
         }
       }
+      return;
+    }
+    if (view.name === "moment") {
+      var mf = moment && !moment.checked && app.querySelector('[data-act="moment-typing"]');
+      if (mf && typeof mf.focus === "function") mf.focus();
+      return;
+    }
+    if (view.name === "make") {
+      if (made && made.hear && !made.played) { made.played = true; speak(made.s.ar); }
       return;
     }
     if (view.name !== "play" || !session) return;
@@ -7148,6 +7803,8 @@
       if (dest === "phrasebook") { pbQuery = ""; go({ name: "phrasebook" }); return; }
       if (dest === "words") { go({ name: "words" }); return; }
       if (dest === "make") { session = null; made = newMake(null); go({ name: "make" }); return; }
+      if (dest === "you") { session = null; go({ name: "you" }); return; }
+      if (dest === "moment") { session = null; moment = newMoment(null); go({ name: "moment" }); return; }
       if (dest === "talk") { talk = newTalk(); go({ name: "talk" }); return; }
       if (dest === "lesson") { go({ name: "lesson", lesson: lessonById(el.getAttribute("data-id")) }); return; }
       if (dest === "learn") {
@@ -7503,6 +8160,40 @@
     }
     if (act === "make-hint") { if (made) made.hint = true; render(); return; }
     if (act === "make-check") { checkMake(); return; }
+    if (act === "make-answer") { answerMake(el.getAttribute("data-value")); return; }
+    if (act === "moment-check") { checkMoment(); return; }
+    if (act === "moment-show") { showMoment(); return; }
+    if (act === "moment-next") { stopSpeech(); moment = newMoment(moment); render(); return; }
+    if (act === "you-name") {
+      var yn = window.prompt("What is your name?", you().name || "");
+      if (yn === null) return;
+      setYou("name", String(yn).trim().slice(0, 24));
+      render();
+      return;
+    }
+    if (act === "you-age") {
+      var ya = window.prompt("How old are you?", you().age ? String(you().age) : "");
+      if (ya === null) return;
+      var n = parseInt(String(ya).replace(/[^0-9]/g, ""), 10);
+      setYou("age", n > 0 && n < 120 ? n : "");
+      render();
+      return;
+    }
+    if (act === "you-from" || act === "you-job") {
+      var field = act === "you-from" ? "from" : "job";
+      var id = el.getAttribute("data-id");
+      setYou(field, you()[field] === id ? "" : id);
+      render();
+      return;
+    }
+    if (act === "you-gender") { setYou("gender", el.getAttribute("data-id")); render(); return; }
+    if (act === "you-clear") {
+      store.you = {};
+      save();
+      applyPersonal();
+      render();
+      return;
+    }
     if (act === "make-next") { stopSpeech(); made = newMake(made); render(); return; }
     if (act === "match") { matchTap(el.getAttribute("data-side"), Number(el.getAttribute("data-i"))); return; }
     if (act === "next") { stopSpeech(); advance(); return; }
@@ -7522,16 +8213,20 @@
       if (send) send.disabled = !el.value.trim();
       return;
     }
+    if (what === "moment-typing") { if (moment && !moment.checked) moment.typed = el.value; return; }
     if (what === "search") { pbQuery = el.value; render(); }
   });
 
   document.addEventListener("keydown", function (ev) {
     if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
 
-    var inField = ev.target && ev.target.getAttribute &&
-      ev.target.getAttribute("data-act") === "typing";
-    if (inField) {
+    var field = ev.target && ev.target.getAttribute && ev.target.getAttribute("data-act");
+    if (field === "typing") {
       if (ev.key === "Enter") { ev.preventDefault(); checkWrite(); }
+      return;
+    }
+    if (field === "moment-typing") {
+      if (ev.key === "Enter") { ev.preventDefault(); checkMoment(); }
       return;
     }
 
