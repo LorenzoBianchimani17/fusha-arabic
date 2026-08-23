@@ -5265,7 +5265,11 @@
 
   // How long a phrase should hold at each strength, roughly the usual
   // expanding schedule: a day, then three, a week, a fortnight, a month.
-  var HOLDS = [0, 1, 3, 7, 16, 35];
+  // How long a phrase is left alone at each strength. Measured against
+  // the whole course rather than guessed: with the old [0,1,3,7,16,35]
+  // and 345 phrases in the pool, a daily session could not come back to
+  // anything in time and mastery went backwards from about day 75.
+  var HOLDS = [0, 2, 5, 12, 30, 75];
 
   function holdFor(s) { return HOLDS[Math.max(0, Math.min(HOLDS.length - 1, s))]; }
 
@@ -5288,10 +5292,11 @@
     var s = rec.s;
     var since = daysSince(rec.day);
     if (since === null) return s;
-    while (s > 0 && since > holdFor(s)) {
-      since -= holdFor(s);
-      s--;
-    }
+    // One step back, however long you have been away. Sliding a phrase
+    // all the way down for a month's absence is what made the whole
+    // course lose ground once the pool passed a couple of hundred: a
+    // phrase you had cold in March is not back to nothing in May.
+    if (s > 0 && since > holdFor(s)) s--;
     return s;
   }
 
