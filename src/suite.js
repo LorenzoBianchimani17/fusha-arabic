@@ -2316,6 +2316,98 @@ section("when you get stuck");
   click({ "data-go": "home" });
 }
 
+section("difficulty that follows your strength");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+  st.known = {}; st.passive = {};
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+
+  const optionsAt = s2 => {
+    st.str = {};
+    if (s2 !== null) st.str["1|Marhàban"] = { s: s2, n: 3, day: D.today() };
+    let t = null, g = 0;
+    while (g++ < 60 && !t) {
+      click({ "data-go": "home" });
+      click({ "data-go": "play", "data-id": "1" });
+      t = peek().session.tasks.find(x => x.phrase && x.phrase.ar === "Marhàban");
+    }
+    return t ? t.options.length : 0;
+  };
+  check("a phrase you have never met gets four options", optionsAt(null) === 4);
+  check("one that is holding gets three", optionsAt(2) === 3);
+  check("one you nearly have gets two", optionsAt(4) === 2);
+  check("and the support never disappears entirely", optionsAt(5) >= 2);
+
+  // right, but you had to dig for it
+  st.str = { "1|Marhàban": { s: 2, n: 3, day: D.today() - 20 } };
+  let t = null, g = 0;
+  while (g++ < 60 && !t) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    const s2 = peek().session;
+    const i = s2.tasks.findIndex(x => x.phrase && x.phrase.ar === "Marhàban");
+    if (i >= 0) { s2.i = i; s2.state = "asking"; t = s2.tasks[i]; }
+  }
+  click({ "data-act": "answer", "data-value": t.answer });
+  check("a right answer climbs", st.str["1|Marhàban"].s === 2);
+  check("and offers to say it was a struggle", /data-act="only-just"/.test(h));
+  click({ "data-act": "only-just" });
+  check("saying so takes the climb back", st.str["1|Marhàban"].s === 1);
+  check("and carries on to the next round", peek().session.state === "asking");
+
+  // speed, once you know it
+  st.str = { "1|Marhàban": { s: 4, n: 9, day: D.today() } };
+  t = null; g = 0;
+  while (g++ < 60 && !t) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    const s2 = peek().session;
+    const i = s2.tasks.findIndex(x => x.phrase && x.phrase.ar === "Marhàban");
+    if (i >= 0) { s2.i = i; s2.state = "asking"; t = s2.tasks[i]; }
+  }
+  click({ "data-act": "peek" });
+  check("a phrase you know arrives with a clock", /class="quickbar"/.test(h));
+  t.startedAt = Date.now() - 9000;
+  click({ "data-act": "answer", "data-value": t.answer });
+  check("answering it slowly still counts as right", peek().session.lastRight === true);
+  check("but says so", /but slowly/i.test(h));
+  check("and does not let it climb", st.str["1|Marhàban"].s === 4);
+  st.str = { "1|Àhlan": { s: 1, n: 1, day: D.today() } };
+  let weak = null; g = 0;
+  while (g++ < 60 && !weak) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    const s3 = peek().session;
+    const i = s3.tasks.findIndex(x => x.phrase && x.phrase.ar === "Àhlan");
+    if (i >= 0) { s3.i = i; s3.state = "asking"; weak = s3.tasks[i]; }
+  }
+  click({ "data-act": "peek" });
+  check("a weak phrase is never timed", !!weak && !/class="quickbar"/.test(h));
+
+  // a session that is going well carries on a little
+  st.games = undefined;
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-go": "review" });
+  const started = peek().session.tasks.length;
+  let g2 = 0;
+  while (g2++ < 400 && !h.includes("result-score")) playRound(true);
+  check(`a perfect run gets a few more rounds (${started} to ${peek().session.tasks.length})`,
+    peek().session.extended === true);
+
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-go": "review" });
+  g2 = 0;
+  while (g2++ < 400 && !h.includes("result-score")) playRound(false);
+  check("a poor run does not", peek().session.extended === false);
+
+  st.str = {}; st.games = undefined;
+  click({ "data-go": "home" });
+}
+
 section("when you are wrong");
 {
   const D = global.__data;

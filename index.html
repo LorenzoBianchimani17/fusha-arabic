@@ -757,6 +757,32 @@
     text-align: center;
   }
 
+  /* Not a deadline: a sense of how long a phrase you know should take.
+     Nothing happens when it runs out. */
+  .quickbar {
+    height: 2px;
+    margin: var(--s-2) 0 calc(var(--s-2) * -1);
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .quickbar > i {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: var(--accent);
+    transform-origin: left center;
+    animation: quick 3.5s linear forwards;
+  }
+
+  @keyframes quick { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .quickbar > i { animation: none; opacity: .35; }
+  }
+
+  .only-just { display: block; margin: var(--s-4) auto 0; }
   .confused { margin: var(--s-3) 0 0; font-size: var(--t-3); color: var(--ink-2); text-align: left; }
   .confused .ar { color: var(--ink); }
   .circuit { margin: var(--s-6) 0 var(--s-2); text-align: center; }
@@ -5742,6 +5768,17 @@
   // mode: "soft" for a typing slip, which costs one step instead of two;
   // "held" for an answer found on the second attempt, which keeps the
   // phrase off the immediate queue without letting it climb.
+  // You got it, but you had to dig for it. The climb is taken back
+  // without counting a miss: it is not wrong, it is not solid.
+  function onlyJust(lessonId, ar) {
+    if (!lessonId || !ar || !store.str) return;
+    var rec = store.str[phraseKey(lessonId, ar)];
+    if (!rec) return;
+    rec.s = Math.max(0, (rec.s || 0) - 1);
+    rec.day = today();
+    save();
+  }
+
   function bumpStrength(lessonId, ar, right, mode) {
     if (!lessonId || !ar) return;
     if (!store.str) store.str = {};
@@ -6023,14 +6060,25 @@
      ROUND BUILDERS
      ============================================================ */
 
+  // Four options while it is new, three once it is holding, two when you
+  // nearly have it. A phrase you have known for a month was being asked
+  // exactly like one you met yesterday, which wasted half the round.
+  function optionsFor(lessonId, ar) {
+    var s = strengthOf(lessonId, ar);
+    if (s === null || s <= 1) return 3;
+    if (s <= 3) return 2;
+    return 1;
+  }
+
   function quizRound(lesson, phrase) {
     // Asked in English, a parked phrase would be exactly the choice you
     // said you did not want to make. Asked in Arabic, it is the reason
     // you kept it.
     var toEnglish = isPassive(phrase.ar) || Math.random() < 0.5;
     var field = toEnglish ? "en" : "ar";
-    var wrong = distractors(visiblePhrases(lesson), phrase[field], field, 3);
-    if (wrong.length < 3) return null;
+    var want = optionsFor(lesson.id, phrase.ar);
+    var wrong = distractors(visiblePhrases(lesson), phrase[field], field, want);
+    if (!wrong.length) return null;
     return {
       type: "quiz",
       points: 1,
@@ -6056,8 +6104,8 @@
 
   function listenRound(lesson, phrase) {
     if (!SCRIPT[phrase.ar]) return null;
-    var wrong = distractors(visiblePhrases(lesson), phrase.en, "en", 3);
-    if (wrong.length < 3) return null;
+    var wrong = distractors(visiblePhrases(lesson), phrase.en, "en", optionsFor(lesson.id, phrase.ar));
+    if (!wrong.length) return null;
     return {
       type: "listen",
       points: 1,
@@ -6101,9 +6149,10 @@
   function dialogRound(lesson, exchange) {
     if (isPassive(exchange.reply)) return null;
     var wide = replyPool();
-    var wrong = distractors(wide.length > 12 ? wide : lesson.dialogue, exchange.reply, "reply", 2);
-    if (wrong.length < 2) wrong = distractors(lesson.dialogue, exchange.reply, "reply", 2);
-    if (wrong.length < 2) return null;
+    var want = Math.max(1, optionsFor(lesson.id, exchange.reply) - 1);
+    var wrong = distractors(wide.length > 12 ? wide : lesson.dialogue, exchange.reply, "reply", want);
+    if (!wrong.length) wrong = distractors(lesson.dialogue, exchange.reply, "reply", want);
+    if (!wrong.length) return null;
     return {
       type: "dialog",
       points: 1,
@@ -6278,6 +6327,8 @@
       isFollow: !!fields.isFollow,
       isFixup: !!fields.isFixup,
       isToday: !!fields.isToday,
+      extended: false,
+      grew: false,
       convo: fields.convo || null,
       reviewPool: fields.reviewPool || 0,
       todayNext: fields.todayNext || null,
@@ -9639,6 +9690,25 @@
     return "";
   }
 
+  // Above strength 3 the round is timed, softly: nothing fails on the
+  // clock, but an answer that took longer than the bar does not climb.
+  // Knowing a phrase and having it ready are different things, and only
+  // the second one is any use in a conversation.
+  var QUICK_MS = 3500;
+
+  function isQuick(t) {
+    if (!t || !t.phrase || t.isLeech || t.isRetry) return false;
+    if (!t.options || t.type === "match") return false;
+    var l = lessonOf(t, t.phrase);
+    if (!l) return false;
+    var s = strengthOf(l.id, t.phrase.ar);
+    return s !== null && s >= 4;
+  }
+
+  function tookTooLong(t) {
+    return !!(t.startedAt && Date.now() - t.startedAt > QUICK_MS);
+  }
+
   function playHTML() {
     var t = session.tasks[session.i];
     var pct = Math.round(session.i / session.tasks.length * 100);
@@ -9659,8 +9729,17 @@
       : session.isConvo ? session.convo.title
       : session.lesson.title;
     var note = roundNote(t);
+    if (session.grew && session.state === "asking") {
+      session.grew = false;
+      session.grewShown = true;
+    }
+    var quick = isQuick(t) && session.state === "asking";
+    if (quick && !t.startedAt) t.startedAt = Date.now();
     return topbarHTML(title, pct, (session.i + 1) + " / " + session.tasks.length) +
-      (note ? '<p class="round-why">' + esc(note) + "</p>" : "") +
+      (quick ? '<div class="quickbar"><i></i></div>' : "") +
+      (session.grewShown && session.i >= session.tasks.length - EXTRA_ROUNDS
+        ? '<p class="round-why">Going well, so a few more.</p>'
+        : note ? '<p class="round-why">' + esc(note) + "</p>" : "") +
       '<div class="fade-in">' + body + "</div>" + verdictHTML(t);
   }
 
@@ -9998,9 +10077,11 @@
     if (session.lastRight) {
       // Getting it right is the honest moment to say you have it, and
       // getting it on the second go is the honest moment to say that.
-      msg = t.secondTry
-        ? '<div class="verdict-msg ok"><b>Right, second time.</b>&nbsp;<span>It will come round again.</span></div>'
-        : '<div class="verdict-msg ok"><b>Correct.</b></div>';
+      msg = t.slow
+        ? '<div class="verdict-msg ok"><b>Right, but slowly.</b>&nbsp;<span>In a conversation that pause is a gap.</span></div>'
+        : t.secondTry
+          ? '<div class="verdict-msg ok"><b>Right, second time.</b>&nbsp;<span>It will come round again.</span></div>'
+          : '<div class="verdict-msg ok"><b>Correct.</b></div>';
     } else {
       var answer = t.type === "build" ? t.target.join(" ") : (arabicAnswerFor(t) ? disp(t.answer) : t.answer);
       var arabicAnswer = arabicAnswerFor(t);
@@ -10016,7 +10097,13 @@
       (session.lastRight ? "" : confusedWith(t)) + leechOut(t) +
       (session.lastRight ? "" : whyHTML(t)) + roundControls(t) +
       '<button class="btn btn-wide" data-act="next">' +
-      (ending ? "See your score" : "Continue") + "</button></div>";
+      (ending ? "See your score" : "Continue") + "</button>" +
+      // Right, but only just, is not the same as right. Saying so pulls
+      // the phrase back a step instead of letting it sail off for a
+      // month on an answer you had to dig for.
+      (session.lastRight && !t.secondTry && t.phrase
+        ? '<button class="link-btn only-just" data-act="only-just">That was a struggle</button>'
+        : "") + "</div>";
   }
 
   /* ============================================================
@@ -10150,6 +10237,10 @@
   }
 
   function settle(task, right, phrase, secondTry) {
+    if (right && !secondTry && tookTooLong(task)) {
+      task.slow = true;
+      secondTry = true;   // right, but not ready: hold it where it is
+    }
     session.state = "checked";
     session.lastRight = right;
     task.settled = true;
@@ -10275,7 +10366,30 @@
     go({ name: "result" }, { replace: true });
   }
 
+  var EXTRA_ROUNDS = 4;
+
+  // A session that is going well stops at the same place as one that is
+  // not. If the run is strong and there is more to draw on, it carries
+  // on a little rather than ending on the number twelve.
+  function maybeExtend() {
+    if (!session.isReview || session.extended) return;
+    if (session.i < session.tasks.length - 1) return;
+    var asked = session.tasks.filter(function (t) { return t.settled && t.points > 0; });
+    if (asked.length < 6) return;
+    var right = asked.filter(function (t) { return t.wasRight && !t.secondTry; }).length;
+    if (right / asked.length < 0.9) return;
+    var more = buildReview();
+    if (!more) return;
+    var add = more.tasks.filter(function (t) { return t.type !== "match"; }).slice(0, EXTRA_ROUNDS);
+    if (!add.length) return;
+    session.extended = true;
+    session.tasks = session.tasks.concat(add);
+    session.max += add.reduce(function (n, t) { return n + t.points; }, 0);
+    session.grew = true;
+  }
+
   function advance() {
+    maybeExtend();
     var atEnd = session.i >= session.tasks.length - 1;
 
     if (atEnd && !session.retried) {
@@ -10962,6 +11076,16 @@
     }
     if (act === "make-next") { stopSpeech(); made = newMake(made); render(); return; }
     if (act === "match") { matchTap(el.getAttribute("data-side"), Number(el.getAttribute("data-i"))); return; }
+    if (act === "only-just") {
+      var tj = session && session.tasks[session.i];
+      if (tj && tj.phrase && session.state === "checked") {
+        var lj = lessonOf(tj, tj.phrase);
+        if (lj) onlyJust(lj.id, tj.phrase.ar);
+      }
+      stopSpeech();
+      advance();
+      return;
+    }
     if (act === "next") { stopSpeech(); advance(); return; }
   });
 
