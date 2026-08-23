@@ -515,6 +515,13 @@
   .today-line { font-size: var(--t-5); line-height: 1.35; letter-spacing: -.01em; }
   .today-go { flex: none; padding: var(--s-4) 20px; }
 
+  /* At 375px the line runs about 85 characters through a ~190px
+     column beside a fixed 90px button and becomes six lines with the
+     button floating mid-paragraph. Stack it over a full-width button. */
+  @media (max-width: 420px) {
+    .today { flex-direction: column; align-items: stretch; }
+  }
+
   /* ---------- mixed review ---------- */
 
   .review {
@@ -804,6 +811,25 @@
   .why b { color: var(--ink); font-weight: 600; }
   .why .gloss { background: transparent; padding: 0; }
 
+  .why > summary { cursor: pointer; list-style: none; }
+  .why > summary::-webkit-details-marker { display: none; }
+
+  .why:not([open]) > summary {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .why:not([open]) > summary::after {
+    content: "Read more";
+    display: block;
+    margin-top: 4px;
+    font-size: var(--t-1);
+    font-weight: 600;
+    color: var(--accent-ink);
+  }
+
   .round-controls {
     display: flex;
     flex-wrap: wrap;
@@ -864,6 +890,13 @@
   .btn-row { display: flex; gap: var(--s-4); margin-top: 22px; }
   .btn-row .btn { flex: 1; }
   .btn-step { flex: 0 0 62px; font-size: var(--t-6); padding-left: 0; padding-right: 0; }
+
+  /* Three ghost buttons at flex:1 in a 335px row leave labels like
+     "Ask for all of them again" about 66px of text width, wrapping
+     four or five lines. Stack this specific row full width instead. */
+  @media (max-width: 420px) {
+    .btn-row-stack { flex-direction: column; }
+  }
 
   /* ---------- speak button ---------- */
 
@@ -1252,6 +1285,13 @@
   .talk-input { display: flex; align-items: center; gap: var(--s-4); }
   .talk-field { flex: 1; font-size: var(--t-6); padding: var(--s-4) var(--s-5); }
 
+  /* At 375px the mic pill alone runs to about 150px, leaving too
+     little of the 335px row for the field and its var(--t-6)
+     placeholder. Stack the mic above the field instead. */
+  @media (max-width: 420px) {
+    .talk-input { flex-direction: column; }
+  }
+
   /* ---------- microphone ---------- */
 
   .mic-row { display: flex; justify-content: center; margin-top: 20px; }
@@ -1543,6 +1583,16 @@
   /* ---------- verdict ---------- */
 
   .verdict {
+    position: sticky;
+    bottom: 0;
+    margin-top: 22px;
+    padding: 16px 0 calc(20px + env(safe-area-inset-bottom));
+    background: linear-gradient(to bottom, transparent, var(--bg) 22%);
+  }
+
+  /* Same fix as .verdict: keep the mic/typing controls above the iOS
+     keyboard instead of letting the keyboard cover them. */
+  .action-row {
     position: sticky;
     bottom: 0;
     margin-top: 22px;
@@ -6383,13 +6433,15 @@
   var CIRCUIT = [
     { go: "moment", label: "Now: three situations", why: "no English to translate" },
     { go: "asked", label: "Now: five questions by ear", why: "just what they are asking" },
-    { go: "make", label: "Now: make a few sentences", why: "none of them taught as a phrase" }
+    { go: "make", label: "Now: make a few sentences", why: "none of them taught as a phrase" },
+    { go: "numbers", label: "Now: a few numbers by ear", why: "the ones that cost money" }
   ];
 
   function circuitNext() {
     var open = CIRCUIT.filter(function (c) {
       if (c.go === "moment") return openMoments().length > 0;
       if (c.go === "asked") return askPool().length > 0;
+      if (c.go === "numbers") return true;
       return combos().length > 0;
     });
     if (!open.length) return null;
@@ -6732,6 +6784,7 @@
     if (v.name === "moment") return "#/moment";
     if (v.name === "twins") return "#/twins";
     if (v.name === "asked") return "#/asked";
+    if (v.name === "numbers") return "#/numbers";
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -6810,6 +6863,14 @@
       session = null;
       pbQuery = "";
       view = { name: "phrasebook" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "numbers") {
+      session = null;
+      numbers = newNumbers(null);
+      view = { name: "numbers" };
       render();
       return;
     }
@@ -7265,6 +7326,8 @@
       '<div class="nav-group">Speak</div>' +
       '<button class="nav-item" data-go="talk"><span class="nav-label">Free talk</span>' +
       '<span class="nav-note">Say anything; it answers from the lessons you choose</span></button>' +
+      '<button class="nav-item" data-go="numbers"><span class="nav-label">Numbers by ear</span>' +
+      '<span class="nav-note">A price or a time, said once. Type the digits</span></button>' +
       '<button class="nav-item' + (openAsks ? "" : " is-off") + '" data-go="asked"' +
       (openAsks ? "" : " disabled") + '><span class="nav-label">What are they asking?</span>' +
       '<span class="nav-note">' + (openAsks
@@ -7436,6 +7499,7 @@
   var made = null;
   var moment = null;
   var asked = null;
+  var numbers = null;
 
   function talkHTML() {
     var lines = talk.turns.map(function (t) {
@@ -7502,6 +7566,7 @@
       '<div class="transcript talk-log">' + lines + "</div>" +
       understood + hint +
       micNote() +
+      '<div class="action-row">' +
       '<div class="talk-input">' +
       (canHear() ? micBtn("Say something", ears.busy).replace('data-act="mic"', 'data-act="talk-mic"') : "") +
       '<input class="type-in talk-field" data-act="talk-typing" type="text" value="' + esc(talk.draft) + '"' +
@@ -7512,6 +7577,7 @@
       '<div class="btn-row">' +
       '<button class="btn btn-ghost" data-act="talk-reset">Start over</button>' +
       '<button class="btn" data-act="talk-send"' + (talk.draft.trim() ? "" : " disabled") + ">Say it</button>" +
+      "</div>" +
       "</div>";
   }
 
@@ -7594,7 +7660,7 @@
       '<p class="pb-lead">What you have taken out of rotation, and how to put it back. Tap any line to hear it.</p>' +
       knownBlock + passiveBlock + hiddenBlock +
       (idx.known.length || idx.hidden.length || idx.passive.length
-        ? '<div class="btn-row">' +
+        ? '<div class="btn-row btn-row-stack">' +
           (idx.known.length ? '<button class="btn btn-ghost" data-act="unknow-all">Return all set aside</button>' : "") +
           (idx.passive.length ? '<button class="btn btn-ghost" data-act="unpassive-all">Ask for all of them again</button>' : "") +
           (idx.hidden.length ? '<button class="btn btn-ghost" data-act="unhide-all">Show all hidden</button>' : "") +
@@ -8641,13 +8707,15 @@
       ' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"' +
       ' aria-label="Say something that works"' + (mo.checked ? " disabled" : "") + ">" +
       (mo.checked ? "" :
+        '<div class="action-row">' +
         (canHear()
           ? '<div class="mic-row">' + micBtn("Say it into the mic", ears.busy) + "</div>"
           : mo.spoken ? micNote() : "") +
         momentHeardHTML() +
         '<div class="btn-row">' +
         '<button class="btn btn-ghost" data-act="moment-show">I have no idea</button>' +
-        '<button class="btn" data-act="moment-check">Check</button></div>') +
+        '<button class="btn" data-act="moment-check">Check</button></div>' +
+        "</div>") +
       verdict;
   }
 
@@ -9067,6 +9135,121 @@
   }
 
   /* ============================================================
+     NUMBERS BY EAR
+
+     Every number in the course arrives on a page: a flashcard, a
+     four-way guess against the English word. That is not how a price
+     or a departure time actually reaches you; it arrives spoken, once,
+     and you either catch the digits or you do not. Nothing here is
+     written down to fall back on. You hear the number, or, lacking a
+     voice, read the transliteration you would otherwise have heard,
+     and type back the digits you caught.
+     ============================================================ */
+
+  function newNumbers(prev) {
+    var start = 20, cap = 99, step = 10;
+    var got = prev ? prev.got : 0;
+    var ceil = Math.min(cap, start + got * step);
+    var wide = ceil > start;
+
+    // Below twenty, every number is a single digit or a teen the course
+    // will not touch, so the pool is just whatever is valid. Past that,
+    // weight it toward the two-digit numbers and the round tens
+    // especially: a price or a room number is rarely "seven", and the
+    // single digits already had the whole range to themselves before
+    // the ceiling moved.
+    var pool = [];
+    for (var i = 1; i <= ceil; i++) {
+      if (!numberWords(i, variety())) continue;
+      var weight = 1;
+      if (wide) weight = (i >= 10 && i % 10 === 0) ? 4 : (i >= 10 ? 3 : 1);
+      for (var k = 0; k < weight; k++) pool.push(i);
+    }
+
+    var n = shuffle(pool)[0];
+    if (prev && pool.length > 1) {
+      var g = 0;
+      while (g++ < 8 && n === prev.n) n = shuffle(pool)[0];
+    }
+
+    var w = numberWords(n, variety());
+    // Not a phrase the course teaches, so spk() would have nothing to
+    // say without this: the same registration compose() does for its
+    // own sentences.
+    MADE[w.ar] = w.s;
+
+    return {
+      n: n,
+      w: w,
+      typed: "",
+      checked: false,
+      right: false,
+      played: false,
+      got: got,
+      run: prev ? prev.run : 0
+    };
+  }
+
+  function checkNumbers() {
+    if (!numbers || numbers.checked) return;
+    var field = app.querySelector('[data-act="numbers-typing"]');
+    if (field) numbers.typed = field.value;
+    var digits = String(numbers.typed).replace(/[^0-9]/g, "");
+    if (!digits) return;
+    numbers.checked = true;
+    numbers.right = Number(digits) === numbers.n;
+    numbers.run += 1;
+    if (numbers.right) {
+      numbers.got += 1;
+      // A number the course teaches as one word is a phrase like any
+      // other, and catching it by ear is recall of it. numberWords
+      // writes it mid-sentence, so it comes back lower-cased.
+      var key = numbers.w.ar.charAt(0).toUpperCase() + numbers.w.ar.slice(1);
+      var lid = lessonTeaching(key);
+      if (lid) { bumpStrength(lid, key, true); save(); }
+    }
+    render();
+  }
+
+  function numbersHTML() {
+    if (!numbers) return topbarHTML("Numbers by ear");
+
+    var nu = numbers;
+    var heard = canSpeak();
+    var checked = nu.checked;
+
+    var stage = heard
+      ? '<div class="listen-stage">' +
+        '<button class="say say-lg" data-act="say" data-say="' + esc(nu.w.ar) + '"' +
+        ' aria-label="Play the number again">' + SPEAKER_SVG + "</button></div>" +
+        '<div class="prompt-sub">tap to hear it again</div>'
+      : '<div class="prompt-main ar">' + esc(nu.w.ar) + "</div>" +
+        '<div class="prompt-sub">no Arabic voice on this device, so you get it in writing</div>';
+
+    var cls = "type-in" + (checked ? (nu.right ? " is-right" : " is-wrong") : "");
+
+    var verdict = checked
+      ? '<div class="verdict">' +
+        (nu.right
+          ? '<div class="verdict-msg ok"><b>Right.</b>&nbsp;<span>' + nu.n + '</span>&nbsp;<span class="ar">' +
+            esc(nu.w.ar) + '</span>' + sayBtn(nu.w.ar, true) + '</div>'
+          : '<div class="verdict-msg no"><b>It was ' + nu.n + '.</b>&nbsp;<span class="ar">' +
+            esc(nu.w.ar) + '</span>' + sayBtn(nu.w.ar, true) + '</div>') +
+        '<button class="btn btn-wide" data-act="numbers-next">Another number</button></div>'
+      : "";
+
+    return topbarHTML("Numbers by ear", null, nu.run ? nu.got + "/" + nu.run : "") +
+      '<div class="prompt"><div class="prompt-label">' +
+      (heard ? "Listen to the number" : "Read the number") + "</div>" + stage + "</div>" +
+      '<input class="' + cls + '" data-act="numbers-typing" type="text" inputmode="numeric" pattern="[0-9]*"' +
+      ' maxlength="2" value="' + esc(nu.typed) + '" autocomplete="off" autocorrect="off" autocapitalize="off"' +
+      ' spellcheck="false" aria-label="Type the number, in digits"' + (checked ? " disabled" : "") + ">" +
+      (checked ? "" :
+        '<div class="btn-row"><button class="btn btn-wide" data-act="numbers-check">Check</button></div>') +
+      verdict;
+  }
+
+  /* ============================================================
      LESSON, STUDY
      ============================================================ */
 
@@ -9438,9 +9621,9 @@
     if (!n) {
       // No rule written for it, but the pieces still explain themselves.
       var g = glossesFor(disp(ph.ar));
-      return g.length ? '<div class="why">' + glossHTML(ph.ar) + "</div>" : "";
+      return g.length ? '<details class="why" data-fold="why"><summary>' + glossHTML(ph.ar) + "</summary></details>" : "";
     }
-    return '<div class="why">' + n + "</div>";
+    return '<details class="why" data-fold="why"><summary>' + n + "</summary></details>";
   }
 
   function arabicAnswerFor(t) {
@@ -9775,6 +9958,7 @@
     if (view.name === "moment") return momentHTML();
     if (view.name === "twins") return twinsHTML();
     if (view.name === "asked") return askedHTML();
+    if (view.name === "numbers") return numbersHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -9845,6 +10029,12 @@
     }
     if (view.name === "asked") {
       if (asked && !asked.played && canSpeak()) { asked.played = true; speak(asked.q.ar); }
+      return;
+    }
+    if (view.name === "numbers") {
+      if (numbers && !numbers.played && canSpeak()) { numbers.played = true; speak(numbers.w.ar); }
+      var nf = numbers && !numbers.checked && app.querySelector('[data-act="numbers-typing"]');
+      if (nf && typeof nf.focus === "function") nf.focus();
       return;
     }
     if (view.name === "moment") {
@@ -9926,6 +10116,7 @@
       if (dest === "moment") { session = null; moment = newMoment(null); go({ name: "moment" }); return; }
       if (dest === "twins") { session = null; go({ name: "twins" }); return; }
       if (dest === "asked") { session = null; asked = newAsked(null); go({ name: "asked" }); return; }
+      if (dest === "numbers") { session = null; numbers = newNumbers(null); go({ name: "numbers" }); return; }
       if (dest === "talk") { talk = newTalk(); go({ name: "talk" }); return; }
       if (dest === "lesson") { go({ name: "lesson", lesson: lessonById(el.getAttribute("data-id")) }); return; }
       if (dest === "learn") {
@@ -10320,6 +10511,8 @@
       if (window.confirm("Ask you to produce all of them again?")) { unpassiveAll(); render(); }
       return;
     }
+    if (act === "numbers-check") { checkNumbers(); return; }
+    if (act === "numbers-next") { stopSpeech(); numbers = newNumbers(numbers); render(); return; }
     if (act === "asked-answer") { answerAsked(el.getAttribute("data-value")); return; }
     if (act === "asked-next") { stopSpeech(); asked = newAsked(asked); render(); return; }
     if (act === "moment-check") { checkMoment(); return; }
@@ -10380,6 +10573,7 @@
       return;
     }
     if (what === "moment-typing") { if (moment && !moment.checked) moment.typed = el.value; return; }
+    if (what === "numbers-typing") { if (numbers && !numbers.checked) numbers.typed = el.value; return; }
     if (what === "search") {
       pbQuery = el.value;
       var results = app.querySelector && app.querySelector('[data-results]');
@@ -10398,6 +10592,10 @@
     }
     if (field === "moment-typing") {
       if (ev.key === "Enter") { ev.preventDefault(); checkMoment(); }
+      return;
+    }
+    if (field === "numbers-typing") {
+      if (ev.key === "Enter") { ev.preventDefault(); checkNumbers(); }
       return;
     }
 
