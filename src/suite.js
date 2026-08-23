@@ -743,9 +743,11 @@ section("the game picker");
     setOnly([only]);
     click({ "data-go": "play", "data-id": "1" });
     const types = [...new Set(peek().session.tasks.map(t => t.type))];
+    // ten rounds, plus the echoes of any phrase met for the first time
     const want = only === "match" ? 3 : 10;
-    if (types.length !== 1 || types[0] !== only || peek().session.tasks.length !== want) {
-      bad.push(`${only}: ${types.join(",")} x${peek().session.tasks.length}`);
+    const got = peek().session.tasks.length;
+    if (types.length !== 1 || types[0] !== only || got < want || got > want + 4) {
+      bad.push(`${only}: ${types.join(",")} x${got}`);
     }
     click({ "data-go": "home" });
     click({ "data-go": "review" });
@@ -2313,6 +2315,104 @@ section("when you get stuck");
   check("in Levantine too", D.combos().filter(c => /^Hal /.test(c.frame.stem))
     .every(c => !D.compose(c).msa));
   peek().store.variety = "msa";
+  click({ "data-go": "home" });
+}
+
+section("how a phrase arrives");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+  st.str = {}; st.known = {}; st.passive = {};
+
+  // guess before you see
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "1" });
+  check("the card asks for a guess first", /data-act="learn-guess"/.test(h));
+  check("three to choose between", (h.match(/data-act="learn-guess"/g) || []).length === 3);
+  const card = peek().learn.lesson.phrases[peek().learn.i];
+  check("the right one is among them", peek().learn.guessOpts.indexOf(card.en) !== -1);
+  const guess = peek().learn.guessOpts.find(x => x !== card.en);
+  click({ "data-act": "learn-guess", "data-value": guess });
+  check("guessing opens the card", peek().learn.shown === true);
+  check("and it tells you what you guessed", /You guessed/.test(h));
+  check("with the meaning now on it", visible(h).includes(card.en));
+  click({ "data-act": "learn-next" });
+  check("the next card asks again", /data-act="learn-guess"/.test(h) && peek().learn.guessed === null);
+
+  // met next to the one it will be confused with
+  st.str = { "1|Marhàban": { s: 2, n: 3, day: D.today() } };
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "1" });
+  let g = 0;
+  while (g++ < 20 && peek().learn.lesson.phrases[peek().learn.i].ar !== "Àhlan") click({ "data-act": "learn-fwd" });
+  click({ "data-act": "learn-reveal" });
+  check("a phrase is introduced against the one you already know", /Not the same as/.test(h));
+  check("naming it", visible(h).includes("Marhàban"));
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "1" });
+  g = 0;
+  while (g++ < 20 && peek().learn.lesson.phrases[peek().learn.i].ar !== "Àhlan") click({ "data-act": "learn-fwd" });
+  click({ "data-act": "learn-reveal" });
+  check("but not against one you have never met", !/Not the same as/.test(h));
+
+  // a new phrase comes back inside the session
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+  const s1 = peek().session;
+  const echoes = s1.tasks.filter(t => t.isEcho);
+  check(`a new phrase is echoed later in the session (${echoes.length})`, echoes.length > 0);
+  check("at a growing distance", echoes.every(e => {
+    const first = s1.tasks.findIndex(t => t.phrase && e.phrase && t.phrase.ar === e.phrase.ar && !t.isEcho);
+    return first >= 0 && s1.tasks.indexOf(e) > first + 1;
+  }));
+  check("and an echo scores no point", echoes.every(e => e.points === 0));
+
+  const echo = echoes[0];
+  s1.i = s1.tasks.indexOf(echo);
+  s1.state = "asking";
+  st.str["1|" + echo.phrase.ar] = { s: 2, n: 1, day: D.today() };
+  answerCurrent(true);
+  check("nor does it climb the phrase: one sitting is one piece of evidence",
+    st.str["1|" + echo.phrase.ar].s === 2);
+
+  // long phrases are built from the tail
+  st.str = {};
+  st.games = { quiz: false, build: true, match: false, dialog: false, write: false, listen: false, say: false };
+  let lad = null;
+  g = 0;
+  while (g++ < 80 && !lad) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "28" });
+    lad = peek().session.tasks.find(x => x.ladder);
+  }
+  check("a long phrase is built in rungs", !!lad && lad.ladder.length === 3);
+  check("starting from the end of it",
+    !!lad && lad.ladder[0].length < lad.ladder[2].length &&
+    lad.ladder[2].slice(-lad.ladder[0].length).join(" ") === lad.ladder[0].join(" "));
+  check("and ending on the whole thing",
+    !!lad && lad.ladder[2].join(" ") === D.tokens(D.disp(lad.phrase.ar)).join(" "));
+
+  const sl = peek().session;
+  sl.i = sl.tasks.indexOf(lad);
+  sl.state = "asking";
+  for (let step = 0; step < lad.ladder.length; step++) {
+    const cur = peek().session.tasks[peek().session.i];
+    cur.target.forEach(w => {
+      const tile = cur.tiles.find(x => x.word === w && cur.picked.indexOf(x.id) === -1);
+      if (tile) click({ "data-act": "pick", "data-id": String(tile.id) });
+    });
+    click({ "data-act": "check-build" });
+    if (step < lad.ladder.length - 1) {
+      check(`rung ${step + 1} does not end the round`, peek().session.state === "asking");
+    }
+  }
+  check("the last rung settles it", peek().session.state === "checked");
+  check("and it counted as right", peek().session.lastRight === true);
+
+  st.str = {}; st.games = undefined;
   click({ "data-go": "home" });
 }
 

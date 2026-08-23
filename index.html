@@ -782,6 +782,9 @@
     .quickbar > i { animation: none; opacity: .35; }
   }
 
+  .options.guess { margin-top: var(--s-4); }
+  .guess-back { margin: var(--s-3) 0 0; font-size: var(--t-3); color: var(--ink-3); }
+  .guess-back.ok { color: var(--good); }
   .only-just { display: block; margin: var(--s-4) auto 0; }
   .confused { margin: var(--s-3) 0 0; font-size: var(--t-3); color: var(--ink-2); text-align: left; }
   .confused .ar { color: var(--ink); }
@@ -6116,6 +6119,31 @@
     };
   }
 
+  // A long phrase is learned from the tail. Say the last two words, then
+  // the last three, then all of it: that way the end never crumbles,
+  // which is exactly how long phrases crumble.
+  function ladderFor(words) {
+    if (words.length < 4) return null;
+    var steps = [];
+    var from = Math.max(1, words.length - 2);
+    while (from > 0) { steps.push(words.slice(from)); from -= 1; }
+    steps.push(words.slice(0));
+    // at most three rungs, ending on the whole phrase
+    if (steps.length > 3) steps = [steps[0], steps[Math.floor(steps.length / 2)], steps[steps.length - 1]];
+    return steps;
+  }
+
+  function buildTiles(words, lesson, phrase) {
+    var extras = [];
+    shuffle(visiblePhrases(lesson)).forEach(function (p) {
+      if (extras.length >= 2 || p === phrase) return;
+      var cand = shuffle(tokens(disp(p.ar)))[0];
+      if (!cand || words.indexOf(cand) !== -1 || extras.indexOf(cand) !== -1) return;
+      extras.push(cand);
+    });
+    return shuffle(words.concat(extras)).map(function (w, i) { return { id: i, word: w }; });
+  }
+
   function buildRound(lesson, phrase) {
     var words = tokens(disp(phrase.ar));
     var extras = [];
@@ -6125,13 +6153,19 @@
       if (!cand || words.indexOf(cand) !== -1 || extras.indexOf(cand) !== -1) return;
       extras.push(cand);
     });
+    // Only for a phrase you have not got yet: once it is holding, the
+    // whole thing at once is the point.
+    var ladder = strengthOf(lesson.id, phrase.ar) === null ? ladderFor(words) : null;
+    var target = ladder ? ladder[0] : words;
     return {
       type: "build",
       points: 1,
       srcLesson: lesson,
       phrase: phrase,
-      target: words,
-      tiles: shuffle(words.concat(extras)).map(function (w, i) { return { id: i, word: w }; }),
+      ladder: ladder,
+      rung: 0,
+      target: target,
+      tiles: buildTiles(target, lesson, phrase),
       picked: []
     };
   }
@@ -6317,6 +6351,43 @@
     return out.slice(0, count);
   }
 
+  // A phrase met for the first time comes back twice more in the same
+  // session, two rounds later and then five: the distance is what turns
+  // recognising it into remembering it. The repeats do not climb the
+  // strength - one sitting is one piece of evidence - they are there for
+  // the retrieval.
+  var ECHO_AT = [2, 5];
+
+  function echoNew(tasks, lessonFor) {
+    var out = tasks.slice();
+    var added = 0;
+    tasks.forEach(function (t) {
+      if (added >= 2 || !t.phrase) return;
+      var l = t.srcLesson || lessonFor;
+      if (!l || strengthOf(l.id, t.phrase.ar) !== null) return;
+      var at = out.indexOf(t);
+      if (at < 0) return;
+      // In whatever games are switched on, not always the quiz: a
+      // say-only session has to stay a say-only session.
+      var types = askingGames();
+      if (!types.length) types = [t.type];
+      ECHO_AT.forEach(function (gap) {
+        var item = { phrase: t.phrase, ar: t.phrase.ar, en: t.phrase.en };
+        var copy = null;
+        typeFor(item, types).forEach(function (ty) {
+          if (!copy) copy = makeRound(l, item, ty);
+        });
+        if (!copy) return;
+        copy.points = 0;
+        copy.isEcho = true;
+        var pos = Math.min(out.length, at + gap);
+        out.splice(pos, 0, copy);
+      });
+      added++;
+    });
+    return out;
+  }
+
   function newSession(fields) {
     var all = fields.tasks;
     return {
@@ -6350,12 +6421,14 @@
   function buildSession(lesson) {
     var asking = askingGames();
     var tasks = [];
+    var echoIn = lesson;
     for (var i = 0; i < matchCount(asking); i++) {
       var grid = matchRound(lesson);
       if (grid) tasks.push(grid);
     }
     if (asking.length) tasks = tasks.concat(fillRounds(lesson, asking, ROUNDS));
     if (!tasks.length) tasks = fillRounds(lesson, ["quiz"], ROUNDS);
+    tasks = echoNew(tasks, echoIn);
     return newSession({ lesson: lesson, tasks: tasks });
   }
 
@@ -9610,6 +9683,50 @@
     }).join("") + "</div>";
   }
 
+  // Reading the answer teaches less than getting it wrong first. The
+  // card asks for a guess before it will show anything, and it does not
+  // mark the guess: what it is for is the moment of trying, and then
+  // seeing how close you were.
+  // A phrase that does the same job as one you have already met is
+  // introduced next to it, with the difference named. Confusions are
+  // cheaper to prevent at the first meeting than to unpick later.
+  function twinNote(ar) {
+    var group = null;
+    TWINS.forEach(function (t) { if (!group && t.members.indexOf(ar) !== -1) group = t; });
+    if (!group) return "";
+    var met = null;
+    group.members.forEach(function (other) {
+      if (met || other === ar) return;
+      var lid = lessonTeaching(other);
+      if (lid && strengthOf(lid, other) !== null) met = other;
+    });
+    if (!met) return "";
+    return '<div class="flash-note"><span>Not the same as <b class="ar">' + esc(disp(met)) +
+      "</b>, which is <b>" + esc(englishFor(met) || "") + "</b>. " + esc(group.why) + "</span>" +
+      sayBtn(met, true) + "</div>";
+  }
+
+  function guessHTML(p) {
+    var pool = learn.lesson.phrases.filter(function (x) { return x !== p; });
+    if (pool.length < 2) return '<div class="flash-hint">Tap to see what it means</div>';
+    if (!learn.guessOpts) {
+      learn.guessOpts = shuffle(shuffle(pool).slice(0, 2).concat([p]))
+        .map(function (x) { return x.en; });
+    }
+    return '<div class="flash-hint">Before you look: what do you think it means?</div>' +
+      '<div class="options guess">' + learn.guessOpts.map(function (en, i) {
+        return '<button class="option" data-act="learn-guess" data-value="' + esc(en) + '">' +
+          '<span class="option-key">' + (i + 1) + "</span><span>" + esc(en) + "</span></button>";
+      }).join("") + "</div>";
+  }
+
+  function guessBackHTML(p) {
+    if (learn.guessed === p.en) {
+      return '<div class="guess-back ok">You guessed that. Good instinct.</div>';
+    }
+    return '<div class="guess-back">You guessed <b>' + esc(learn.guessed) + "</b>.</div>";
+  }
+
   function learnHTML() {
     var l = learn.lesson;
     var p = l.phrases[learn.i];
@@ -9622,6 +9739,7 @@
         ': <b class="ar">' + esc(p.f) + "</b></span>" + sayBtn(p.f, true) + "</div>";
     }
     if (p.note) note += '<div class="flash-note"><span>' + p.note + "</span></div>";
+    note += twinNote(p.ar);
 
     var known = !!knownRec(l.id, p.ar);
     var hidden = isHidden(l.id, p.ar);
@@ -9662,8 +9780,9 @@
               " form written for this one yet</div>") +
       (learn.shown
         ? '<div class="flash-rule"></div><div class="flash-en">' + esc(p.en) + "</div>" +
+          (learn.guessed ? guessBackHTML(p) : "") +
           glossHTML(p.ar) + note + aside
-        : '<div class="flash-hint">Tap reveal to see what it means</div>') +
+        : guessHTML(p)) +
       "</div>" +
       '<div class="btn-row">' +
       '<button class="btn btn-ghost btn-step" data-act="learn-prev"' +
@@ -9684,6 +9803,7 @@
      ============================================================ */
 
   function roundNote(t) {
+    if (t.isEcho) return "The same one again, on purpose";
     if (t.isCheck) return "A phrase you set aside, coming back for its check";
     if (t.isMiss) return "You missed this one recently";
     if (t.isLeech) return "This one keeps slipping, so here it is in pieces";
@@ -9929,6 +10049,12 @@
 
   function buildHTML(t) {
     var checked = session.state === "checked";
+    var rung = t.ladder
+      ? '<div class="prompt-sub">' +
+        (t.rung === t.ladder.length - 1 ? "and now the whole thing"
+          : t.rung === 0 ? "the end of it first" : "one more word") +
+        " &#183; " + (t.rung + 1) + " of " + t.ladder.length + "</div>"
+      : "";
     var slotCls = "slot" + (t.picked.length ? "" : " is-empty") +
       (checked ? (session.lastRight ? " is-right" : " is-wrong") : "");
 
@@ -9946,7 +10072,7 @@
 
     return '<div class="prompt">' +
       '<div class="prompt-label">Build this sentence</div>' +
-      '<div class="prompt-main">' + esc(t.phrase.en) + "</div></div>" +
+      '<div class="prompt-main">' + esc(t.phrase.en) + "</div>" + rung + "</div>" +
       '<div class="' + slotCls + '">' + slot + "</div>" +
       '<div class="bank">' + bank + "</div>" +
       (checked ? "" :
@@ -10221,6 +10347,11 @@
 
   function scorePhrase(task, right, phrase) {
     if (!phrase || (task && task.isRetry)) return;
+    if (task && task.isEcho && right) {
+      var le = lessonOf(task, phrase);
+      if (le) { bumpStrength(le.id, phrase.ar, true, "held"); save(); }
+      return;
+    }
     var l = lessonOf(task, phrase);
     if (!l) return;
     // Typing it is the one game where a miss can be a spelling and not a
@@ -10293,7 +10424,20 @@
     var t = session.tasks[session.i];
     if (session.state === "checked" || t.picked.length !== t.target.length) return;
     var built = t.picked.map(function (id) { return t.tiles[id].word; });
-    settle(t, built.join(" ") === t.target.join(" "), t.phrase);
+    var right = built.join(" ") === t.target.join(" ");
+
+    // Up the ladder: a rung answered right is not the end of the round,
+    // it is the next rung, one word longer.
+    if (right && t.ladder && t.rung < t.ladder.length - 1) {
+      t.rung += 1;
+      t.target = t.ladder[t.rung];
+      t.tiles = buildTiles(t.target, t.srcLesson, t.phrase);
+      t.picked = [];
+      t.climbed = true;
+      render();
+      return;
+    }
+    settle(t, right, t.phrase);
   }
 
   function matchTap(side, i) {
@@ -10817,6 +10961,12 @@
       render();
       return;
     }
+    if (act === "learn-guess") {
+      learn.guessed = el.getAttribute("data-value");
+      learn.shown = true;
+      render();
+      return;
+    }
     if (act === "learn-reveal") { learn.shown = true; render(); return; }
     if (act === "learn-prev" || act === "learn-fwd") {
       var step = act === "learn-fwd" ? 1 : -1;
@@ -10825,6 +10975,8 @@
       stopSpeech();
       learn.i = to;
       learn.shown = false;
+      learn.guessed = null;
+      learn.guessOpts = null;
       go({ name: "learn" });
       return;
     }
@@ -10836,6 +10988,8 @@
       } else {
         learn.i++;
         learn.shown = false;
+      learn.guessed = null;
+      learn.guessOpts = null;
         go({ name: "learn" });
       }
       return;
