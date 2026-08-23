@@ -78,9 +78,16 @@ In order, as it was shipped:
 - **Section 10**, the warmer light theme and a result screen that leads
   with what changed.
 
-**Still open, and not something the app can do for itself: looking at
-the screens on a real phone.** Two or three screenshots would replace a
-lot of guessing about the layout at 375 points wide.
+**Section 10's last item is closed too.** Four screenshots from an
+iPhone on 2026-08-24 found one real defect and one small one: the menu
+pill and the Right now pill were both absolutely positioned in the same
+corner, so Right now covered the menu completely and the home screen -
+the only screen with no topbar - had no way into the drawer; and "See
+them" beside the set-aside notice wrapped onto two lines. Both fixed,
+both held by tests. Everything else on those four screens was right at
+375 points wide.
+
+Nothing on this list is outstanding.
 
 Where it stands: 30 lessons, 402 phrases, 91 core, 132 exchanges, 84
 situations, 24 capabilities, 22 lines on the right-now screen, 8 rules
