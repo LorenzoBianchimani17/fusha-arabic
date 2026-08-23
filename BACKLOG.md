@@ -1,11 +1,50 @@
 # Agreed, not yet built
 
 Decided on 2026-08-23, after four audits of the app (Levantine accuracy,
-code, visual design, learning design) and three rounds of choices. The
-order of delivery is the only thing still open: to be decided 2026-08-24.
+code, visual design, learning design) and four rounds of choices.
 
 Everything below was chosen deliberately. Nothing here is a suggestion
 waiting for approval; it is a list of work waiting for a turn.
+
+## The plan
+
+Order chosen 2026-08-23: the source into the repository first, then the
+sixteen learning mechanisms, in four deliveries. Each one ends with the
+test suite green in all four configurations, the hundred-and-fifty-day
+simulation re-run, and the app live on Pages, so it can be used before
+the next one starts.
+
+**Delivery 0, the source into the repository.** `src/fusha.html`,
+`src/suite.js` and the two scripts that generate `index.html` and the
+test copy. Small, and it removes the only real risk in the project.
+
+**Delivery 1, what happens when you are wrong.** In this order, because
+three of the four need the same thing underneath: a count of how many
+times each phrase has been missed. Then the second attempt before the
+answer; then naming what you confused it with; then yesterday's misses
+leading today; then leeches, which need all of the above to know what a
+leech is. This delivery changes the moment you feel most.
+
+**Delivery 2, difficulty that follows your strength.** Fading support
+first, because it is the one that reclaims wasted rounds. Then how sure
+you were, which changes the interval arithmetic and therefore needs the
+simulation re-run before anything else lands on top of it. Then timed
+rounds above strength 3, then session length following the run.
+
+**Delivery 3, how a phrase arrives.** Guess before you see, expanding
+rehearsal inside a session, backward buildup, contrast with the twin.
+These touch the study screen and the round dealer, which were both
+rewritten on 2026-08-23, so they come after the two deliveries that do
+not.
+
+**Delivery 4, the mouth and the ear.** Shadowing, whole-sentence
+dictation, an ear-only session, speaking at a run. Three of the four
+need a voice or a microphone and must degrade honestly without them,
+which is why they are last: they are the least certain to be usable on
+every device.
+
+Sections 5 to 11 below are not scheduled. They are the decided list to
+draw from once the mechanisms are in and have been used for a week.
 
 ## 0. Before anything else
 
@@ -107,6 +146,15 @@ met yesterday.
   barista who recognises you, someone asking *you* for directions.
 
 ## 8. Features
+
+- **Your own words.** Somewhere to put a word you heard in the street:
+  write it as it sounded, say what it means, and from then on it is in
+  the spaced repetition like everything else. The app cannot learn
+  anything from you today.
+- **The screen for right now.** One tap from home: twenty large lines
+  with audio, the ones you need in the street. The phrasebook exists but
+  is ordered by lesson and has to be searched, which is the last thing
+  you want to be doing while someone is talking to you.
 
 - **Free talk that can say it did not understand.** Today it answers
   "Là àfham" and starts again. With the repair kit now in the course it

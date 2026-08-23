@@ -1,0 +1,3267 @@
+// One suite over the whole app. A working DOM, location and history
+// stub, so clicks, routes and browser back are exercised for real.
+let h = "", clickH = null, inputH = null, hashListener = null;
+const fields = {};
+
+const fakeEl = {
+  set innerHTML(v) { h = v; }, get innerHTML() { return h; },
+  addEventListener(t, f) { if (t === "click") clickH = f; if (t === "input") inputH = f; },
+  querySelectorAll(sel) {
+    if (sel === ".say") {
+      const out = []; const re = /<button class="say[^"]*"[^>]*data-say="([^"]*)"/g; let m;
+      while ((m = re.exec(h))) { const v = m[1]; out.push({ getAttribute: () => v, classList: { toggle() {} } }); }
+      return out;
+    }
+    if (sel === '[data-act="answer"]') return [];
+    return [];
+  },
+  querySelector(sel) {
+    // the phrasebook patches just its results now, so the harness has to
+    // let it, or the fast path is never the one under test
+    if (sel === "[data-results]") {
+      if (!/<div data-results>/.test(h)) return null;
+      return {
+        set innerHTML(v) {
+          h = h.replace(/(<div data-results>)[\s\S]*(<\/div>)\s*$/, "$1" + v + "$2");
+        }
+      };
+    }
+    if (sel === '[data-act="backup"]') {
+      const m = h.match(/data-act="backup"[^>]*>([\s\S]*?)<\/textarea>/);
+      return { value: fields.backupOverride !== undefined ? fields.backupOverride : decodeEnt(m ? m[1] : "") };
+    }
+    if (sel === '[data-act="search"]') return { value: fields.search || "", focus() {}, setSelectionRange() {} };
+    if (sel === '[data-act="typing"]') return null;   // driver sets task.typed directly
+    if (sel === '[data-act="talk-typing"]') return { value: fields.talk || "", focus() {}, setSelectionRange() {} };
+    if (sel === '[data-act="talk-send"]') return { disabled: false };
+    return null;
+  }
+};
+const decodeEnt = s => String(s).replace(/&quot;/g, '"').replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+
+const stack = ["#/"]; let at = 0;
+const location = {
+  get hash() { return stack[at]; },
+  set hash(v) { if (v === stack[at]) return; stack.length = at + 1; stack.push(v); at++; if (hashListener) hashListener(); }
+};
+const back = () => { if (at > 0) { at--; if (hashListener) hashListener(); } };
+const forward = () => { if (at < stack.length - 1) { at++; if (hashListener) hashListener(); } };
+
+// a real key/value store, so profiles are exercised rather than faked
+const LS = {};
+const savedStore = () => JSON.parse(LS["fusha-msa-v1:" + peek().people.current] || "{}");
+const wipeLS = () => { Object.keys(LS).forEach(k => delete LS[k]); };
+let promptAnswer = "";
+let confirmAnswer = true;
+const spoken = [];
+const withVoice = process.argv.includes("--voice");
+const withMic = process.argv.includes("--mic");
+let nextHeard = [];          // what the stub recogniser will return
+let micErrored = null;
+const stageSeen = [];
+const stageRaw = [];
+const strip = t => t.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
+// a slightly degraded rendering, the way a recogniser tends to answer
+const flattenArabicSample = a => String(a).replace(/[\u064B-\u0652]/g, "");
+
+global.document = { getElementById: () => fakeEl, addEventListener() {} };
+global.window = {
+  localStorage: {
+    getItem: k => (Object.prototype.hasOwnProperty.call(LS, k) ? LS[k] : null),
+    setItem(k, v) { LS[k] = v; },
+    removeItem(k) { delete LS[k]; }
+  },
+  scrollTo() {}, setTimeout: f => f(), confirm: () => confirmAnswer,
+  prompt: () => promptAnswer,
+  location, history: { replaceState(_a, _b, v) { stack[at] = v; } },
+  self: {}, top: {},          // pretend we are inside a frame, as on claude.ai
+  addEventListener(t, f) { if (t === "hashchange") hashListener = f; },
+  btoa: s => Buffer.from(s, "binary").toString("base64"),
+  atob: s => Buffer.from(s, "base64").toString("binary"),
+};
+if (withVoice) {
+  global.window.speechSynthesis = {
+    getVoices: () => [{ name: "Maged", lang: "ar-SA" }],
+    cancel() {}, speak(u) { spoken.push(u); }, onvoiceschanged: null
+  };
+  global.window.SpeechSynthesisUtterance = function (t) { this.text = t; };
+}
+
+if (withMic) {
+  global.window.SpeechRecognition = function () {
+    const self = this;
+    this.start = function () {
+      if (micErrored) { self.onerror && self.onerror({ error: micErrored }); self.onend && self.onend(); return; }
+      self.onaudiostart && self.onaudiostart();
+      stageSeen.push(strip(h)); stageRaw.push(h);
+      self.onspeechstart && self.onspeechstart();
+      stageSeen.push(strip(h)); stageRaw.push(h);
+      self.onspeechend && self.onspeechend();
+      stageSeen.push(strip(h)); stageRaw.push(h);
+      const alts = nextHeard.map(t => ({ transcript: t }));
+      alts.length = nextHeard.length;
+      const res = Object.assign(alts, { length: nextHeard.length });
+      self.onresult && self.onresult({ results: [res] });
+      self.onend && self.onend();
+    };
+  };
+}
+
+require("./extracted.test.js");
+
+const { LESSONS, CONVOS, PHRASEBOOK, SCRIPT, normalise } = global.__data;
+const peek = () => global.__peek();
+const peekMade = () => peek().made;
+const fail = [];
+const check = (n, c) => { console.log((c ? "  ok   " : "  FAIL ") + n); if (!c) fail.push(n); };
+const section = n => console.log("\n[" + n + "]");
+const click = a => clickH({
+  target: { closest: () => ({ disabled: false, getAttribute: k => (k in a ? a[k] : null) }) },
+  preventDefault() {}
+});
+const type = (act, val) => { fields[act === "search" ? "search" : "x"] = val; inputH({ target: { getAttribute: () => act, value: val } }); };
+const visible = t => t.replace(/<[^>]*>/g, " ");
+// the drawer is rendered on every screen: anything looking for a screen's
+// own markup has to look past it
+const screenOnly = () => (h.split("</nav>")[1] || h);
+const isHiddenIn = (store, lid, ar) => !!(store.hidden || {})[lid + "|" + ar];
+const studiedDue = ar => {
+  const idx = global.__data;
+  const rec = (peek().store.known || {})["1|" + ar];
+  if (!rec) return false;
+  const d = typeof rec.day === "number" ? idx.today() - rec.day : idx.RECHECK_AFTER;
+  return d >= idx.RECHECK_AFTER;
+};
+const unlockAll = () => { const s = peek().store; s.lessons = {}; LESSONS.forEach(l => { s.lessons[l.id] = { best: 100, done: true }; }); };
+
+// Plays whatever round is on screen. `right` decides the answer.
+function playRound(right) {
+  const s = peek().session;
+  const t = s.tasks[s.i];
+  if (s.state === "checked") { click({ "data-act": "next" }); return; }
+  if (t.type === "say") {
+    if (!t.shown) { click({ "data-act": "say-reveal" }); return; }
+    click({ "data-act": "say-grade", "data-value": right ? "got" : "missed" });
+  } else if (t.type === "write") {
+    t.typed = right ? t.answer : "zzzqqq";
+    click({ "data-act": "check-write" });
+  } else if (t.type === "match") {
+    const open = t.pairs.map((_, n) => n).filter(n => t.done.indexOf(n) === -1);
+    const other = open.length > 1 && !right ? open[1] : open[0];
+    click({ "data-act": "match", "data-side": "l", "data-i": String(open[0]) });
+    click({ "data-act": "match", "data-side": "r", "data-i": String(other) });
+    if (!right) { // finish the grid so the round can end
+      let g = 0;
+      while (g++ < 30 && t.done.length < t.pairs.length) {
+        const o = t.pairs.map((_, n) => n).filter(n => t.done.indexOf(n) === -1)[0];
+        click({ "data-act": "match", "data-side": "l", "data-i": String(o) });
+        click({ "data-act": "match", "data-side": "r", "data-i": String(o) });
+      }
+    }
+  } else if (t.type === "build") {
+    const order = right || t.target.length < 2 ? t.target : [...t.target].reverse();
+    for (const w of order) {
+      const tile = t.tiles.find(x => x.word === w && t.picked.indexOf(x.id) === -1);
+      if (tile) click({ "data-act": "pick", "data-id": String(tile.id) });
+    }
+    while (t.picked.length < t.target.length) {
+      const free = t.tiles.find(x => t.picked.indexOf(x.id) === -1);
+      if (!free) break;
+      click({ "data-act": "pick", "data-id": String(free.id) });
+    }
+    click({ "data-act": "check-build" });
+  } else {
+    const v = right ? t.answer : t.options.find(o => o !== t.answer);
+    click({ "data-act": "answer", "data-value": v });
+  }
+}
+
+// "Say it" takes two taps (reveal, then grade), so one playRound call
+// is no longer guaranteed to settle the round.
+function answerCurrent(right) {
+  let g = 0;
+  while (g++ < 5 && peek().session.state !== "checked") playRound(right);
+}
+
+function playToEnd(right, cap = 500) {
+  let g = 0;
+  while (g++ < cap && !h.includes("result-score")) playRound(right);
+  return g < cap;
+}
+
+/* ------------------------------------------------------------ */
+
+section("data integrity");
+check("no problems reported on load", !h.includes("Lesson data problem"));
+{
+  const used = new Set();
+  LESSONS.forEach(l => {
+    l.phrases.forEach(p => { used.add(p.ar); if (p.f) used.add(p.f); });
+    (l.dialogue || []).forEach(d => { used.add(d.ask); used.add(d.reply); });
+  });
+  const missing = [...used].filter(k => !SCRIPT[k]);
+  const orphans = Object.keys(SCRIPT).filter(k => !used.has(k));
+  check(`every phrase has Arabic script (${used.size})`, missing.length === 0);
+  check("no orphan script entries", orphans.length === 0);
+  if (missing.length) console.log("    missing:", missing.slice(0, 5));
+  if (orphans.length) console.log("    orphans:", orphans.slice(0, 5));
+
+  let dupes = [];
+  LESSONS.forEach(l => {
+    const ars = {}, ens = {};
+    l.phrases.forEach(p => {
+      if (ars[p.ar]) dupes.push(`L${l.id} ar "${p.ar}"`); ars[p.ar] = 1;
+      if (ens[p.en]) dupes.push(`L${l.id} en "${p.en}"`); ens[p.en] = 1;
+    });
+  });
+  check("no lesson repeats a phrase on either side", dupes.length === 0);
+  if (dupes.length) console.log("   ", dupes.slice(0, 5));
+}
+
+section("no unexplained synonyms");
+{
+  // Two phrases in one lesson that translate the same way are fine only
+  // if at least one of them says how they differ. Otherwise it reads as
+  // arbitrary redundancy and the learner cannot tell them apart.
+  // strip articles only: "I am thirty" and "thirty" are not the same thing
+  const key = en => en.toLowerCase().replace(/\(.*?\)/g, "")
+    .replace(/\b(a|an|the)\b/g, "")
+    .replace(/[^a-z ]/g, "").split(/\s+/).filter(Boolean).sort().join(" ");
+  const bad = [];
+  LESSONS.forEach(l => {
+    const byKey = {};
+    l.phrases.forEach(p => {
+      const k = key(p.en);
+      if (!k) return;
+      (byKey[k] = byKey[k] || []).push(p);
+    });
+    Object.entries(byKey).forEach(([k, group]) => {
+      if (group.length > 1 && !group.some(p => p.note)) {
+        bad.push(`L${l.id} "${k}": ` + group.map(p => p.ar).join(" / "));
+      }
+    });
+  });
+  check("no lesson gives two words for one meaning without explaining", bad.length === 0);
+  if (bad.length) console.log("   ", bad);
+
+  // the greeting distinctions the whole of lesson 1 turns on
+  const L1 = LESSONS[0];
+  const noted = ar => (L1.phrases.find(p => p.ar === ar) || {}).note || "";
+  check("marhaban is marked as the safe default", /keep this one/i.test(noted("Marhàban")));
+  check("ahlan is explained as a reply, not an opener", /back/i.test(noted("Àhlan")));
+  check("ahlan wa sahlan is explained as something said to you", /hear this far more/i.test(noted("Àhlan wa sàhlan")));
+}
+
+section("the app knows what day it is");
+{
+  const { today, strengthOf, isFading, HOLDS, RECHECK_AFTER } = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.known = {};
+  const L1 = LESSONS[0], ar = L1.phrases[0].ar;
+  const put = (s, daysAgo) => { st.str["1|" + ar] = { s, n: 5, day: today() - daysAgo }; };
+
+  check("a phrase practised today holds its strength", (put(5, 0), strengthOf(1, ar) === 5));
+  check("and is not fading", !isFading(1, ar));
+  check(`it still holds inside its window (${HOLDS[5]} days)`, (put(5, HOLDS[5] - 1), strengthOf(1, ar) === 5));
+  check("past the window it slips a step", (put(5, HOLDS[5] + 1), strengthOf(1, ar) === 4));
+  check("and is reported as fading", isFading(1, ar));
+  // Away for a month or for a year, it slips one step and no further:
+  // multi-step decay is what made the course lose ground over time.
+  check("however long you are away it slips one step, not several",
+    (put(5, HOLDS[5] + HOLDS[4] + HOLDS[3] + 1), strengthOf(1, ar) === 4));
+  check("even after years", (put(5, 100000), strengthOf(1, ar) === 4));
+  check("and a phrase barely known falls to nothing", (put(1, 100000), strengthOf(1, ar) === 0));
+  check("but never below it", (put(0, 100000), strengthOf(1, ar) === 0));
+  check("a weak phrase decays quickly", (put(1, 3), strengthOf(1, ar) === 0));
+  check("an unseen phrase is still unseen", (delete st.str["1|" + ar], strengthOf(1, ar) === null));
+
+  // answering re-dates it, from the faded value rather than the stored one
+  put(5, HOLDS[5] + 1);
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+  let guard = 0, found = false;
+  while (guard++ < 60 && !h.includes("result-score")) {
+    const ss = peek().session, t = ss.tasks[ss.i];
+    if (ss.state !== "checked" && t.phrase && t.phrase.ar === ar) { playRound(true); found = true; break; }
+    playRound(true);
+  }
+  if (found) {
+    const rec = st.str["1|" + ar];
+    check("answering stamps today's date", rec.day === today());
+    check("and climbs from the faded value, not the old one", rec.s === 5);
+  }
+  st.games = undefined;
+
+  // a set-aside phrase is checked after days, not after sessions
+  st.known["1|" + ar] = { day: today() };
+  check("freshly set aside is not due", !studiedDue(ar));
+  st.known["1|" + ar] = { day: today() - RECHECK_AFTER };
+  check(`due after ${RECHECK_AFTER} days`, studiedDue(ar));
+  st.known["1|" + ar] = { day: undefined };
+  check("a record from before the clock existed is treated as due", studiedDue(ar));
+  st.known = {}; st.str = {};
+
+  // and Today notices how long you have been away
+  st.lastDay = today() - 1;
+  click({ "data-go": "home" });
+  check("it knows you were here yesterday", /Yesterday was your last go/.test(h));
+  st.lastDay = today() - 40;
+  click({ "data-go": "home" });
+  check("and that you have been gone a while", /It has been a while/.test(h));
+  st.lastDay = today();
+  click({ "data-go": "home" });
+  check("and says nothing when you are here today", !/It has been/.test(h));
+
+  // leave the store as we found it: the next section checks a fresh install
+  st.lessons = {}; st.str = {}; st.known = {}; st.hidden = {};
+  st.lastDay = undefined; st.games = undefined; st.variety = undefined;
+  click({ "data-go": "home" });
+}
+
+section("the core set");
+{
+  const core = LESSONS.flatMap(l => l.phrases.filter(p => p.core));
+  const all = LESSONS.reduce((n, l) => n + l.phrases.length, 0);
+  const share = core.length / all;
+  check(`core is a sensible share of the course (${core.length} of ${all}, ${Math.round(share * 100)}%)`,
+    core.length >= 50 && share <= 0.24);
+  check("every core phrase has audio", core.every(p => SCRIPT[p.ar]));
+  const lessonsWithCore = new Set(LESSONS.filter(l => l.phrases.some(p => p.core)).map(l => l.id));
+  check(`core spans many lessons (${lessonsWithCore.size})`, lessonsWithCore.size >= 12);
+  check("the first lessons all contribute", [1, 2, 3, 4, 5, 6].every(id => lessonsWithCore.has(id)));
+}
+
+section("home screen, fresh install");
+check("lesson rows for every lesson", (h.match(/data-go="lesson"/g) || []).length >= LESSONS.length);
+check("all but the first are locked", (h.match(/class="lesson is-locked" data-go="lesson"/g) || []).length === LESSONS.length - 1);
+check("conversations are listed and locked", (h.match(/data-go="convo"[^>]*disabled/g) || []).length === CONVOS.length);
+check("core meter hidden until a lesson is passed", !/class="core"/.test(h));
+check("today points at lesson 1", /Start with lesson 1/.test(h));
+check("phrasebook is reachable", /data-go="phrasebook"/.test(h));
+
+section("playing a lesson perfectly");
+{
+  const bad = [];
+  unlockAll();
+  for (const { id } of LESSONS) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": String(id) });
+    if (!playToEnd(true)) { bad.push(id + " (never ended)"); continue; }
+    if (!/result-score mono pass">100%/.test(h)) bad.push(String(id));
+  }
+  check(`all ${LESSONS.length} lessons reach 100%`, bad.length === 0);
+  if (bad.length) console.log("    failed:", bad);
+}
+
+section("random play never gets stuck");
+{
+  const bad = [];
+  for (let run = 0; run < 40; run++) {
+    const id = LESSONS[run % LESSONS.length].id;
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": String(id) });
+    let g = 0;
+    while (g++ < 400 && !h.includes("result-score")) playRound(Math.random() < 0.5);
+    const sc = Number((h.match(/result-score mono \w+">(\d+)%/) || [])[1]);
+    if (!Number.isFinite(sc) || sc < 0 || sc > 100) bad.push(id);
+  }
+  check("40 random runs all end with a valid score", bad.length === 0);
+}
+
+section("unlocking and persistence");
+{
+  wipeLS();
+  const s = peek().store;
+  s.lessons = {}; s.str = {}; s.convos = {}; s.review = undefined;
+  click({ "data-go": "home" });
+  check("back to nothing unlocked", (h.match(/class="lesson is-locked" data-go="lesson"/g) || []).length === LESSONS.length - 1);
+  click({ "data-go": "play", "data-id": "1" });
+  playToEnd(true);
+  check("passing lesson 1 records it", savedStore().lessons["1"].done === true);
+  click({ "data-go": "home" });
+  check("lesson 2 is now open", (h.match(/class="lesson is-locked" data-go="lesson"/g) || []).length === LESSONS.length - 2);
+  check("core meter appears", /class="core"/.test(h));
+  check("phrase strengths were recorded", Object.keys(savedStore().str || {}).length > 0);
+}
+
+section("core drives the daily session");
+{
+  unlockAll();
+  const s = peek().store;
+  s.str = {};
+  // everything mastered except the core
+  LESSONS.forEach(l => {
+    // dialogue first: some replies are also core phrases, and the
+    // phrase value has to be the one that sticks
+    (l.dialogue || []).forEach(d => { s.str[l.id + "|" + d.reply] = { s: 5, n: 9 }; });
+    l.phrases.forEach(p => { s.str[l.id + "|" + p.ar] = { s: p.core ? 0 : 5, n: 9 }; });
+  });
+  click({ "data-go": "home" });
+  check("today names the core", /core phrases? still to lock in/.test(h));
+  check("the meter shows none solid yet", /class="core-count">0 \//.test(h));
+
+  let coreHits = 0, total = 0;
+  for (let i = 0; i < 120; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    peek().session.tasks.forEach(t => {
+      if (t.type === "match") return;
+      total++;
+      const p = t.phrase || (t.exchange ? null : null);
+      if (p && p.core) coreHits++;
+    });
+  }
+  const pct = Math.round(coreHits / total * 100);
+  console.log(`    core made up ${pct}% of review rounds`);
+  check("the review is dominated by core phrases", pct > 60);
+
+  // now mark the core solid and check the app moves on
+  LESSONS.forEach(l => l.phrases.forEach(p => { if (p.core) s.str[l.id + "|" + p.ar] = { s: 5, n: 9 }; }));
+  click({ "data-go": "home" });
+  check("today stops nagging once core is solid", !/still to lock in/.test(h));
+  check("the meter reads full", /class="core-count">(\d+) \/ \1</.test(h));
+}
+
+section("core makes you produce it");
+{
+  unlockAll();
+  const s = peek().store;
+  s.str = {};
+  LESSONS.forEach(l => l.phrases.forEach(p => { if (p.core) s.str[l.id + "|" + p.ar] = { s: 0, n: 9 }; }));
+  let write = 0, other = 0;
+  for (let i = 0; i < 40; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    peek().session.tasks.forEach(t => {
+      if (!t.phrase || !t.phrase.core) return;
+      if (t.type === "say" || t.type === "write") write++; else other++;
+    });
+  }
+  check(`core rounds always make you produce it (${write} vs ${other})`, write > 0 && other === 0);
+
+  // Say is self-marked and forgiving; Write is marked for you. Core
+  // needs both, or the generous one never gets checked.
+  const mix = { say: 0, write: 0 };
+  for (let i = 0; i < 60; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    peek().session.tasks.forEach(t => {
+      if (t.phrase && t.phrase.core && mix[t.type] !== undefined) mix[t.type]++;
+    });
+  }
+  const sayPct = Math.round(mix.say / (mix.say + mix.write) * 100);
+  console.log(`    core split: say ${sayPct}%  write ${100 - sayPct}%`);
+  // With a microphone, saying it is the real test and typing is the
+  // stand-in, so Say leads. Without one, Say can only mark itself, and
+  // the two take turns.
+  if (withMic) check("with a microphone, core is led by saying it", sayPct > 70);
+  else check("without one, core alternates between saying and typing", sayPct > 30 && sayPct < 70);
+}
+
+section("setting a phrase aside");
+{
+  unlockAll();
+  const st = peek().store;
+  st.known = {}; st.str = {};
+  const L1 = LESSONS[0], target = L1.phrases[0].ar;
+
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "1" });
+  check("no tick before you reveal the card", !/data-act="known"/.test(h));
+  click({ "data-act": "learn-reveal" });
+  check("a tick appears once revealed", /data-act="known"/.test(h));
+  check("it starts off", !/class="aside is-on"/.test(h));
+
+  click({ "data-act": "known", "data-id": target });
+  check("ticking it is recorded", !!(peek().store.known || {})[L1.id + "|" + target]);
+  check("the card shows it as set aside", /class="[^"]*\baside\b[^"]*\bis-on"/.test(h));
+  check("and explains it will come back", /come back once for a check/.test(h));
+  check("it survives to storage", !!savedStore().known[L1.id + "|" + target]);
+
+  click({ "data-go": "home" });
+  check("home counts it", /1 phrase set aside/.test(screenOnly()));
+  check("and the count points at where to undo it",
+    /1 phrase set aside[\s\S]{0,200}data-go="words"/.test(screenOnly()));
+
+  // it should now stay out of the draw
+  let seen = 0;
+  for (let i = 0; i < 120; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    peek().session.tasks.forEach(t => {
+      if (t.phrase && t.phrase.ar === target) seen++;
+      if (t.pairs && t.pairs.some(p => p.ar === target)) seen++;
+    });
+  }
+  check(`it drops out of the rotation (${seen} appearances in 120 sessions)`, seen === 0);
+
+  // ...until the spot check is due
+  const age = d => { const r = peek().store.known[L1.id + "|" + target]; if (r) r.day = global.__data.today() - d; };
+  age(global.__data.RECHECK_AFTER);
+  let back = 0;
+  for (let i = 0; i < 120; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    if (peek().session.tasks.some(t => t.phrase && t.phrase.ar === target)) back++;
+  }
+  check(`it comes back for its check (${back} of 120)`, back > 10);
+
+  // getting the check right puts it back to sleep
+  age(global.__data.RECHECK_AFTER);
+  let guard = 0, found = null;
+  while (guard++ < 60 && !found) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    const s = peek().session;
+    const idx = s.tasks.findIndex(t => t.phrase && t.phrase.ar === target);
+    if (idx >= 0) found = idx;
+  }
+  check("a due phrase can be reached", found !== null);
+  if (found !== null) {
+    const s = peek().session;
+    s.i = found;
+    s.state = "asking";
+    answerCurrent(true);
+    check("answering it right keeps it set aside", !!(peek().store.known || {})[L1.id + "|" + target]);
+    check("and its clock restarts", peek().store.known[L1.id + "|" + target].day === global.__data.today());
+  }
+
+  // getting it wrong returns it to normal rotation
+  age(global.__data.RECHECK_AFTER);
+  guard = 0; found = null;
+  while (guard++ < 60 && !found) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    const s = peek().session;
+    const idx = s.tasks.findIndex(t => t.phrase && t.phrase.ar === target);
+    if (idx >= 0) found = idx;
+  }
+  if (found !== null) {
+    const s = peek().session;
+    s.i = found;
+    s.state = "asking";
+    answerCurrent(false);
+    check("failing the check puts it back in rotation", !(peek().store.known || {})[L1.id + "|" + target]);
+  }
+
+  // untick from the card, and bring-all-back
+  st.known = {};
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "1" });
+  click({ "data-act": "learn-reveal" });
+  click({ "data-act": "known", "data-id": target });
+  click({ "data-act": "known", "data-id": target });
+  check("ticking twice unticks it", !(peek().store.known || {})[L1.id + "|" + target]);
+
+  click({ "data-act": "known", "data-id": target });
+  click({ "data-go": "words" });
+  click({ "data-act": "unknow-all" });
+  check("bring-them-back clears the lot", Object.keys(peek().store.known || {}).length === 0);
+  click({ "data-go": "home" });
+  check("and the notice disappears", !/phrase set aside/.test(h));
+}
+
+section("hiding a phrase for good");
+{
+  unlockAll();
+  const st = peek().store;
+  st.known = {}; st.hidden = {}; st.str = {}; st.runs = 0;
+  const L1 = LESSONS[0], target = L1.phrases[1].ar;   // a non-core one
+
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "1" });
+  click({ "data-act": "learn-reveal" });
+  check("both controls are offered", /data-act="known"/.test(h) && /data-act="hide"/.test(h));
+
+  // walk to the target card and hide it
+  let guard = 0;
+  while (guard++ < 40 && peek().learn.lesson.phrases[peek().learn.i].ar !== target) click({ "data-act": "learn-fwd" });
+  click({ "data-act": "learn-reveal" });
+  click({ "data-act": "hide", "data-id": target });
+  check("hiding is recorded", peek().store.hidden[L1.id + "|" + target] === true);
+  check("the card says so", /Hidden for good/.test(h));
+  check("the tick disappears once hidden", !/data-act="known"/.test(h));
+  check("it reaches storage", savedStore().hidden[L1.id + "|" + target] === true);
+
+  click({ "data-go": "home" });
+  check("home counts it", /1 phrase hidden/.test(screenOnly()));
+  check("and the hidden count points there too",
+    /1 phrase hidden[\s\S]{0,200}data-go="words"/.test(screenOnly()));
+
+  // gone from the lesson's own games, including as a wrong option
+  let seen = 0;
+  for (let i = 0; i < 40; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    peek().session.tasks.forEach(t => {
+      if (t.phrase && t.phrase.ar === target) seen++;
+      if (t.options && t.options.includes(target)) seen++;
+      if (t.pairs && t.pairs.some(p => p.ar === target)) seen++;
+    });
+  }
+  check(`never appears in its own lesson (${seen} in 40 sessions)`, seen === 0);
+
+  // gone from the mixed review too
+  seen = 0;
+  for (let i = 0; i < 60; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    peek().session.tasks.forEach(t => {
+      if (t.phrase && t.phrase.ar === target) seen++;
+      if (t.pairs && t.pairs.some(p => p.ar === target)) seen++;
+    });
+  }
+  check(`never appears in review (${seen} in 60 sessions)`, seen === 0);
+
+  // hiding a core phrase must not stall the meter
+  st.known = {}; st.str = {}; st.hidden = {};
+  const coreP = LESSONS.flatMap(l => l.phrases.filter(p => p.core).map(p => ({ l, p })));
+  coreP.forEach(({ l, p }) => { st.str[l.id + "|" + p.ar] = { s: 5, n: 9 }; });
+  const one = coreP[0];
+  delete st.str[one.l.id + "|" + one.p.ar];          // one core phrase never practised
+  click({ "data-go": "home" });
+  check("an unpractised core phrase holds the meter back", /still to lock in/.test(h));
+  st.hidden[one.l.id + "|" + one.p.ar] = true;
+  click({ "data-go": "home" });
+  check("hiding it releases the meter", !/still to lock in/.test(h));
+
+  // hiding supersedes setting aside
+  st.hidden = {}; st.known = {};
+  st.known[L1.id + "|" + target] = { at: 0 };
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "1" });
+  guard = 0;
+  while (guard++ < 40 && peek().learn.lesson.phrases[peek().learn.i].ar !== target) click({ "data-act": "learn-fwd" });
+  click({ "data-act": "learn-reveal" });
+  click({ "data-act": "hide", "data-id": target });
+  check("hiding clears any set-aside mark", !(peek().store.known || {})[L1.id + "|" + target]);
+
+  // and it toggles back
+  click({ "data-act": "hide", "data-id": target });
+  check("pressing it again unhides", !(peek().store.hidden || {})[L1.id + "|" + target]);
+  st.hidden[L1.id + "|" + target] = true;
+  click({ "data-go": "words" });
+  click({ "data-act": "unhide-all" });
+  check("show-them-again clears the lot", Object.keys(peek().store.hidden || {}).length === 0);
+  st.hidden = {}; st.known = {};
+}
+
+section("set aside counts toward the core");
+{
+  const st = peek().store;
+  unlockAll();
+  st.known = {}; st.str = {};
+  const before = global.__data.coreCounts();
+  check("core starts unsolid", before.solid === 0 && before.reached > 0);
+  LESSONS.forEach(l => l.phrases.forEach(p => { if (p.core) st.known[l.id + "|" + p.ar] = { day: global.__data.today() }; }));
+  const after = global.__data.coreCounts();
+  check("setting every core phrase aside fills the meter", after.solid === after.reached);
+  click({ "data-go": "home" });
+  check("today stops asking for the core", !/still to lock in/.test(h));
+  st.known = {};
+}
+
+section("saying it out loud");
+{
+  unlockAll();
+  const st = peek().store;
+  st.known = {}; st.hidden = {}; st.str = {};
+  st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+  const s0 = peek().session;
+  check("a say-only session is possible", [...new Set(s0.tasks.map(t => t.type))].join() === "say");
+
+  check("it shows the English first", /Say it out loud/.test(h));
+  check("the Arabic is not on screen yet", !visible(h).includes(s0.tasks[0].phrase.ar));
+  check("no keyboard involved", !/data-act="typing"/.test(h));
+  click({ "data-act": "say-reveal" });
+  check("revealing shows the Arabic", visible(h).includes(s0.tasks[0].phrase.ar));
+  check("with a speaker to hear it", /data-act="say"/.test(h));
+  check("and two ways to mark yourself", /data-value="got"/.test(h) && /data-value="missed"/.test(h));
+
+  const before = peek().session.earned;
+  click({ "data-act": "say-grade", "data-value": "got" });
+  check("marking it right scores it", peek().session.earned === before + 1);
+  const key = "1|" + s0.tasks[0].phrase.ar;
+  check("and strengthens the phrase", (peek().store.str[key] || {}).s === 1);
+
+  click({ "data-act": "next" });
+  const t1 = peek().session.tasks[peek().session.i];
+  click({ "data-act": "say-reveal" });
+  click({ "data-act": "say-grade", "data-value": "missed" });
+  check("marking it missed counts as wrong", !peek().session.lastRight);
+  check("and it lands in the review list", peek().session.missed.some(m => m.ar === t1.phrase.ar));
+
+  st.games = undefined;
+}
+
+section("listening and replying carry the weight");
+{
+  unlockAll();
+  const st = peek().store;
+  st.known = {}; st.hidden = {}; st.str = {}; st.games = undefined;
+  const tally = {};
+  let sessionsWithReply = 0;
+  for (let i = 0; i < 60; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    if (peek().session.tasks.some(t => t.type === "dialog")) sessionsWithReply++;
+    peek().session.tasks.forEach(t => {
+      if (t.type === "match" || (t.phrase && t.phrase.core)) return;   // core is always Say
+      tally[t.type] = (tally[t.type] || 0) + 1;
+    });
+  }
+  const total = Object.values(tally).reduce((a, b) => a + b, 0);
+  const share = k => Math.round((tally[k] || 0) / total * 100);
+  console.log("    non-core round mix:", Object.entries(tally)
+    .sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${Math.round(v / total * 100)}%`).join("  "));
+  check(`Reply is in every session (${share("dialog")}% of non-core rounds)`, share("dialog") >= 10);
+  check("Build is not crowding the session", share("build") < 25);
+  check("Write is in the mix", (tally.write || 0) > 0);
+  check(`a conversation round in every session (${sessionsWithReply}/60)`, sessionsWithReply === 60);
+}
+
+section("the game picker");
+{
+  const ALL = ["quiz", "build", "match", "dialog", "write", "say"].concat(withVoice ? ["listen"] : []);
+  // only the game chips: the speed and variety pickers wear the same class
+  const chipsOn = () => (h.match(/is-on"[^>]*data-act="game"/g) || []).length;
+  const setOnly = keys => {
+    click({ "data-go": "home" });
+    for (const k of ALL) if (!new RegExp(`is-on" data-act="game" data-key="${k}"`).test(h)) click({ "data-act": "game", "data-key": k });
+    for (const k of ALL) if (!keys.includes(k)) click({ "data-act": "game", "data-key": k });
+  };
+  unlockAll();
+  click({ "data-go": "home" });
+  check(`${withVoice ? 7 : 6} games on by default`, chipsOn() === (withVoice ? 7 : 6));
+
+  const bad = [];
+  for (const only of ALL) {
+    setOnly([only]);
+    click({ "data-go": "play", "data-id": "1" });
+    const types = [...new Set(peek().session.tasks.map(t => t.type))];
+    const want = only === "match" ? 3 : 10;
+    if (types.length !== 1 || types[0] !== only || peek().session.tasks.length !== want) {
+      bad.push(`${only}: ${types.join(",")} x${peek().session.tasks.length}`);
+    }
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    const rTypes = [...new Set(peek().session.tasks.map(t => t.type))];
+    if (rTypes.length !== 1 || rTypes[0] !== only) bad.push(`review ${only}: ${rTypes.join(",")}`);
+  }
+  check("each game in isolation fills a full session, in lessons and review", bad.length === 0);
+  if (bad.length) console.log("   ", bad);
+
+  setOnly(["quiz"]);
+  check("only one left on", chipsOn() === 1);
+  click({ "data-act": "game", "data-key": "quiz" });
+  check("the last game cannot be switched off", chipsOn() === 1);
+  setOnly(ALL);
+}
+
+section("conversations");
+{
+  unlockAll();
+  const bad = [];
+  for (const c of CONVOS) {
+    click({ "data-go": "home" });
+    click({ "data-go": "convo", "data-id": c.id });
+    const s = peek().session;
+    if (!s || !s.isConvo || s.tasks.length !== c.turns.length) { bad.push(c.id + " (bad session)"); continue; }
+    if (!s.tasks.every(t => t.options.length === 3 && t.options.includes(t.answer) && new Set(t.options).size === 3)) {
+      bad.push(c.id + " (bad options)");
+      continue;
+    }
+    if (!playToEnd(true, 60) || !/result-score mono review">100%/.test(h)) bad.push(c.id + " (not winnable)");
+  }
+  check(`all ${CONVOS.length} conversations are playable and winnable`, bad.length === 0);
+  if (bad.length) console.log("   ", bad);
+
+  click({ "data-go": "home" });
+  click({ "data-go": "convo", "data-id": CONVOS[0].id });
+  click({ "data-act": "answer", "data-value": peek().session.tasks[0].answer });
+  click({ "data-act": "next" });
+  check("the transcript accumulates", (h.match(/class="bubble"/g) || []).length === 3);
+}
+
+section("the home screen is not a pile any more");
+{
+  unlockAll();
+  const st = peek().store;
+  st.str = {};
+  click({ "data-go": "home" });
+  // what should be immediately visible, before any folding
+  const top = screenOnly().split('class="guide fold"')[0];
+  check("Today is above the fold", /class="today"/.test(top));
+  check("so is the core meter", /class="core"/.test(top));
+  check("so is mixed review", /data-go="review"/.test(top));
+  check("the course is folded away", /<summary>The course/.test(h));
+  check("so are the conversations", /<summary>Conversations/.test(h));
+  check("and the game switches", /<summary>Games/.test(h));
+  check("each fold says how much is inside", (h.match(/class="fold-count"/g) || []).length === 3);
+  check("nothing was lost in the folding",
+    (h.match(/data-go="lesson"/g) || []).length >= LESSONS.length &&
+    (h.match(/data-go="convo"/g) || []).length === CONVOS.length &&
+    (h.match(/data-act="game"/g) || []).length >= 6);
+
+  // a newcomer needs to see the course without hunting for it
+  st.lessons = {};
+  click({ "data-go": "home" });
+  check("with nothing passed the course starts open", /data-fold="course" open>/.test(h));
+  unlockAll();
+  click({ "data-go": "home" });
+  check("once you are going it folds itself away", !/<details class="guide fold" open>/.test(h));
+}
+
+section("more than one person on one phone");
+{
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.known = {}; st.hidden = {};
+  click({ "data-go": "home" });
+  click({ "data-act": "nav-open" });
+  check("the menu says who is practising", /Who is practising/.test(h));
+  check("there is one profile to begin with", peek().people.list.length === 1);
+  check("and it is the current one", /nav-who is-on/.test(h));
+  check("with a way to add another", /data-act="who-add"/.test(h));
+  const mineDone = Object.keys(peek().store.lessons).length;
+  check("who has done what is shown", new RegExp(mineDone + " lessons passed").test(h));
+
+  // add a second person
+  promptAnswer = "Marco";
+  click({ "data-act": "who-add" });
+  check("adding someone makes a second profile", peek().people.list.length === 2);
+  check("and switches to them", peek().people.current === peek().people.list[1].id);
+  check("who starts from nothing", Object.keys(peek().store.lessons).length === 0);
+  click({ "data-act": "nav-open" });
+  check("their name is used", /Marco/.test(h));
+
+  // their progress is their own
+  click({ "data-go": "play", "data-id": "1" });
+  playToEnd(true);
+  check("the newcomer can pass a lesson", peek().store.lessons["1"].done === true);
+  const marcoLessons = Object.keys(peek().store.lessons).length;
+  check("without inheriting anyone else's", marcoLessons === 1);
+
+  // switch back
+  const firstId = peek().people.list[0].id;
+  click({ "data-go": "home" });
+  click({ "data-act": "nav-open" });
+  click({ "data-act": "who", "data-id": firstId });
+  check("switching back restores the first profile", peek().people.current === firstId);
+  check("with their own lessons intact", Object.keys(peek().store.lessons).length === mineDone);
+  check("and the two stores are separate",
+    LS["fusha-msa-v1:" + firstId] !== LS["fusha-msa-v1:" + peek().people.list[1].id]);
+
+  // renaming
+  promptAnswer = "Lorenzo";
+  click({ "data-act": "nav-open" });
+  click({ "data-act": "who-rename" });
+  check("renaming sticks", peek().people.list[0].name === "Lorenzo");
+  check("and is written down", /Lorenzo/.test(LS["fusha-people-v1"]));
+
+  // removing
+  const marcoId = peek().people.list[1].id;
+  click({ "data-act": "nav-open" });
+  click({ "data-act": "who", "data-id": marcoId });
+  confirmAnswer = true;
+  click({ "data-act": "nav-open" });
+  click({ "data-act": "who-remove" });
+  check("removing takes the profile away", peek().people.list.length === 1);
+  check("and its saved progress with it", !LS["fusha-msa-v1:" + marcoId]);
+  check("falling back to whoever is left", peek().people.current === firstId);
+  click({ "data-act": "nav-open" });
+  check("the last profile cannot be removed", !/data-act="who-remove"/.test(h));
+  promptAnswer = ""; confirmAnswer = true;
+}
+
+section("the breakdown is in the Arabic you are reading");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+
+  st.variety = "lev";
+  const g = D.glossesFor(D.disp("Anà àidan"));
+  check("a Levantine phrase is broken into Levantine words",
+    g.length === 2 && g[0].word === "Anà" && g[1].word === "kamàn");
+  check("and the meaning is of the word actually shown", g[1].gloss.indexOf("too") !== -1);
+  check("the fus-ha word is not what you are given",
+    !g.some(x => x.word === "àidan"));
+
+  // words the two varieties share still come from the one table
+  check("what is the same in both is glossed once",
+    D.glossesFor("Shày, shùkran").length === 2);
+
+  // the article, however it is glued on
+  check("bil-bèit is read through to the house", D.glossFor("bil-bèit") === "at home");
+  check("ʿal-matàr is read through the ʿa and the article",
+    D.glossFor("ʿal-matàr") === D.glossFor("al-matàr"));
+
+  const words = {};
+  Object.keys(D.DIALECT).forEach(k => {
+    const d = D.DIALECT[k].lev;
+    if (!d) return;
+    d[0].replace(/[?!.,;:]/g, "").split(/\s+/).filter(Boolean).forEach(w => { words[w.toLowerCase()] = 1; });
+  });
+  const names = ["marco", "sara", "ahmad", "milàno"];
+  const missing = Object.keys(words).filter(w => !D.glossFor(w) && names.indexOf(w) === -1);
+  check(`every Levantine word in the course is glossed (${Object.keys(words).length})`, missing.length === 0);
+  if (missing.length) console.log("   ", missing.slice(0, 10));
+
+  st.variety = "msa";
+  const m = D.glossesFor(D.disp("Anà àidan"));
+  check("in fus-ha you get the fus-ha words back",
+    m.length === 2 && m[1].word === "àidan");
+  click({ "data-go": "home" });
+}
+
+section("out of the flashcards at any point");
+{
+  unlockAll();
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "4" });
+  check("the study screen offers the way out", /class="learn-jump"/.test(h));
+  check("it names the lesson it will play", visible(h).includes("play lesson 4"));
+  click({ "data-act": "learn-fwd" });
+  check("and it is still there mid-pile", /class="learn-jump"/.test(h));
+  click({ "data-go": "play", "data-id": "4" });
+  check("it starts that lesson", peek().view.name === "play" && peek().session.lesson.id === 4);
+  click({ "data-go": "home" });
+}
+
+section("the Levantine layer is finished, and honest");
+{
+  const D = global.__data;
+  const st = peek().store;
+  const keys = [];
+  const seen = {};
+  const add = ar => { if (ar && !seen[ar]) { seen[ar] = 1; keys.push(ar); } };
+  LESSONS.forEach(l => {
+    l.phrases.forEach(p => add(p.ar));
+    (l.dialogue || []).forEach(d => { add(d.ask); add(d.reply); });
+  });
+  CONVOS.forEach(c => c.turns.forEach(t => { add(t.say); add(t.reply); }));
+
+  const open = keys.filter(ar => !(D.DIALECT[ar] || {}).lev && !(D.SAME.lev || {})[ar]);
+  check(`every phrase in the course has been checked in Levantine (${keys.length})`, open.length === 0);
+  if (open.length) console.log("   ", open.slice(0, 8));
+
+  const both = keys.filter(ar => (D.DIALECT[ar] || {}).lev && (D.SAME.lev || {})[ar]);
+  check("none of them is both different and the same", both.length === 0);
+
+  const forms = keys.filter(ar => (D.DIALECT[ar] || {}).lev).map(ar => D.DIALECT[ar].lev);
+  check(`the ones that differ have a spelling and a script (${forms.length})`,
+    forms.every(f => Array.isArray(f) && f.length === 2 && f[0].trim() && f[1].trim()));
+  check("the script is Arabic and nothing else",
+    forms.every(f => /^[\u0600-\u06ff\s?!.,]+$/.test(f[1])));
+  check("the spelling never smuggles in an Arabic letter",
+    forms.every(f => !/[\u0600-\u06ff]/.test(f[0])));
+  check("a question keeps its mark in both",
+    keys.filter(ar => /\?$/.test(ar) && (D.DIALECT[ar] || {}).lev)
+      .every(ar => /\?$/.test(D.DIALECT[ar].lev[0]) && /؟$/.test(D.DIALECT[ar].lev[1])));
+
+  const core = LESSONS.flatMap(l => l.phrases).filter(p => p.core).map(p => p.ar);
+  check(`the core is covered end to end (${core.length})`,
+    core.every(ar => (D.DIALECT[ar] || {}).lev || (D.SAME.lev || {})[ar]));
+
+  // two phrases in one lesson must never print the same words in any variety
+  const clashes = [];
+  ["egy", "lev", "gulf"].forEach(v => {
+    st.variety = v;
+    LESSONS.forEach(l => {
+      const shown = {};
+      const items = l.phrases.map(p => p.ar)
+        .concat((l.dialogue || []).flatMap(d => [d.ask, d.reply]));
+      items.forEach(ar => {
+        const t = D.disp(ar);
+        if (shown[t] && shown[t] !== ar) clashes.push(v + " L" + l.id + ": " + shown[t] + " / " + ar + " -> " + t);
+        shown[t] = ar;
+      });
+    });
+  });
+  st.variety = "msa";
+  check("no two phrases in a lesson come out identical in any dialect", clashes.length === 0);
+  if (clashes.length) console.log("   ", clashes.slice(0, 6));
+
+  // and every situation can be answered by someone learning Levantine
+  st.variety = "lev";
+  unlockAll();
+  check("every situation has an answer in Levantine",
+    D.MOMENTS.every(m => m.ok.some(ar => (D.DIALECT[ar] || {}).lev || (D.SAME.lev || {})[ar])));
+  st.variety = "msa";
+}
+
+section("choosing which Arabic you are learning");
+{
+  const { VARIETIES, DIALECT, disp, spk, variety } = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.variety = undefined;
+  click({ "data-go": "home" });
+
+  check("fusha is where you start", variety() === "msa");
+  // the picker lives on the lesson screen; home leads with the day
+  click({ "data-go": "lesson", "data-id": "1" });
+  const picker = (h.match(/<div class="picker variety-pick">[\s\S]*?<\/div>\s*<\/div>/) || [""])[0];
+  check("the choice is on the lesson screen", picker.length > 0);
+  check("all four are offered",
+    VARIETIES.every(v => new RegExp(`data-act="variety" data-id="${v.key}"`).test(picker)));
+  check("each says where it is spoken", /Syria, Lebanon, Jordan, Palestine/.test(picker));
+  check("and it is honest that fusha is not spoken", /speak it nowhere/i.test(picker));
+  click({ "data-go": "home" });
+
+  // switching changes what you see and hear, not what is stored
+  const before = disp("Kèifa hàluk?");
+  click({ "data-act": "variety", "data-id": "lev" });
+  check("switching sticks", variety() === "lev");
+  check("and is remembered", savedStore().variety === "lev");
+  check("the phrase now reads Levantine", disp("Kèifa hàluk?") === "Kìfak?" && before === "Kèifa hàluk?");
+  check("the audio follows it", spk("Kèifa hàluk?") === DIALECT["Kèifa hàluk?"].lev[1]);
+  check("a shared phrase is left alone", disp("Shùkran") === "Shùkran");
+
+  click({ "data-act": "variety", "data-id": "egy" });
+  check("Egyptian is different again", disp("Kèifa hàluk?") === "Izzàyak?");
+  check("and where-questions change too", disp("Àina al-hammàm?") === "Fèin al-hammàm?");
+
+  // it says how much is covered rather than pretending, on the screen
+  // where you actually choose (home leads with the thing to press)
+  click({ "data-go": "home" });
+  check("the home screen leads with today, not with a setting",
+    !/class="picker variety-pick"/.test(h) && /class="today/.test(h));
+  click({ "data-go": "lesson", "data-id": "2" });
+  check("it says how much has a distinct form", /\d+ of \d+ phrases are said differently in Egyptian/.test(h));
+  check("and how much of the core is covered", /including \d+ of the \d+ core ones/.test(h));
+  check("and that progress is shared", /progress follows you across all four/.test(h));
+
+  // the games follow the choice, while progress keys do not move
+  st.str = {};
+  click({ "data-go": "learn", "data-id": "2" });
+  click({ "data-act": "learn-reveal" });
+  check("the flashcard shows the spoken form", visible(h).includes("Izzàyak?"));
+  check("with the fusha alongside it", /fusha:/.test(h) && visible(h).includes("Kèifa hàluk?"));
+
+  click({ "data-go": "home" });
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  click({ "data-go": "play", "data-id": "2" });
+  // walk the whole session and prove no fusha-only form is ever shown
+  // for a phrase that has an Egyptian one
+  let leaked = [], shown = 0;
+  {
+    let g = 0;
+    while (g++ < 400 && !h.includes("result-score")) {
+      const ss = peek().session;
+      const t = ss.tasks[ss.i];
+      const txt = visible(h);
+      [t.phrase && t.phrase.ar, t.answer].filter(Boolean).forEach(ar => {
+        const row = DIALECT[ar];
+        if (!row || !row.egy) return;
+        if (txt.includes(row.egy[0])) shown++;
+        else if (txt.includes(ar)) leaked.push(ar);
+      });
+      playRound(true);
+    }
+  }
+  check(`the games show the Egyptian form (${shown} shown, ${leaked.length} leaked)`, leaked.length === 0);
+  const keys = Object.keys(peek().store.str || {});
+  check("progress is filed under the fusha key, not the dialect",
+    keys.every(k => !k.includes("Izzàyak")) && keys.length > 0);
+
+  st.games = undefined;
+  st.variety = undefined;
+  click({ "data-act": "variety", "data-id": "msa" });
+  check("switching back restores fusha", disp("Kèifa hàluk?") === "Kèifa hàluk?");
+}
+
+section("you always know which Arabic you are reading");
+{
+  unlockAll();
+  const st = peek().store;
+  const D = global.__data;
+  const covered = Object.keys(D.DIALECT).find(k => D.DIALECT[k].lev &&
+    LESSONS.some(l => l.phrases.some(p => p.ar === k)));
+  const bare = LESSONS[0].phrases.find(p => !(D.DIALECT[p.ar] || {}).lev).ar;
+
+  st.variety = "msa";
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "1" });
+  check("in fus-ha nothing is labelled, because there is nothing to say",
+    !/class="in-variety"/.test(h));
+
+  st.variety = "lev";
+  const findCard = ar => {
+    click({ "data-go": "home" });
+    click({ "data-go": "learn", "data-id": String(LESSONS.find(l => l.phrases.some(p => p.ar === ar)).id) });
+    let g = 0;
+    while (g++ < 40 && peek().learn.lesson.phrases[peek().learn.i].ar !== ar) click({ "data-act": "learn-fwd" });
+    return peek().learn.lesson.phrases[peek().learn.i].ar === ar;
+  };
+  if (findCard(covered)) {
+    check("a phrase with a Levantine form says so", /class="in-variety"/.test(h) &&
+      visible(h).includes("Levantine"));
+    check("and shows the fus-ha underneath", visible(h).includes(covered));
+  }
+  if (findCard(bare)) {
+    check("one that comes out identical says so, rather than saying nothing",
+      /the same in Levantine/.test(h));
+  }
+
+  // the varieties still being written say so plainly
+  st.variety = "gulf";
+  const gulfBare = LESSONS.flatMap(l => l.phrases).find(p =>
+    !(D.DIALECT[p.ar] || {}).gulf && !(D.SAME.gulf || {})[p.ar]).ar;
+  if (findCard(gulfBare)) {
+    check("and where nobody has looked yet, it admits it",
+      /no Gulf form written for this one yet/.test(h));
+  }
+  st.variety = "msa";
+  click({ "data-go": "home" });
+}
+
+section("your words, in one place");
+{
+  unlockAll();
+  const st = peek().store;
+  st.known = {}; st.hidden = {}; st.runs = 0;
+  const L1 = LESSONS[0];
+  st.known[L1.id + "|" + L1.phrases[0].ar] = { day: global.__data.today() };
+  st.hidden[L1.id + "|" + L1.phrases[2].ar] = true;
+
+  click({ "data-go": "home" });
+  click({ "data-act": "nav-open" });
+  check("the menu lists it", /data-go="words"/.test(h));
+  check("with a count", /2 set aside or hidden/.test(h));
+  click({ "data-go": "words" });
+  check("it has its own address", location.hash === "#/words");
+  check("the set-aside one is listed", visible(h).includes(L1.phrases[0].ar));
+  check("with when it comes back", /Back in \d+|Due a check/.test(h));
+  check("the hidden one is listed", visible(h).includes(L1.phrases[2].ar));
+  check("each says which lesson it came from", /lesson 1/.test(h));
+  check("and each can be undone from here", (h.match(/class="[^"]*\bword-undo"/g) || []).length === 2);
+
+  click({ "data-act": "hide", "data-id": L1.phrases[2].ar, "data-lesson": "1" });
+  check("showing one again works from this screen", !(peek().store.hidden || {})[L1.id + "|" + L1.phrases[2].ar]);
+  click({ "data-act": "known", "data-id": L1.phrases[0].ar, "data-lesson": "1" });
+  check("and so does returning a set-aside one", !(peek().store.known || {})[L1.id + "|" + L1.phrases[0].ar]);
+  check("empty state explains how to fill it", /Nothing yet|Nothing hidden/.test(h));
+  st.known = {}; st.hidden = {};
+}
+
+section("setting aside and hiding from inside any game");
+{
+  unlockAll();
+  const st = peek().store;
+  st.known = {}; st.hidden = {};
+  const seen = { withKnown: [], withHide: [] };
+  ["quiz", "build", "write", "say", "dialog"].forEach(g => {
+    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+    st.games[g] = true;
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "2" });
+    playRound(true);
+    while (peek().session.state !== "checked") playRound(true);
+    if (/data-act="hide"/.test(h)) seen.withHide.push(g);
+    if (/data-act="known"/.test(h)) seen.withKnown.push(g);
+  });
+  check(`hiding is offered in every game (${seen.withHide.join(", ")})`, seen.withHide.length === 5);
+  check(`so is setting aside, after a right answer (${seen.withKnown.join(", ")})`, seen.withKnown.length === 5);
+
+  // and it actually works from there
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "2" });
+  playRound(true);
+  const t = peek().session.tasks[peek().session.i];
+  click({ "data-act": "hide", "data-id": t.phrase.ar, "data-lesson": String(t.srcLesson.id) });
+  check("hiding from a game is recorded", isHiddenIn(peek().store, t.srcLesson.id, t.phrase.ar));
+  check("and the round says so", /Hidden\. It will not come up again/.test(h));
+  st.games = undefined; st.hidden = {};
+}
+
+section("the answer is not handed to you");
+{
+  unlockAll();
+  const st = peek().store;
+  st.games = { quiz: false, build: false, match: false, dialog: true, write: false, listen: false, say: false };
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "2" });
+  const t = peek().session.tasks[0];
+  // look only under the prompt: the lesson title in the top bar can be
+  // the very same English by coincidence
+  const sub = () => (h.match(/<div class="prompt-sub">([\s\S]*?)<\/div>/) || ["", ""])[1];
+  check("the English of what was said is withheld", !visible(sub()).includes(t.exchange.askEn));
+  check("but you can ask for it", /data-act="peek"/.test(sub()));
+  click({ "data-act": "peek" });
+  check("asking shows it", visible(sub()).includes(t.exchange.askEn));
+
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "2" });
+  const t2 = peek().session.tasks[0];
+  playRound(true);
+  check("and answering shows it anyway", visible(sub()).includes(t2.exchange.askEn));
+
+  click({ "data-go": "home" });
+  click({ "data-go": "convo", "data-id": CONVOS[0].id });
+  const said = peek().session.tasks[0].turn.sayEn;   // on the turn, not the task
+  check("a conversation withholds it too", !visible(h).includes(said));
+  click({ "data-act": "peek" });
+  check("and gives it if you ask", visible(h).includes(said));
+  st.games = undefined;
+}
+
+section("word by word");
+{
+  const { glossesFor } = global.__data;
+  check("a phrase is broken into its words", glossesFor("Mà ìsmuk?").length === 2);
+  check("with the meaning of each", glossesFor("Mà ìsmuk?")[0].gloss === "what");
+  check("the article is seen through", glossesFor("Àina al-hammàm?").some(g => g.gloss === "bathroom"));
+  check("punctuation is not glued to the word", glossesFor("Mà ìsmuk?").every(g => !/[?!.,]/.test(g.word)));
+  check("a single word is left alone", glossesFor("Shùkran").length === 0);
+
+  unlockAll();
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "2" });
+  check("no breakdown before you reveal", !/class="gloss"/.test(h));
+  click({ "data-act": "learn-reveal" });
+  const card = peek().learn.lesson.phrases[peek().learn.i];
+  if (glossesFor(card.ar).length) {
+    check("the study card breaks the phrase down", /class="gloss"/.test(h));
+    check("showing ana = I and the like", /class="gloss-eq"/.test(h));
+  }
+}
+
+section("audio speed");
+{
+  const { rateFor, today } = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.speed = undefined;
+  const ar = LESSONS[0].phrases[0].ar;
+  check("a phrase you have not learned is slowed", rateFor(ar) === 0.75);
+  st.str["1|" + ar] = { s: 4, n: 6, day: today() };
+  check("one you know comes at natural speed", rateFor(ar) === 1);
+  st.str["1|" + ar] = { s: 1, n: 6, day: today() };
+  check("a shaky one goes back to slow", rateFor(ar) === 0.75);
+  st.speed = "normal";
+  check("always-natural overrides that", rateFor(ar) === 1);
+  st.speed = "slow";
+  st.str["1|" + ar] = { s: 5, n: 9, day: today() };
+  check("and so does always-slow", rateFor(ar) === 0.75);
+  click({ "data-go": "home" });
+  check("the choice is offered", /data-act="speed"/.test(h));
+  click({ "data-act": "speed", "data-id": "auto" });
+  check("and is remembered", savedStore().speed === "auto");
+  st.speed = undefined; st.str = {};
+}
+
+section("the partner suggests a way over the wall");
+{
+  const { suggestionsAfter } = global.__data;
+  unlockAll();
+  peek().store.talkScope = null;
+  click({ "data-go": "home" });
+  click({ "data-go": "talk" });
+  check("suggestions are offered from the start", peek().talk.suggest.length > 0);
+  check("and shown on the screen", /Stuck\? Things you could say/.test(h));
+
+  const idx = global.__data.talkIndex();
+  const all = new Set(idx.all.map(p => p.ar));
+  check("every suggestion is something the course teaches",
+    peek().talk.suggest.every(s2 => all.has(s2.ar)));
+  check("what answers a greeting is suggested for it",
+    suggestionsAfter("Sabàh al-khèir").some(s2 => s2.ar === "Sabàh an-nùr"));
+
+  // and one of them can be sent straight off
+  const pick = peek().talk.suggest[0].ar;
+  click({ "data-act": "talk-pick", "data-id": pick });
+  check("tapping a suggestion says it", peek().talk.turns.some(t => t.who === "you" && t.ar === pick));
+  check("and new suggestions follow", peek().talk.suggest.length > 0);
+
+  // even when it has not understood
+  fields.talk = "zzz qqq wwww";
+  inputH({ target: { getAttribute: () => "talk-typing", value: "zzz qqq wwww" } });
+  click({ "data-act": "talk-send" });
+  check("a wall still comes with a way over it", peek().talk.suggest.length > 0);
+  fields.talk = "";
+}
+
+if (withVoice) {
+section("following a whole exchange by ear");
+{
+  unlockAll();
+  click({ "data-go": "home" });
+  check("conversations offer a listen-through", /data-go="follow"/.test(h));
+  const C0 = CONVOS[0];
+  click({ "data-go": "follow", "data-id": C0.id });
+  const s2 = peek().session;
+  check("it builds a listening session", !!s2 && s2.isFollow === true);
+  check("with a few questions", s2.tasks.length >= 2 && s2.tasks.length <= 3);
+  check("four options each", s2.tasks.every(t => t.options.length === 4));
+  check("the right answer among them", s2.tasks.every(t => t.options.includes(t.answer)));
+  check("and the answer really was said in this exchange",
+    s2.tasks.every(t => t.lines.some(l => l.en === t.answer)));
+  check("while the wrong ones were not",
+    s2.tasks.every(t => t.options.filter(o => t.lines.some(l => l.en === o)).length === 1));
+  check("nothing of the exchange is written on screen",
+    !C0.turns.some(t => visible(h).includes(t.say)));
+  check("it can be played again", /data-act="replay"/.test(h));
+
+  playToEnd(true, 40);
+  check("a clean run scores full marks", /result-score mono review">100%/.test(h));
+  check("named as listening", /listening/i.test(h) || /followed it without seeing/.test(h));
+}
+}
+
+section("the menu");
+{
+  const { GAMES } = global.__data;
+  unlockAll();
+  click({ "data-go": "home" });
+  check("a way into the menu on the home screen", /data-act="nav-open"/.test(h));
+  check("it starts closed", !/class="nav is-open"/.test(h));
+  click({ "data-act": "nav-open" });
+  check("opening it shows the panel", /class="nav is-open"/.test(h));
+  check("Today is in it", /data-act="nav-today"/.test(h));
+  check("mixed review is in it", /data-go="review"/.test(h.split("</nav>")[0]));
+  check("free talk is in it", /data-go="talk"/.test(h));
+  check("the phrasebook is in it", /data-go="phrasebook"/.test(h));
+  check("the course and conversations are in it", /data-act="nav-course"/.test(h) && /data-act="nav-convos"/.test(h));
+  const playableGames = GAMES.filter(g => !g.needsVoice || withVoice);
+  check(`every game can be started on its own (${playableGames.length})`,
+    playableGames.every(g => new RegExp(`data-act="drill" data-id="${g.key}"`).test(h)));
+  click({ "data-act": "nav-close" });
+  check("it closes again", !/class="nav is-open"/.test(h));
+
+  // reachable from inside a lesson too, not just from home
+  click({ "data-go": "lesson", "data-id": "3" });
+  check("the menu is reachable from any screen", /data-act="nav-open"/.test(h));
+
+  // a single game, on its own
+  click({ "data-act": "nav-open" });
+  click({ "data-act": "drill", "data-id": "quiz" });
+  const s1 = peek().session;
+  check("starting one game gives a session of only that", !!s1 && [...new Set(s1.tasks.map(t => t.type))].join() === "quiz");
+  check("of a useful length", s1.tasks.length >= 10);
+  check("the menu shuts behind you", peek().navOpen === false);
+  check("and the screen says which game it is", /QUIZ ONLY/i.test(h));
+  playToEnd(true);
+  check("it plays to a score", /result-score/.test(h));
+  check("named after the game", /Quiz, drawn from everything you have passed/.test(h));
+
+  click({ "data-go": "home" });
+  click({ "data-act": "nav-open" });
+  click({ "data-act": "drill", "data-id": "match" });
+  const s2 = peek().session;
+  check("match on its own is grids", [...new Set(s2.tasks.map(t => t.type))].join() === "match" && s2.tasks.length === 3);
+
+  // a brand new learner should still be able to drill lesson one
+  const st = peek().store;
+  st.lessons = {};
+  click({ "data-go": "home" });
+  click({ "data-act": "nav-open" });
+  check("drills work before you have passed anything", !/nav-item nav-sub is-off[^"]*" data-act="drill" data-id="quiz"/.test(h));
+  click({ "data-act": "drill", "data-id": "quiz" });
+  check("and actually start", !!peek().session && peek().session.isDrill === "quiz");
+  const from = new Set(peek().session.tasks.map(t => t.srcLesson && t.srcLesson.id));
+  check("drawing only on what is unlocked", [...from].every(id => id === 1));
+
+  // something genuinely unavailable must say why
+  if (!withVoice) {
+    click({ "data-go": "home" });
+    click({ "data-act": "nav-open" });
+    check("a game that needs a voice says so", /Needs an Arabic voice on this device/.test(h));
+    check("instead of vanishing from the list", /data-act="drill" data-id="listen"/.test(h));
+  }
+  unlockAll();
+}
+
+section("routes");
+{
+  unlockAll();
+  click({ "data-go": "home" });
+  check("home is #/", location.hash === "#/");
+  click({ "data-go": "lesson", "data-id": "3" });
+  check("a lesson has an address", location.hash === "#/lesson/3");
+  click({ "data-go": "learn", "data-id": "3" });
+  check("study card 1", location.hash === "#/lesson/3/study/1");
+  click({ "data-act": "learn-fwd" });
+  check("forward without revealing", peek().learn.i === 1 && peek().learn.shown === false);
+  check("the address follows the card", location.hash === "#/lesson/3/study/2");
+  click({ "data-act": "learn-fwd" });
+  back();
+  check("browser back steps one card", peek().learn.i === 1);
+  forward();
+  check("forward returns", peek().learn.i === 2);
+  click({ "data-act": "back" });
+  check("the arrow goes up to the lesson", location.hash === "#/lesson/3");
+  click({ "data-act": "back" });
+  check("and then home", location.hash === "#/");
+
+  click({ "data-go": "lesson", "data-id": "2" });
+  click({ "data-go": "play", "data-id": "2" });
+  playToEnd(true);
+  check("the score has an address", location.hash === "#/lesson/2/score");
+  const roundsPlayed = peek().session.tasks.length;
+  back();
+  check("back from a score returns to the last question, not out of the exercise",
+    /^#\/lesson\/2\/play\/\d+$/.test(location.hash) && peek().view.name === "play");
+  check("and that question is still shown as answered", peek().session.state === "checked");
+  const scoredOnce = savedStore().lessons["2"].best;
+  back(); back();
+  check("back again walks the exercise backwards", peek().session.i < roundsPlayed - 1);
+  check("without letting you answer it twice", peek().session.state === "checked");
+  forward(); forward(); forward();
+  check("forward returns to the score", /score/.test(location.hash) || peek().view.name === "result");
+  check("and the lesson was scored only once", savedStore().lessons["2"].best === scoredOnce);
+  click({ "data-act": "back" });
+  check("the arrow still leaves for the lesson", location.hash === "#/lesson/2");
+
+  location.hash = "#/lesson/4/study/3";
+  check("a deep link opens that card", peek().view.name === "learn" && peek().learn.i === 2);
+  location.hash = "#/lesson/4/study/999";
+  check("out of range clamps", peek().learn.i === peek().learn.lesson.phrases.length - 1);
+  location.hash = "#/nonsense";
+  check("nonsense falls back home", peek().view.name === "home" && location.hash === "#/");
+
+  const s = peek().store;
+  s.lessons = { 1: { best: 100, done: true } };
+  location.hash = "#/lesson/9";
+  check("a locked lesson cannot be opened by address", peek().view.name === "home");
+  location.hash = "#/talk/" + CONVOS[CONVOS.length - 1].id;
+  check("a locked conversation cannot be opened by address", peek().view.name === "home");
+}
+
+section("phrasebook");
+{
+  unlockAll();
+  click({ "data-go": "home" });
+  click({ "data-go": "phrasebook" });
+  check("has its own address", location.hash === "#/phrasebook");
+  const total = PHRASEBOOK.reduce((n, g) => n + g.lines.length, 0);
+  check(`all ${total} lines listed`, (h.match(/class="pb-row"/g) || []).length === total);
+  check("every group heading shows", PHRASEBOOK.every(g => h.includes(g.title)));
+  type("search", "bathroom");
+  const narrowed = (h.match(/class="pb-row"/g) || []).length;
+  check("search by English narrows it", narrowed > 0 && narrowed < total);
+  type("search", "shukran");
+  check("search by Arabic ignores accents", h.includes("Shùkran"));
+  type("search", "zzzz");
+  check("no match says so", /Nothing matches/.test(h));
+  type("search", "");
+  check("clearing restores all", (h.match(/class="pb-row"/g) || []).length === total);
+  click({ "data-act": "back" });
+  check("back leaves for home", peek().view.name === "home");
+}
+
+section("typed answers");
+{
+  const same = (a, b) => normalise(a) === normalise(b);
+  check('accents optional', same("sabah al-kheir", "Sabàh al-khèir"));
+  check('case ignored', same("SHUKRAN", "Shùkran"));
+  check('ayn mark optional', same("afwan", "ʿÀfwan"));
+  check('hyphen or space', same("as salamu alaikum", "As-salàmu ʿaláikum"));
+  check('question mark optional', same("ma ismuk", "Mà ìsmuk?"));
+  check('extra spaces collapse', same("  ana   bikheir ", "Anà bikhèir"));
+  check('a different word is wrong', !same("shukran", "ʿÀfwan"));
+  check('a missing word is wrong', !same("ana", "Anà bikhèir"));
+}
+
+section("the rule turns up the moment you need it");
+{
+  const { noteFor } = global.__data;
+  const noted = [];
+  LESSONS.forEach(l => l.phrases.forEach(p => { if (p.note) noted.push({ l: l, p: p }); }));
+  check(`some phrases carry a written rule (${noted.length})`, noted.length > 20);
+  check("the rule can be looked up by phrase", noteFor(noted[0].p.ar) === noted[0].p.note);
+  check("a phrase without one gets nothing", noteFor("Not A Phrase") === null);
+
+  unlockAll();
+  const st = peek().store;
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+
+  // a lesson whose note-carrying phrase is reachable in a quiz round
+  const target = noted.find(n => n.l.phrases.length > 3);
+  let guard = 0, at = null;
+  while (guard++ < 40 && at === null) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": String(target.l.id) });
+    const s = peek().session;
+    const idx = s.tasks.findIndex(t => t.phrase && t.phrase.ar === target.p.ar);
+    if (idx >= 0) at = idx;
+  }
+  check("the phrase comes up", at !== null);
+  if (at !== null) {
+    const s = peek().session;
+    s.i = at; s.state = "asking";
+    answerCurrent(true);
+    check("getting it right is not a lecture", !/class="why"/.test(h));
+
+    guard = 0; at = null;
+    while (guard++ < 40 && at === null) {
+      click({ "data-go": "home" });
+      click({ "data-go": "play", "data-id": String(target.l.id) });
+      const s2 = peek().session;
+      const idx = s2.tasks.findIndex(t => t.phrase && t.phrase.ar === target.p.ar);
+      if (idx >= 0) at = idx;
+    }
+    const s3 = peek().session;
+    s3.i = at; s3.state = "asking";
+    answerCurrent(false);
+    check("getting it wrong shows the rule behind it", visible(h).includes(target.p.note));
+  }
+
+  // no rule written for it: the words themselves are the explanation
+  const plain = LESSONS[0].phrases.find(p => !p.note && global.__data.glossesFor(p.ar).length > 1);
+  if (plain) {
+    guard = 0; at = null;
+    while (guard++ < 40 && at === null) {
+      click({ "data-go": "home" });
+      click({ "data-go": "play", "data-id": "1" });
+      const s4 = peek().session;
+      const idx = s4.tasks.findIndex(t => t.phrase && t.phrase.ar === plain.ar);
+      if (idx >= 0) at = idx;
+    }
+    if (at !== null) {
+      const s5 = peek().session;
+      s5.i = at; s5.state = "asking";
+      answerCurrent(false);
+      check("with no rule written, it breaks the words down instead", /class="why"[\s\S]*?class="gloss/.test(h));
+    }
+  }
+  st.games = undefined;
+}
+
+section("fixing what you just missed");
+{
+  unlockAll();
+  const st = peek().store;
+  st.review = { best: 0, runs: 0 };
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "3" });
+  playToEnd(false);
+  const missed = peek().session.missed;
+  const uniq = [...new Set(missed.map(m => m.ar))];
+  check("the score screen lists what you missed", /result-misses/.test(h));
+  check(`and offers to fix them now (${uniq.length})`, h.includes(">Fix these " + uniq.length + " now<"));
+
+  click({ "data-act": "fixup" });
+  const s = peek().session;
+  check("that starts a session of its own", !!s && s.isFixup);
+  check("built only from the phrases you got wrong",
+    s.tasks.every(t => t.phrase && uniq.indexOf(t.phrase.ar) !== -1));
+  check("one round each, nothing repeated",
+    new Set(s.tasks.map(t => t.phrase.ar)).size === s.tasks.length);
+  check("and it says what it is", visible(h).includes("Fixing what you missed"));
+
+  const before = st.review.runs;
+  const wasWeak = uniq.filter(ar => !((st.str || {})["3|" + ar] || {}).s);
+  playToEnd(true);
+  check("finishing it does not count as a review run", peek().store.review.runs === before);
+  check("but the phrases themselves moved up",
+    wasWeak.some(ar => (((peek().store.str || {})["3|" + ar]) || {}).s > 0));
+
+  // nothing missed, nothing offered
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+  playToEnd(true);
+  check("a clean run is not asked to fix anything", !/data-act="fixup"/.test(h));
+
+  // these two sections play real rounds, which moves real strengths.
+  // Later sections read the audio speed off those, so hand the store back
+  // the way it was found.
+  peek().store.str = {};
+  peek().store.review = undefined;
+}
+
+section("the search reaches the whole course");
+{
+  unlockAll();
+  click({ "data-go": "home" });
+  click({ "data-go": "phrasebook" });
+  const pbLines = new Set(PHRASEBOOK.flatMap(g => g.lines));
+  const inCourse = [];
+  LESSONS.forEach(l => l.phrases.forEach(p => { if (!pbLines.has(p.ar)) inCourse.push({ l, p }); }));
+
+  // something taught in a lesson and deliberately not in the phrasebook
+  const pick = inCourse.find(x => x.p.en.split(" ").length > 1 &&
+    inCourse.filter(y => y.p.en === x.p.en).length === 1);
+  type("search", pick.p.en);
+  check("a phrase that is only in a lesson is found", visible(h).includes(pick.p.ar));
+  check("under its own heading", /Elsewhere in the course/.test(h));
+  check("with the lesson it came from", h.includes('data-go="lesson" data-id="' + pick.l.id + '"'));
+  check("and a speaker on it", h.includes('data-say="' + pick.p.ar + '"'));
+
+  type("search", pick.p.ar.toLowerCase().replace(/[àèìòù]/g, m => "aeiou"["àèìòù".indexOf(m)]));
+  check("typing it without accents finds it too", visible(h).includes(pick.p.ar));
+
+  // dialogue lines are searchable, not just the phrase lists
+  let dlg = null, dlgL = null;
+  LESSONS.forEach(l => (l.dialogue || []).forEach(d => {
+    if (dlg || pbLines.has(d.reply)) return;
+    if (l.phrases.some(p => p.ar === d.reply)) return;   // then it is indexed as a phrase, not a line
+    dlg = d; dlgL = l;
+  }));
+  check("there is a reply taught only inside a dialogue", !!dlg);
+  if (dlg) {
+    type("search", dlg.en);
+    check("a line of dialogue is searchable by its English",
+      visible(h).includes(global.__data.disp(dlg.reply)));
+    check("and it points at the lesson it belongs to",
+      h.includes('data-go="lesson" data-id="' + dlgL.id + '"'));
+  }
+
+  // a curated line is not printed twice
+  const dup = PHRASEBOOK[0].lines[0];
+  type("search", dup);
+  const disp = global.__data.disp(dup);
+  const times = (visible(h).match(new RegExp(disp.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")) || []).length;
+  check("a phrasebook line is not listed twice", times === 1);
+
+  type("search", "e");
+  check("a wide search is capped", /more\. Narrow it down/.test(h));
+  type("search", "");
+  check("clearing goes back to the phrasebook alone", !/Elsewhere in the course/.test(h));
+  click({ "data-act": "back" });
+}
+
+section("making sentences the course never taught");
+{
+  const D = global.__data;
+  const st = peek().store;
+
+  // nothing is offered before you have passed anything
+  st.lessons = {};
+  click({ "data-go": "home" });
+  click({ "data-act": "nav-open" });
+  check("locked until you have passed a lesson", /Make a sentence[\s\S]{0,140}Pass a lesson to open this/.test(h));
+  click({ "data-act": "nav-close" });
+
+  unlockAll();
+  click({ "data-go": "home" });
+  check("the home screen offers it once something is open", /class="review" data-go="make"/.test(h));
+  const all = D.combos();
+  check(`there are sentences to make (${all.length})`, all.length > 40);
+
+  const taught = new Set();
+  LESSONS.forEach(l => {
+    l.phrases.forEach(p => taught.add(p.ar));
+    (l.dialogue || []).forEach(d => { taught.add(d.ask); taught.add(d.reply); });
+  });
+  const made = all.map(c => D.compose(c));
+  check("not one of them is a phrase from the lessons",
+    made.every(s => ![...taught].some(k => k.indexOf(s.ar) === 0)));
+  check("every one can be spoken", made.every(s => !!D.spk(s.ar)));
+  check("every one reads as English", made.every(s => !/___/.test(s.en) && /^[A-Z]/.test(s.en)));
+  check("the slot word is not left capitalised mid-sentence",
+    made.every(s => s.ar.split(" ").slice(1).every(w => !/^[A-ZÀ-Þ]/.test(w))));
+  check("a question keeps its mark on both sides",
+    made.filter(s => /\?$/.test(s.ar)).every(s => /؟$/.test(D.spk(s.ar))));
+  check("each breaks down word by word", made.every(s => D.glossesFor(s.ar).length >= 2));
+
+  click({ "data-go": "make" });
+  check("it has its own address", location.hash === "#/make");
+  const m = peek().session === null && peek().view.name === "make";
+  check("it is not a scored session", m);
+  check("the English is on screen", visible(h).includes(peekMade().s.en));
+  check("the Arabic is not", !visible(h).includes(peekMade().s.ar));
+  check("the pattern is withheld until you ask", /data-act="make-hint"/.test(h));
+  click({ "data-act": "make-hint" });
+  check("asking gives it", visible(h).includes(peekMade().s.pattern));
+
+  // build it wrong
+  let mm = peekMade();
+  const wrongFirst = mm.tiles.find(t => t.word !== mm.target[0]);
+  click({ "data-act": "make-pick", "data-id": String(wrongFirst.id) });
+  check("a tile moves into the slot", peekMade().picked.length === 1);
+  click({ "data-act": "make-unpick", "data-id": String(wrongFirst.id) });
+  check("and can be taken back out", peekMade().picked.length === 0);
+
+  mm.target.forEach(w => {
+    const t = mm.tiles.find(x => x.word === w && mm.picked.indexOf(x.id) === -1);
+    click({ "data-act": "make-pick", "data-id": String(t.id) });
+  });
+  click({ "data-act": "make-check" });
+  check("getting it right says so", /verdict-msg ok/.test(h));
+  check("and shows the sentence you just made", visible(h).includes(mm.s.ar));
+  check("with the words explained", /class="why"/.test(h));
+  check("the tally counts it", peekMade().got === 1 && peekMade().run === 1);
+
+  click({ "data-act": "make-next" });
+  check("another one follows", peekMade().run === 1 && !peekMade().checked);
+  check("and the tally carries over", peekMade().got === 1);
+
+  if (withVoice) {
+    const hm = peekMade();
+    check("the next one comes the other way round, by ear", hm.hear);
+    check("it plays on its own", spoken.length > 0 && spoken[spoken.length - 1].text === D.spk(hm.s.ar));
+    check("nothing is written on screen", !visible(h).includes(hm.s.ar));
+    check("the meaning is one of four", (h.match(/data-act="make-answer"/g) || []).length === 4);
+
+    const wrongs = hm.options.filter(x => x !== hm.s.en);
+    const stemEn = hm.c.frame.en.split("___")[0].trim();
+    check("one wrong answer keeps the pattern and changes the word",
+      wrongs.some(x => x.indexOf(stemEn) === 0));
+    if (D.combos().some(o => o.word === hm.c.word && o.frame !== hm.c.frame)) {
+      const wordEn = (D.englishFor(hm.c.word) || "").toLowerCase();
+      check("another keeps the word and changes the pattern",
+        wrongs.some(x => x.indexOf(stemEn) !== 0 && x.toLowerCase().indexOf(wordEn) !== -1));
+    }
+
+    click({ "data-act": "make-answer", "data-value": wrongs[0] });
+    check("choosing wrong says so", /verdict-msg no/.test(h));
+    check("and tells you what it was", visible(h).includes(hm.s.en));
+    check("and writes it down at last", visible(h).includes(hm.s.ar));
+    check("a miss does not count toward the tally", peekMade().got === 1 && peekMade().run === 2);
+
+    click({ "data-act": "make-next" });
+    check("and then it is back to building", !peekMade().hear);
+  } else {
+    check("with no Arabic voice it never asks you to listen", !peekMade().hear);
+  }
+
+  mm = peekMade();
+  const order = mm.target.length > 1
+    ? [...mm.target].reverse()
+    : [mm.tiles.find(t => t.word !== mm.target[0]).word];
+  order.forEach(w => {
+    const t = mm.tiles.find(x => x.word === w && mm.picked.indexOf(x.id) === -1);
+    if (t) click({ "data-act": "make-pick", "data-id": String(t.id) });
+  });
+  while (peekMade().picked.length < peekMade().target.length) {
+    const free = peekMade().tiles.find(x => peekMade().picked.indexOf(x.id) === -1);
+    click({ "data-act": "make-pick", "data-id": String(free.id) });
+  }
+  click({ "data-act": "make-check" });
+  check("getting it wrong says so too", /verdict-msg no/.test(h));
+  check("and hands you the right order", visible(h).includes(peekMade().target.join(" ")));
+
+  // dialect: never half one Arabic and half another
+  st.variety = "egy";
+  const low = w => w.replace(/[A-Za-z\u00c0-\u024f]/, ch => ch.toLowerCase());
+  const egyOf = k => (D.DIALECT[k] || {}).egy;
+  check("a dialect sentence is whole, or it is fus\u00b7ha whole", D.combos().every(c => {
+    const s = D.compose(c);
+    const body = s.ar.replace(/\?$/, "");
+    return s.msa
+      ? body === c.frame.stem + " " + low(c.word)
+      : body === egyOf(c.frame.stem)[0] + " " + low(egyOf(c.word)[0]);
+  }));
+  check("and it only falls back when it has to", D.combos().every(c =>
+    D.compose(c).msa === !(egyOf(c.frame.stem) && egyOf(c.word))));
+  check("some do come out in Egyptian", D.combos().some(c => !D.compose(c).msa));
+
+  // Levantine is written end to end, so nothing there falls back
+  st.variety = "lev";
+  const lev = D.combos().map(c => D.compose(c));
+  check(`every made sentence comes out in Levantine (${lev.length})`, lev.every(x => !x.msa));
+  check("including the ones built on a word that is the same in both",
+    lev.some(x => /^Bìddi /.test(x.ar)));
+  check("and the pattern itself is in the dialect, not fus-ha",
+    lev.every(x => !/^Urìd |^Àina |^Khudhni |^Bikàm |^Àdhhab /.test(x.ar)));
+  check("ʿa is glued to the article the way Levantine writes it",
+    lev.filter(x => /^Khùdni |^Bròh |^Addèsh /.test(x.ar)).every(x => !/ ʿa /.test(x.ar)) &&
+    lev.some(x => /ʿal-|ʿas-/.test(x.ar)));
+  check("and the script is glued in the same place",
+    lev.filter(x => /ʿal-|ʿas-/.test(x.ar)).every(x => /ع[ا-ي]/.test(D.spk(x.ar))));
+  st.variety = "egy";
+  st.variety = "msa";
+  click({ "data-go": "home" });
+}
+
+section("your own answers, not Marco's");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+  st.you = {};
+
+  // the numbers are joined the way lesson 19 joins them
+  check("a round ten is one word", D.numberWords(30).ar === "thalathùn");
+  check("twenty-one comes out exactly as the course teaches it",
+    normalise(D.numberWords(21).ar) === normalise("Wàhid wa ʿishrùn"));
+  check("and so does its script", D.numberWords(21).s === SCRIPT["Wàhid wa ʿishrùn"]);
+  check("thirty-five is built from two taught words", D.numberWords(35).ar === "khàmsa wa thalathùn");
+  check("the teens the course skips are left alone", D.numberWords(15) === null);
+  check("and so is anything over a hundred", D.numberWords(120) === null);
+
+  // a name has to reach the speech engine somehow
+  check("a name becomes Arabic letters", /^[\u0600-\u06ff]+$/.test(D.nameScript("Lorenzo")));
+  check("the course's own spelling of Marco comes back",
+    D.nameScript("Marco") === "ماركو");
+  check("accents and punctuation do not survive", D.nameScript("José!") === D.nameScript("Jose"));
+  check("a doubled letter is written once", D.nameScript("Anna") === D.nameScript("Ana"));
+  check("a name with nothing in it is refused", D.nameScript("123") === "");
+
+  promptAnswer = "Lorenzo";
+  click({ "data-go": "you" });
+  check("it has its own address", location.hash === "#/you");
+  click({ "data-act": "you-name" });
+  check("the app now says your name", D.disp("Ismì Marco") === "Ismì Lorenzo");
+  check("and can speak it", D.spk("Ismì Marco").indexOf(D.nameScript("Lorenzo")) !== -1);
+  check("the English follows it", D.englishFor("Ismì Marco") === "My name is Lorenzo");
+
+  click({ "data-act": "you-from", "data-id": "de" });
+  click({ "data-act": "you-job", "data-id": "programmer" });
+  promptAnswer = "35";
+  click({ "data-act": "you-age" });
+  check("all four questions are answered", D.yourLines().length === 4);
+  check("where you are from", D.disp("Anà min Itàlya") === "Anà min Almànya");
+  check("what you do", D.disp("Anà muhàndis") === "Anà mubàrmij");
+  check("how old you are", D.disp("ʿÙmri thalathùn") === "ʿÙmri khàmsa wa thalathùn");
+  check("in English too", D.englishFor("Anà muhàndis") === "I am a programmer");
+
+  // a woman says the job differently
+  click({ "data-act": "you-gender", "data-id": "f" });
+  check("a woman gets the feminine form", D.disp("Anà muhàndis") === "Anà mubàrmija");
+  check("but the English is the same", D.englishFor("Anà muhàndis") === "I am a programmer");
+  click({ "data-act": "you-gender", "data-id": "m" });
+
+  // it reaches the games and the conversations, not just this screen
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "3" });
+  let guard = 0;
+  while (guard++ < 30 && !visible(h).includes("Ismì Lorenzo")) click({ "data-act": "learn-next" });
+  check("the flashcards say it", visible(h).includes("Ismì Lorenzo"));
+  click({ "data-act": "learn-reveal" });
+  check("with your English under it", visible(h).includes("My name is Lorenzo"));
+
+  const convo = CONVOS.find(c => c.turns.some(t => t.reply === "Ismì Marco"));
+  if (convo) {
+    click({ "data-go": "home" });
+    click({ "data-go": "convo", "data-id": convo.id });
+    let g2 = 0;
+    while (g2++ < 40 && !h.includes("result-score") && !visible(h).includes("Ismì Lorenzo")) playRound(true);
+    check("so do the conversations", visible(h).includes("Ismì Lorenzo"));
+  }
+
+  // the phrase keys never move, so no progress is lost by changing your mind
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "3" });
+  playToEnd(true);
+  const before = Object.keys(peek().store.str || {}).filter(k => k.indexOf("3|Ismì Marco") === 0).length;
+  promptAnswer = "Giulia";
+  click({ "data-go": "you" });
+  click({ "data-act": "you-name" });
+  check("changing your name does not move the phrase key",
+    Object.keys(peek().store.str || {}).filter(k => k.indexOf("3|Ismì Marco") === 0).length === before);
+  check("but it does change what is shown", D.disp("Ismì Marco") === "Ismì Giulia");
+
+  // a collision with something the course already teaches is refused
+  promptAnswer = "Sara";
+  click({ "data-act": "you-name" });
+  check("a name the course already uses is left alone", D.disp("Ismì Marco") === "Ismì Marco");
+  check("and the English goes back with it", D.englishFor("Ismì Marco") === "My name is Marco");
+  click({ "data-act": "you-from", "data-id": "eg" });
+  check("nor is a country it already teaches", D.disp("Anà min Itàlya") === "Anà min Itàlya");
+
+  // an age the course cannot say
+  promptAnswer = "15";
+  click({ "data-act": "you-age" });
+  check("an age it cannot say is left as it is", D.disp("ʿÙmri thalathùn") === "ʿÙmri thalathùn");
+  check("and it says why", /not in the course/.test(h));
+
+  // in a dialect, your four answers are in the dialect too
+  promptAnswer = "Lorenzo";
+  click({ "data-act": "you-name" });
+  click({ "data-act": "you-job", "data-id": "doctor" });
+  promptAnswer = "35";
+  click({ "data-act": "you-age" });
+  st.variety = "lev";
+  click({ "data-go": "home" });
+  check("your name is said the Levantine way", D.disp("Ismì Marco") === "Ìsmi Lorenzo");
+  check("and your age counted the Levantine way",
+    D.disp("ʿÙmri thalathùn") === "ʿÙmri khàmse w tlatìn");
+  check("thirty-five is built from the words the course teaches there",
+    D.numberWords(35, "lev").ar === "khàmse w tlatìn" && D.numberWords(21, "lev").ar === "wàhid w ʿìshrin");
+  check("a job the course already says is refused in the dialect too, not doubled",
+    !D.yourLines().some(l => l.field === "job"));
+  check("and nothing of yours collides with a phrase already on screen",
+    new Set(LESSONS.flatMap(l => l.phrases).map(p => D.disp(p.ar))).size ===
+    new Set(LESSONS.flatMap(l => l.phrases).map(p => p.ar)).size);
+  st.variety = "msa";
+  click({ "data-go": "home" });
+  check("back in fus-ha it is the fus-ha again", D.disp("Ismì Marco") === "Ismì Lorenzo");
+  click({ "data-act": "you-clear" });
+
+  // clearing puts Marco back everywhere
+  promptAnswer = "Lorenzo";
+  click({ "data-act": "you-name" });
+  check("set again", D.disp("Ismì Marco") === "Ismì Lorenzo");
+  click({ "data-act": "you-clear" });
+  check("clearing gives the course back", D.disp("Ismì Marco") === "Ismì Marco");
+  check("English and all", D.englishFor("Ismì Marco") === "My name is Marco");
+  check("and nothing of yours is left", D.yourLines().length === 0);
+
+  promptAnswer = "";
+  peek().store.str = {};
+  click({ "data-go": "home" });
+}
+
+section("what would you say?");
+{
+  const D = global.__data;
+  const st = peek().store;
+
+  // every answer has to be a phrase the course actually teaches
+  const taught = {};
+  LESSONS.forEach(l => l.phrases.forEach(p => { taught[p.ar] = l.id; }));
+  const bad = [];
+  D.MOMENTS.forEach(m => m.ok.forEach(ar => { if (!taught[ar]) bad.push(m.en + " -> " + ar); }));
+  check(`every answer is a taught phrase (${D.MOMENTS.length} situations)`, bad.length === 0);
+  if (bad.length) console.log("   ", bad.slice(0, 5));
+  check("and every one can be spoken", D.MOMENTS.every(m => m.ok.every(ar => !!SCRIPT[ar])));
+  check("no situation is written twice",
+    new Set(D.MOMENTS.map(m => m.en)).size === D.MOMENTS.length);
+  check("none of them is empty", D.MOMENTS.every(m => m.ok.length > 0 && m.en.length > 12));
+
+  // locked, then opening lesson by lesson
+  st.lessons = {};
+  check("nothing is open before you pass anything", D.openMoments().length === 0);
+  click({ "data-go": "home" });
+  click({ "data-act": "nav-open" });
+  check("and the menu says so", /What would you say\?[\s\S]{0,120}Pass a lesson to open this/.test(h));
+  click({ "data-act": "nav-close" });
+  st.lessons = { 1: { best: 100, done: true } };
+  const afterOne = D.openMoments().length;
+  check("passing lesson one opens a few", afterOne > 0 && afterOne < D.MOMENTS.length);
+  unlockAll();
+  check("passing everything opens the lot", D.openMoments().length === D.MOMENTS.length);
+
+  click({ "data-go": "home" });
+  check("the home screen offers it", /class="review" data-go="moment"/.test(h));
+  click({ "data-go": "moment" });
+  check("it has its own address", location.hash === "#/moment");
+  let mo = peek().moment;
+  check("the situation is on screen", visible(h).includes(mo.m.en));
+  check("no Arabic is handed to you", mo.m.ok.every(ar => !visible(h).includes(D.disp(ar))));
+  check("nor the English of the answer", !visible(h).includes(D.englishFor(mo.m.ok[0])));
+
+  // a wrong answer
+  type("moment-typing", "zzz qqq");
+  click({ "data-act": "moment-check" });
+  check("something that is not on the list is refused", /verdict-msg no/.test(h));
+  check("and it shows you what would have worked",
+    mo.m.ok.every(ar => visible(h).includes(D.disp(ar))));
+
+  // a right one, and any of them counts
+  click({ "data-act": "moment-next" });
+  mo = peek().moment;
+  const pick = mo.m.ok[mo.m.ok.length - 1];
+  type("moment-typing", D.disp(pick).toLowerCase().replace(/[àèìòù]/g, m => "aeiou"["àèìòù".indexOf(m)]));
+  click({ "data-act": "moment-check" });
+  check("the last answer on the list counts as much as the first", /verdict-msg ok/.test(h));
+  check("it marks the one you gave", /is-yours/.test(h));
+  check("the tally counts it", peek().moment.got === 1);
+  check("and the phrase itself goes up",
+    (((peek().store.str || {})[D.lessonTeaching(pick) + "|" + pick]) || {}).s > 0);
+
+  // giving up
+  click({ "data-act": "moment-next" });
+  mo = peek().moment;
+  const strBefore = JSON.stringify(peek().store.str || {});
+  click({ "data-act": "moment-show" });
+  check("you can ask outright", mo.m.ok.every(ar => visible(h).includes(D.disp(ar))));
+  check("it is not scored as a win", peek().moment.got === 1 && peek().moment.run === 3);
+  check("and being told does not count as remembering",
+    JSON.stringify(peek().store.str || {}) === strBefore);
+
+  // your own answers reach it too
+  promptAnswer = "Lorenzo";
+  click({ "data-go": "you" });
+  click({ "data-act": "you-name" });
+  click({ "data-go": "moment" });
+  let g = 0;
+  while (g++ < 60 && peek().moment.m.ok.indexOf("Ismì Marco") === -1) click({ "data-act": "moment-next" });
+  if (peek().moment.m.ok.indexOf("Ismì Marco") !== -1) {
+    type("moment-typing", "ismi lorenzo");
+    click({ "data-act": "moment-check" });
+    check("asked your name, your own answer is the right one", /verdict-msg ok/.test(h));
+  }
+  click({ "data-act": "you-clear" });
+  promptAnswer = "";
+  peek().store.str = {};
+  click({ "data-go": "home" });
+}
+
+section("one job, several phrases");
+{
+  const D = global.__data;
+  const st = peek().store;
+  st.passive = {};
+
+  // the groups themselves
+  const taught = {};
+  LESSONS.forEach(l => l.phrases.forEach(p => { if (!taught[p.ar]) taught[p.ar] = l.id; }));
+  const stray = [];
+  D.TWINS.forEach(t => t.members.forEach(ar => { if (!taught[ar]) stray.push(t.id + " -> " + ar); }));
+  check(`every phrase in a group is one the course teaches (${D.TWINS.length} groups)`, stray.length === 0);
+  if (stray.length) console.log("   ", stray.slice(0, 5));
+  check("every group suggests one of its own members to keep",
+    D.TWINS.every(t => t.members.indexOf(t.keep) !== -1));
+  check("no group has fewer than two", D.TWINS.every(t => t.members.length > 1));
+  check("every group says how they differ", D.TWINS.every(t => t.why.length > 40));
+  const all = D.TWINS.flatMap(t => t.members);
+  check("no phrase sits in two groups", new Set(all).size === all.length);
+  check("all of them can be spoken", all.every(ar => !!SCRIPT[ar]));
+
+  // gating
+  st.lessons = {};
+  check("nothing to decide before you pass anything", D.openTwins().length === 0);
+  st.lessons = { 1: { best: 100, done: true } };
+  check("lesson one alone already gives you a choice", D.openTwins().length > 0);
+  unlockAll();
+  check("and everything opens the lot", D.openTwins().length === D.TWINS.length);
+
+  click({ "data-go": "twins" });
+  check("it has its own address", location.hash === "#/twins");
+  check("the group is on screen", visible(h).includes(D.TWINS[0].title));
+  check("with the difference spelled out", visible(h).includes(D.TWINS[0].why));
+
+  // parking one phrase
+  const park = "Àhlan";
+  click({ "data-act": "passive", "data-id": park });
+  check("a phrase can be put on recognise only", D.isPassive(park));
+
+  const lesson1 = LESSONS[0];
+  const produced = t =>
+    t.type === "dialog" ? t.exchange.reply : (t.phrase ? t.phrase.ar : null);
+
+  st.games = { quiz: false, build: true, match: false, dialog: true, write: true, listen: false, say: true };
+  let seen = new Set(), guard = 0;
+  while (guard++ < 40) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    peek().session.tasks.forEach(t => { const p = produced(t); if (p) seen.add(p); });
+  }
+  check("it is never asked of you again", !seen.has(park));
+  check("but the rest of the lesson still is", seen.size > 3);
+
+  // it still turns up in the games that only test understanding
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  seen = new Set(); guard = 0;
+  let dirs = new Set();
+  while (guard++ < 40) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    peek().session.tasks.forEach(t => {
+      if (t.phrase && t.phrase.ar === park) { seen.add(park); dirs.add(t.toEnglish); }
+    });
+  }
+  check("it still comes up to be recognised", seen.has(park));
+  check("and always from the Arabic, never asking you to pick it", !dirs.has(false));
+
+  // one tap for the whole group
+  st.passive = {};
+  const g = D.TWINS.find(t => t.id === "bye");
+  click({ "data-go": "twins" });
+  click({ "data-act": "twin-keep", "data-id": g.id, "data-value": g.keep });
+  check("one tap keeps the one you will say", !D.isPassive(g.keep));
+  check("and parks the others",
+    g.members.filter(x => x !== g.keep).every(x => D.isPassive(x)));
+  check("the group stops asking", !D.twinsToDecide().some(t => t.id === g.id));
+
+  // it shows up with the rest of what you have taken out
+  click({ "data-go": "words" });
+  const parked = g.members.filter(x => x !== g.keep);
+  check("your words lists every one of them",
+    /Recognise only/.test(h) && parked.every(ar => visible(h).includes(D.disp(ar))));
+  check("with a way back", /data-act="passive"[^>]*>Say it too/.test(h));
+  click({ "data-act": "passive", "data-id": g.members[1] });
+  check("and it works", !D.isPassive(g.members[1]));
+
+  // the sentence maker will not build out of a parked word
+  const before = D.combos().length;
+  st.passive = { "Shày": true };
+  check("a parked word is not a brick any more", D.combos().length < before);
+  check("nor is anything built on it",
+    D.combos().every(c => c.word !== "Shày"));
+
+  // a situation you could only answer with a parked phrase steps back
+  st.passive = {};
+  const solo = D.MOMENTS.find(m => m.ok.length === 1);
+  const openBefore = D.openMoments().length;
+  st.passive = {}; st.passive[solo.ok[0]] = true;
+  check("a situation with only a parked answer stops coming up",
+    D.openMoments().length === openBefore - 1);
+
+  // and a lesson where you have parked everything still plays
+  st.passive = {};
+  lesson1.phrases.forEach(p => { st.passive[p.ar] = true; });
+  st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+  check("a lesson you have parked outright still plays", peek().session.tasks.length > 0);
+  check("by falling back to recognising it", peek().session.tasks.every(t => t.type === "quiz"));
+
+  // the same choice on any phrase at all, where you happen to notice it
+  st.passive = {};
+  st.games = undefined;
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "5" });
+  click({ "data-act": "learn-reveal" });
+  const card = () => peek().learn.lesson.phrases[peek().learn.i];
+  check("the study card offers it once revealed", /data-act="passive"/.test(h));
+  const own = card().ar;
+  click({ "data-act": "passive", "data-id": own });
+  check("on a phrase of your own choosing, in no group at all", D.isPassive(own));
+  check("and says what it now means", /never to produce it/.test(h));
+  click({ "data-act": "passive", "data-id": own });
+  check("tapping again undoes it", !D.isPassive(own));
+
+  unlockAll();
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "5" });
+  answerCurrent(true);
+  check("so does the verdict after a round", /data-act="passive"/.test(h));
+
+  st.passive = {};
+  st.games = undefined;
+  click({ "data-go": "home" });
+}
+
+section("what are they asking?");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+
+  // every question in the course is classified, or it is not asked
+  const qs = [];
+  LESSONS.forEach(l => {
+    l.phrases.forEach(p => { if (p.ar.indexOf("?") !== -1) qs.push(p.ar); });
+    (l.dialogue || []).forEach(d => { if (d.ask.indexOf("?") !== -1) qs.push(d.ask); });
+  });
+  const unknown = qs.filter(ar => !D.askKind(ar));
+  check(`every question in the course is understood (${qs.length})`, unknown.length === 0);
+  if (unknown.length) console.log("   ", unknown.slice(0, 5));
+  check("nothing without a question mark counts as one",
+    !D.askKind("Marhàban") && !D.askKind("Min fàdlik"));
+  check("the polite opener does not hide the question",
+    D.askKind("Lau samàht, àina al-hammàm?") === "where");
+  check("where from is not the same as where", D.askKind("Min àina ànta?") === "wherefrom");
+  check("where to is not either", D.askKind("Ilà àina?") === "whereto");
+  check("hal means the answer is yes or no", D.askKind("Hal tàʿrif?") === "yesno");
+  check("an or-question is its own kind", D.askKind("Shày am qàhwa?") === "choice");
+  check("and so is having it turned back on you",
+    D.askKind("Anà bikhèir. Wa ànta?") === "backatyou");
+  check("every kind it can answer has a name",
+    D.askPool().every(q => D.ASK_KINDS.some(k => k.key === q.kind)));
+
+  // it only draws on lessons you have passed
+  st.lessons = {};
+  check("nothing before you have passed anything", D.askPool().length === 0);
+  unlockAll();
+  const pool = D.askPool();
+  check(`the whole course gives it plenty (${pool.length})`, pool.length > 60);
+
+  click({ "data-go": "asked" });
+  check("it has its own address", location.hash === "#/asked");
+  const a = peek().asked;
+  check("four kinds to choose from", (h.match(/data-act="asked-answer"/g) || []).length === 4);
+  check("the right one is among them", a.options.indexOf(a.q.kind) !== -1);
+  check("no kind is offered twice", new Set(a.options).size === 4);
+  check("it does not tell you what the question means", !visible(h).includes(a.q.en));
+
+  click({ "data-act": "asked-answer", "data-value": a.q.kind });
+  check("getting it right says so", /verdict-msg ok/.test(h));
+  check("and only then shows you the question", visible(h).includes(D.disp(a.q.ar)));
+  check("with what it actually means", visible(h).includes(a.q.en));
+  check("the tally counts it", peek().asked.got === 1 && peek().asked.run === 1);
+
+  click({ "data-act": "asked-next" });
+  const b = peek().asked;
+  const wrong = b.options.find(k => k !== b.q.kind);
+  click({ "data-act": "asked-answer", "data-value": wrong });
+  check("getting it wrong names the right kind", /verdict-msg no/.test(h));
+  check("and the word that gave it away",
+    visible(h).includes(D.ASK_KINDS.find(k => k.key === b.q.kind).word));
+  check("a miss does not count", peek().asked.got === 1 && peek().asked.run === 2);
+
+  // the drill has to be about the Arabic you are listening to
+  st.variety = "lev";
+  check("in Levantine it classifies what you actually hear",
+    D.askKind("Shu ìsmak?", true) === "what" && D.askKind("Wèin al-hammàm?", true) === "where" &&
+    D.askKind("Addèsh?", true) === "howmuch" && D.askKind("Èmta al-ʾitàr?", true) === "when" &&
+    D.askKind("Mìn hàda?", true) === "who" && D.askKind("Kìfak?", true) === "how");
+  check("a dialect question with no marker word is a yes or no question",
+    D.askKind("Btìhki ʿàrabi?", true) === "yesno");
+  check("but fus-ha still needs hal to be one", D.askKind("Btìhki ʿàrabi?") === null);
+  check("min wèin is still where from, not who",
+    D.askKind("Min wèin ìnta?", true) === "wherefrom");
+  check("a question that changes kind in the dialect is filed by the dialect",
+    D.askPool().some(q => q.ar === "Ày yàum al-yàum?" && q.kind === "what"));
+  const kinds = {};
+  D.askPool().forEach(q => { kinds[q.kind] = 1; });
+  check("every kind it can show has a Levantine word to name it",
+    Object.keys(kinds).every(k => {
+      const e = D.ASK_KINDS.find(x => x.key === k);
+      return e && e.lev && e.lev.length > 1;
+    }));
+  st.variety = "msa";
+
+  click({ "data-go": "home" });
+}
+
+section("a first hour that makes sense");
+{
+  unlockAll();
+  const st = peek().store;
+
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "1" });
+  check("the card asks to show the meaning, not to reveal the word already on it",
+    /Show meaning/.test(h) && !/>Reveal</.test(h));
+
+  // pressing Today lands somewhere that says Today
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-act": "nav-today" });
+  if (peek().session) {
+    check("what Today starts calls itself Today", /class="topbar-title">Today</.test(h));
+  }
+
+  // adding someone says what just happened
+  promptAnswer = "Prova";
+  click({ "data-go": "home" });
+  click({ "data-act": "nav-open" });
+  click({ "data-act": "who-add" });
+  check("adding a profile says you have switched", /Now practising as/.test(h));
+  check("and who you are stays on screen", /class="whoami"/.test(h));
+  check("the empty screen is explained, not just empty", /separate set of progress/.test(h));
+  click({ "data-go": "home" });
+  check("and the notice does not follow you around", !/Now practising as/.test(h));
+  check("but who you are still does", /class="whoami"/.test(h));
+
+  // back to the first profile
+  const first = peek().people.list[0];
+  click({ "data-act": "who", "data-id": first.id });
+  check("switching back says so too", /Now practising as/.test(h));
+  peek().people.list = peek().people.list.filter(p => p.id === first.id);
+  promptAnswer = "";
+  click({ "data-go": "home" });
+}
+
+section("joining two ideas, and saying when");
+{
+  const D = global.__data;
+  const join = LESSONS.find(l => l.id === 28);
+  const when = LESSONS.find(l => l.id === 29);
+  check("both new lessons are in the course", !!join && !!when);
+  check("joining comes after the verbs", LESSONS.indexOf(join) > LESSONS.findIndex(l => l.title === "Common verbs"));
+  check("and times come after the numbers", LESSONS.indexOf(when) > LESSONS.findIndex(l => l.title === "Numbers to 100"));
+
+  const rows = join.phrases.concat(when.phrases);
+  check(`every line of both can be spoken (${rows.length})`, rows.every(p => !!SCRIPT[p.ar]));
+  check("and every line of both exists in Levantine",
+    rows.every(p => (D.DIALECT[p.ar] || {}).lev || (D.SAME.lev || {})[p.ar]));
+  check("their dialogue can be spoken too",
+    join.dialogue.concat(when.dialogue).every(d => !!SCRIPT[d.ask] && !!SCRIPT[d.reply]));
+
+  // the words the course had no way to say before
+  ["Làkin", "Li'ànna", "Thùmma", "Rùbbama", "Làisa ʿìndi", "Hùnaka mushkìla"]
+    .forEach(function (ar) {
+      check("it can now say " + ar, join.phrases.some(p => p.ar === ar));
+    });
+  check("and it can arrange to meet",
+    when.phrases.some(p => p.en === "At what time?") &&
+    when.phrases.some(p => p.en === "Half past") &&
+    when.phrases.some(p => p.en === "Next week"));
+
+  // "at what time" is a when-question, not a which-question
+  check("the ear drill files at-what-time under when",
+    D.askKind("Fi ày sàʿa?") === "when");
+  peek().store.variety = "lev";
+  check("in Levantine too", D.askKind("Ày sàʿa?", true) === "when");
+  peek().store.variety = "msa";
+}
+
+section("when you get stuck");
+{
+  const D = global.__data;
+  const kit = LESSONS.find(l => l.id === 27);
+  check("the repair kit is in the course", !!kit);
+  check("and it comes early, where it is needed",
+    LESSONS.indexOf(kit) > 3 && LESSONS.indexOf(kit) < 8);
+  check("it is numbered by where it sits, not by its id", D.lessonNo(kit) === LESSONS.indexOf(kit) + 1);
+  check("nothing it teaches was already taught elsewhere", (function () {
+    const elsewhere = {};
+    LESSONS.forEach(l => { if (l === kit) return; l.phrases.forEach(p => { elsewhere[p.ar] = 1; }); });
+    return kit.phrases.every(p => !elsewhere[p.ar]);
+  })());
+  check("every line of it can be spoken", kit.phrases.every(p => !!SCRIPT[p.ar]) &&
+    kit.dialogue.every(d => !!SCRIPT[d.ask] && !!SCRIPT[d.reply]));
+  check("and every line of it exists in Levantine", kit.phrases.every(p =>
+    (D.DIALECT[p.ar] || {}).lev || (D.SAME.lev || {})[p.ar]));
+  check("the ones that carry a conversation are core",
+    ["Marra ùkhra, min fàdlik", "Màdha yaʿni?", "Kèifa taqùl hàdha?", "Tàyyib"]
+      .every(ar => kit.phrases.some(p => p.ar === ar && p.core)));
+  check("the core did not grow past its share of the course",
+    LESSONS.flatMap(l => l.phrases.filter(p => p.core)).length <=
+    Math.round(LESSONS.reduce((n, l) => n + l.phrases.length, 0) * 0.24));
+
+  // the sentences you can now put to a person
+  unlockAll();
+  const asks = D.combos().filter(c => /^Hal /.test(c.frame.stem));
+  check(`there are questions to ask a person now (${asks.length})`, asks.length > 30);
+  check("and they are questions, not statements",
+    asks.every(c => /\?$/.test(D.compose(c).ar) && /^(Do|Would) you/.test(D.compose(c).en)));
+  peek().store.variety = "lev";
+  check("in Levantine too", D.combos().filter(c => /^Hal /.test(c.frame.stem))
+    .every(c => !D.compose(c).msa));
+  peek().store.variety = "msa";
+  click({ "data-go": "home" });
+}
+
+section("the games got harder in the right places");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+
+  // Reply: the wrong answers no longer come from the same four lines
+  st.games = { quiz: false, build: false, match: false, dialog: true, write: false, listen: false, say: false };
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "2" });
+  const t = peek().session.tasks[0];
+  const own = new Set((LESSONS.find(l => l.id === 2).dialogue || []).map(d => d.reply));
+  check("a reply round draws its distractors from the whole course",
+    t.options.some(o => !own.has(o)));
+  if (withVoice) {
+    check("and with a voice it is said, not shown",
+      !visible(h).includes(D.disp(t.exchange.ask)) && /say-lg/.test(h));
+    check("with the words a tap away", /data-act="peek"/.test(h));
+    click({ "data-act": "peek" });
+    check("which shows them", visible(h).includes(D.disp(t.exchange.ask)));
+  }
+
+  // Write: a space is not a mistake, and a miss costs one step not two
+  check("word breaks do not decide a typed answer",
+    D.sameSaid("assalamu alaikum", "As-salàmu ʿaláikum") &&
+    D.sameSaid("alhamdulillah", "Al-hàmdu lillàh") &&
+    D.sameSaid("khudhni ilaalmatar", "Khudhni ilà al-matàr"));
+  check("but a different phrase is still different",
+    !D.sameSaid("shukran", "ʿÀfwan"));
+
+  st.str = {}; st.games = { quiz: false, build: false, match: false, dialog: false, write: true, listen: false, say: false };
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+  const tw = peek().session.tasks[0];
+  st.str["1|" + tw.phrase.ar] = { s: 3, n: 3, day: D.today() };
+  tw.typed = "zzzqqq";
+  click({ "data-act": "check-write" });
+  check("a typing miss costs one step, not two", st.str["1|" + tw.phrase.ar].s === 2);
+
+  // and a lesson deals all of itself before repeating
+  st.games = undefined;
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "3" });
+  const l3 = LESSONS.find(l => l.id === 3);
+  const asked = peek().session.tasks
+    .filter(x => x.phrase || x.exchange)
+    .map(x => (x.phrase ? x.phrase.ar : x.exchange.reply));
+  const available = new Set(l3.phrases.map(p => p.ar)
+    .concat((l3.dialogue || []).map(d => d.reply))).size;
+  check(`nothing is asked twice while something else has not been asked at all (${asked.length} rounds, ${new Set(asked).size} distinct of ${available})`,
+    new Set(asked).size === Math.min(asked.length, available));
+
+  st.str = {};
+  click({ "data-go": "home" });
+}
+
+section("the microphone, the routes and the backup");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+
+  // asking for a game writes down what you asked for, not what the
+  // device could manage a second before the voices arrived
+  st.games = undefined;
+  click({ "data-go": "home" });
+  click({ "data-act": "game", "data-key": "quiz" });
+  check("switching a game off does not switch listening off with it",
+    peek().store.games.listen !== false);
+  click({ "data-act": "game", "data-key": "quiz" });
+  st.games = undefined;
+
+  // listening a conversation through has its own address
+  if (withVoice) {
+    click({ "data-go": "home" });
+    click({ "data-go": "follow", "data-id": CONVOS[0].id });
+    check("hearing one through is its own place", /^#\/listen\//.test(location.hash));
+    check("and it is the listening game", peek().session.isFollow === true);
+    click({ "data-go": "home" });
+    click({ "data-go": "convo", "data-id": CONVOS[0].id });
+    check("playing one through is a different place", /^#\/talk\//.test(location.hash));
+    check("and a different game", peek().session.isFollow === false);
+  }
+
+  // the menu opens what it takes you to
+  click({ "data-go": "home" });
+  click({ "data-act": "nav-open" });
+  click({ "data-act": "nav-course" });
+  check("asking for the course opens the course", /data-fold="course" open>/.test(h) ||
+    /data-fold="course"[^>]* open/.test(h));
+
+  // a backup does not silently replace a profile
+  const code = decodeEnt((h.match(/data-act="backup"[^>]*>([\s\S]*?)<\/textarea>/) || [])[1] || "");
+  if (code.indexOf("fusha1:") === 0) {
+    fields.backupOverride = code;
+    confirmAnswer = false;
+    click({ "data-act": "restore" });
+    check("restoring asks before overwriting", /Left as it was/.test(h));
+    confirmAnswer = true;
+    fields.backupOverride = undefined;
+  }
+  click({ "data-go": "home" });
+}
+
+section("numbers, by ear");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+  st.str = {};
+
+  click({ "data-go": "numbers" });
+  check("it has its own address", location.hash === "#/numbers");
+  const first = peek().numbers;
+  check("it starts inside the range the course teaches", first.n >= 1 && first.n <= 20);
+  check("and it is a number the course can say", !!first.w && !!D.spk(first.w.ar));
+  const promptOf = () => (h.match(/<div class="prompt">[\s\S]*?<\/div>\s*<input/) || [""])[0];
+  check("the digits are not on screen", !visible(promptOf()).includes(String(first.n)));
+
+  const type = v => { fields.x = v; inputH({ target: { getAttribute: () => "numbers-typing", value: v } }); };
+  type("999");
+  click({ "data-act": "numbers-check" });
+  check("a wrong answer says what it was", visible(h).includes(String(first.n)));
+  check("and shows how it was said", visible(h).includes(first.w.ar));
+
+  const run = [];
+  for (let i = 0; i < 8; i++) { click({ "data-act": "numbers-next" }); run.push(peek().numbers.n); }
+  check("it never asks the same number twice in a row",
+    run.every((n, i) => i === 0 || n !== run[i - 1]));
+
+  click({ "data-act": "numbers-next" });
+  const second = peek().numbers;
+  type(String(second.n));
+  click({ "data-act": "numbers-check" });
+  check("a right answer counts", peek().numbers.got === 1);
+  check("and a number taught as one word counts for that word",
+    !D.lessonTeaching(second.w.ar.charAt(0).toUpperCase() + second.w.ar.slice(1)) ||
+    Object.keys(peek().store.str || {}).length > 0);
+
+  // it widens as you get them right
+  let widened = false;
+  for (let i = 0; i < 12 && !widened; i++) {
+    click({ "data-act": "numbers-next" });
+    const n = peek().numbers;
+    if (n.n > 20) widened = true;
+    type(String(n.n));
+    click({ "data-act": "numbers-check" });
+  }
+  check("the range opens up as you get them right", widened);
+
+  // 13 to 19 are not in the course and must never be asked
+  const asked = [];
+  for (let i = 0; i < 40; i++) {
+    click({ "data-act": "numbers-next" });
+    asked.push(peek().numbers.n);
+  }
+  check("it never asks for a number the course cannot say",
+    asked.every(n => !!D.numberWords(n, "msa")));
+
+  st.str = {};
+  click({ "data-go": "home" });
+}
+
+section("the phone, not the desktop");
+{
+  unlockAll();
+  const st = peek().store;
+
+  // the controls you need while the keyboard is up are pinned, like the
+  // verdict already was
+  click({ "data-go": "moment" });
+  check("the situation's controls are pinned above the keyboard", /class="action-row"/.test(h));
+  click({ "data-go": "home" });
+  click({ "data-go": "talk" });
+  check("free talk's are too", /class="action-row"/.test(h));
+
+  // the long grammar note cannot pin half a screen to the bottom
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  let guard = 0, noted = false;
+  while (guard++ < 40 && !noted) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    playRound(false);
+    noted = /class="why"/.test(h);
+  }
+  if (noted) {
+    check("the explanation folds instead of filling the screen", /<details class="why"/.test(h));
+    check("and says how to open it", /Read more|summary/.test(h));
+  }
+  st.games = undefined;
+
+  // the three buttons that used to wrap five lines each
+  click({ "data-go": "home" });
+  st.passive = { "Àhlan": true };
+  click({ "data-go": "words" });
+  check("the words screen stacks its buttons on a phone", /btn-row-stack/.test(h));
+  st.passive = {};
+  click({ "data-go": "home" });
+}
+
+section("the look of it");
+{
+  unlockAll();
+  click({ "data-go": "home" });
+  const cards = (h.match(/class="review(?: is-lead)?"/g) || []);
+  check(`the home cards are one lead and a shelf (${cards.length})`,
+    cards.filter(c => /is-lead/.test(c)).length === 1 && cards.length > 2);
+  check("and the day comes before the settings",
+    h.indexOf('class="today') < h.indexOf('class="review'));
+
+  click({ "data-go": "learn", "data-id": "1" });
+  click({ "data-act": "learn-reveal" });
+  check("the flashcard divider is a mark, not a line", /class="flash-rule"/.test(h));
+  click({ "data-go": "home" });
+}
+
+section("the drills count for something");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+  const scored = () => Object.keys(peek().store.str || {}).length;
+
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-go": "convo", "data-id": CONVOS[0].id });
+  let g = 0;
+  while (g++ < 60 && !h.includes("result-score")) playRound(true);
+  check("a conversation teaches the memory something", scored() > 0);
+
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-go": "asked" });
+  for (let i = 0; i < 5; i++) {
+    click({ "data-act": "asked-answer", "data-value": peek().asked.q.kind });
+    click({ "data-act": "asked-next" });
+  }
+  check("so does catching a question by ear", scored() > 0);
+
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-go": "make" });
+  for (let i = 0; i < 5; i++) {
+    const m = peek().made;
+    if (m.hear) click({ "data-act": "make-answer", "data-value": m.s.en });
+    else {
+      m.target.forEach(w => {
+        const t = m.tiles.find(x => x.word === w && m.picked.indexOf(x.id) === -1);
+        if (t) click({ "data-act": "make-pick", "data-id": String(t.id) });
+      });
+      click({ "data-act": "make-check" });
+    }
+    click({ "data-act": "make-next" });
+  }
+  check("and so does building a sentence out of a word", scored() > 0);
+  check("the word it counts is the one you were given",
+    Object.keys(peek().store.str).every(k => !!D.lessonTeaching(k.split("|").slice(1).join("|"))));
+
+  // and the day hands you on instead of ending
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-act": "nav-today" });
+  let g2 = 0;
+  while (g2++ < 200 && !h.includes("result-score")) playRound(true);
+  check("the day ends by pointing at the next thing", /class="circuit"/.test(h));
+  check("and the next thing is one of the producing screens",
+    /data-go="(moment|asked|make)"/.test(h));
+  st.str = {};
+  click({ "data-go": "home" });
+}
+
+section("the course can be climbed");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+  st.str = {}; st.known = {};
+  const ar = LESSONS[0].phrases[0].ar;
+  const put = (s2, daysAgo) => { st.str["1|" + ar] = { s: s2, n: 5, day: D.today() - daysAgo }; };
+
+  // the intervals have to fit the size of the course
+  check("the holds are long enough for a course this size",
+    D.HOLDS[4] >= 24 && D.HOLDS[5] >= 60);
+  check("and still tight at the bottom, where you know least",
+    D.HOLDS[1] <= 3 && D.HOLDS[2] <= 6);
+
+  // what the whole pool needs per day, against what a session gives
+  const pool = LESSONS.reduce((n, l) => n + l.phrases.length, 0);
+  const perDay = pool / D.HOLDS[4];
+  check(`a daily session can carry the whole pool (${pool} phrases, ${perDay.toFixed(0)} a day needed)`,
+    perDay <= 16);
+
+  // and coming back late costs one step, not the lot
+  put(5, D.HOLDS[5] * 4);
+  check("a long absence costs one step", D.strengthOf(1, ar) === 4);
+  st.str = {};
+  click({ "data-go": "home" });
+}
+
+section("the audit's five");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+
+  // 1. changing the Arabic mid-round used to leave the screen on a session
+  //    that had just been deleted, and every render after it threw
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "2" });
+  let threw = false;
+  try { click({ "data-act": "variety", "data-id": "lev" }); } catch (e) { threw = true; }
+  check("switching Arabic mid-round does not throw", !threw);
+  check("and it puts you somewhere real", peek().view.name === "home" && peek().session === null);
+  check("the switch took", D.variety() === "lev");
+  st.variety = "msa";
+
+  // 2. a solved grid has to say it is finished, or walking back is a dead end
+  st.games = { quiz: false, build: false, match: true, dialog: false, write: false, listen: false, say: false };
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+  const grid = peek().session.tasks[0];
+  grid.pairs.forEach((_, i) => {
+    click({ "data-act": "match", "data-side": "l", "data-i": String(i) });
+    click({ "data-act": "match", "data-side": "r", "data-i": String(i) });
+  });
+  check("a finished grid marks itself settled", grid.settled === true && grid.wasRight === true);
+  click({ "data-act": "next" });
+  peek().session.i = 0;
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+
+  // 3. a review with nothing left in it is not a review
+  st.games = undefined;
+  st.lessons = { 1: { best: 100, done: true } };
+  st.hidden = {};
+  LESSONS[0].phrases.forEach(p => { st.hidden["1|" + p.ar] = true; });
+  click({ "data-go": "home" });
+  click({ "data-go": "review" });
+  check("a review it cannot fill is not offered at all",
+    peek().session === null || peek().session.tasks.length > 0);
+  check("and nothing scoreless can be reached",
+    !peek().session || peek().session.max > 0);
+  st.hidden = {};
+  unlockAll();
+
+  // 4. the speaker under a wrong answer is given the phrase, not the words
+  st.variety = "lev";
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  let btn = "", guard = 0;
+  while (guard++ < 40 && !/data-say=/.test(btn)) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    playRound(false);
+    btn = (h.match(/<div class="verdict-msg no">[\s\S]*?<\/div>/) || [""])[0];
+  }
+  if (/data-say=/.test(btn)) {
+    check("the speaker under a wrong answer is given the phrase, not the words on screen",
+      /data-say="[^"]+"/.test(btn) && !!D.spk((btn.match(/data-say="([^"]+)"/) || [])[1]));
+    if (withVoice) check("so it is not dead in a dialect", !/disabled/.test(btn));
+  }
+
+  // 5. a build round deals the words you will actually be asked for
+  const oneTile = [];
+  LESSONS.forEach(l => l.phrases.forEach(p => {
+    if (D.canMake({ ar: p.ar, en: p.en }, "build") && D.tokens(D.disp(p.ar)).length < 2) oneTile.push(p.ar);
+  }));
+  check("no build round in a dialect deals a single tile", oneTile.length === 0);
+  if (oneTile.length) console.log("   ", oneTile.slice(0, 5));
+
+  st.variety = "msa";
+  st.games = undefined;
+  click({ "data-go": "home" });
+}
+
+section("backup and restore");
+{
+  unlockAll();
+  click({ "data-go": "home" });
+  const code = decodeEnt((h.match(/data-act="backup"[^>]*>([\s\S]*?)<\/textarea>/) || [])[1]);
+  check("a code is offered", code.indexOf("fusha1:") === 0);
+  const snapshot = code;
+  click({ "data-go": "reset" });
+  check("reset clears progress", Object.keys(peek().store.lessons).length === 0);
+  fields.backupOverride = snapshot;
+  click({ "data-act": "restore" });
+  check("restoring brings it back", Object.keys(peek().store.lessons).length === LESSONS.length);
+  check("it reports what came back", /Restored\. \d+ lessons marked as passed/.test(h));
+  fields.backupOverride = "not a code";
+  click({ "data-act": "restore" });
+  check("garbage is refused", /does not look like a backup code/.test(h));
+  check("and nothing is lost", Object.keys(peek().store.lessons).length === LESSONS.length);
+  fields.backupOverride = undefined;
+}
+
+if (withVoice) {
+  section("the question drill is audio first");
+  {
+    unlockAll();
+    spoken.length = 0;
+    click({ "data-go": "home" });
+    click({ "data-go": "asked" });
+    const aq = peek().asked;
+    check("it plays the question on its own",
+      spoken.length > 0 && spoken[spoken.length - 1].text === global.__data.spk(aq.q.ar));
+    check("and nothing of it is written down", !visible(h).includes(global.__data.disp(aq.q.ar)));
+    check("but you can hear it again", /data-act="say"/.test(h));
+    click({ "data-act": "asked-answer", "data-value": aq.q.kind });
+    check("once answered it appears in writing", visible(h).includes(global.__data.disp(aq.q.ar)));
+    click({ "data-go": "home" });
+  }
+
+  section("audio");
+  {
+    unlockAll();
+    click({ "data-go": "home" });
+    check("home names the detected voice", /Maged/.test(h));
+    click({ "data-go": "learn", "data-id": "1" });
+    const btn = h.match(/<button class="say"[^>]*>/);
+    check("speaker enabled on the flashcard", btn && !/\sdisabled/.test(btn[0]));
+    spoken.length = 0;
+    click({ "data-act": "say", "data-say": "Sabàh al-khèir" });
+    check("it speaks Arabic script", spoken.length === 1 && /[؀-ۿ]/.test(spoken[0].text));
+    check("with the Arabic voice", spoken[0].voice.name === "Maged");
+    check("slowed down for a phrase you have not learned", spoken[0].rate === 0.75);
+
+    // listening game
+    click({ "data-go": "home" });
+    // derive the keys from the page, so a new game cannot silently
+    // slip past this and leave the session mixed
+    const keys = [...h.matchAll(/data-act="game" data-key="(\w+)"/g)].map(m => m[1]);
+    for (const k of keys) {
+      if (k === "listen") continue;
+      if (new RegExp(`is-on" data-act="game" data-key="${k}"`).test(h)) click({ "data-act": "game", "data-key": k });
+    }
+    spoken.length = 0;
+    click({ "data-go": "play", "data-id": "1" });
+    const s = peek().session;
+    check("listen-only session", [...new Set(s.tasks.map(t => t.type))].join() === "listen");
+    check("the phrase plays on arrival", spoken.length === 1);
+    check("the transliteration is not on screen", !visible(h).includes(s.tasks[0].phrase.ar));
+    click({ "data-act": "answer", "data-value": s.tasks[0].answer });
+    check("and is revealed after answering", visible(h).includes(s.tasks[0].phrase.ar));
+  }
+}
+
+if (withMic) {
+  const { flattenArabic, heardScore } = global.__data;
+
+  section("hearing you, on the Arabic itself");
+  {
+    check("vowel marks are ignored", flattenArabic("صَبَاحُ الْخَيْرِ") === flattenArabic("صباح الخير"));
+    check("alef variants are unified", flattenArabic("أنا") === flattenArabic("انا"));
+    check("a perfect match scores 1", heardScore("صباح الخير", "صَبَاحُ الْخَيْرِ") === 1);
+    check("half the words scores about half", Math.abs(heardScore("صباح", "صَبَاحُ الْخَيْرِ") - 0.5) < 0.01);
+    check("something unrelated scores 0", heardScore("قهوة", "صَبَاحُ الْخَيْرِ") === 0);
+    check("empty speech scores 0", heardScore("", "صَبَاحُ الْخَيْرِ") === 0);
+  }
+
+  section("showing you what it heard, in your alphabet");
+  {
+    const { romanise, nearestTranslit } = global.__data;
+
+    // Written Arabic has no short vowels, so letter-by-letter is a
+    // consonant skeleton. It is the fallback, not the answer.
+    check("letter-by-letter really is unreadable", romanise("مرحبا") === "mrhba");
+    check("but it never leaks Arabic letters", !/[\u0621-\u064A]/.test(romanise("صَبَاحُ الْخَيْرِ")));
+    check("and keeps the word breaks", romanise("صباح الخير").split(" ").length === 2);
+
+    // The real answer: find the phrase and show it as you learned it.
+    const near = a => nearestTranslit(a);
+    check("marhaban comes back as Marhàban", near("مرحبا").text === "Marhàban");
+    check("shukran comes back as Shùkran", near("شكرا").text === "Shùkran");
+    check("al-hamdu lillah is found too", near("الحمد لله").text === "Al-hàmdu lillàh");
+    check("and a whole phrase", near("صباح الخير").text === "Sabàh al-khèir");
+    check("each of those is flagged as a real match", ["مرحبا", "شكرا", "قهوة"].every(a => near(a).sure));
+    check("gibberish falls back instead of inventing", near("زززز ققق").sure === false);
+    check("nothing in equals nothing out", romanise("") === "");
+  }
+
+  section("the microphone in Say it");
+  {
+    unlockAll();
+    const st = peek().store;
+    st.known = {}; st.hidden = {}; st.str = {};
+    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    const t0 = peek().session.tasks[0];
+    check("a mic button is offered", /data-act="mic"/.test(h));
+
+    nextHeard = [SCRIPT[t0.phrase.ar]];
+    click({ "data-act": "mic" });
+    check("it shows what it heard", /class="heard/.test(h));
+    check("a good attempt is marked as matching", /is-close/.test(h) && /That matches/.test(h));
+    // it marks a clear match right, and never marks anything wrong
+    check("and a clear match counts, without a second tap", peek().session.state === "checked");
+    check("counted right", peek().session.lastRight === true);
+
+    click({ "data-act": "next" });
+    const t1 = peek().session.tasks[peek().session.i];
+    nextHeard = ["قهوة"];
+    click({ "data-act": "mic" });
+    check("a poor attempt is reported, not failed",
+      (/It heard|Closest to/.test(h) && !/is-close/.test(h)) && peek().session.state === "asking");
+    check("and says the recogniser is the shaky one", /recognisers are shaky/i.test(h));
+    check("you still get to mark yourself", /data-value="got"/.test(h) || /data-act="say-reveal"/.test(h));
+
+    nextHeard = [];
+    click({ "data-act": "mic" });
+    check("silence is handled", /Nothing came through/.test(h));
+
+    // the whole course avoids the alphabet; the mic must not smuggle it in
+    const arabicOnScreen = t => /[\u0621-\u064A]/.test(visible(t));
+    const t2 = peek().session.tasks[peek().session.i];
+    nextHeard = [SCRIPT[t2.phrase.ar]];
+    click({ "data-act": "mic" });
+    check("a match is shown the way you learned it", visible(h).includes(t2.phrase.ar));
+    check("and never in Arabic letters", !arabicOnScreen(h));
+    click({ "data-act": "next" });
+    nextHeard = ["قهوة"];
+    click({ "data-act": "mic" });
+    check("a miss is romanised, not shown in Arabic", !arabicOnScreen(h));
+    check("and tells you the nearest phrase you know", /Closest to/.test(h) && visible(h).includes("Qàhwa"));
+
+    st.games = undefined;
+  }
+
+  section("it tells you it is listening");
+  {
+    unlockAll();
+    const st = peek().store;
+    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    stageSeen.length = 0; stageRaw.length = 0;
+    nextHeard = ["صباح الخير"];
+    click({ "data-act": "mic" });
+
+    check("the screen moves the moment the mic opens", /Listening - say it now/.test(stageSeen[0] || ""));
+    check("it reacts when you start speaking", /I can hear you/.test(stageSeen[1] || ""));
+    check("and while it works out what you said", /Working it out/.test(stageSeen[2] || ""));
+    check("the button cannot be tapped again mid-listen",
+      stageRaw.every(r => /data-act="mic" disabled/.test(r)));
+    check("it stops saying it is listening once done", !/Listening - say it now/.test(h));
+    check("and shows the result instead", /class="heard/.test(h));
+    st.games = undefined;
+  }
+
+  section("confirming what it thought you said");
+  {
+    unlockAll();
+    const st = peek().store;
+    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    const t0 = peek().session.tasks[0];
+
+    // a clear match no longer needs confirming: it counts on its own
+    const before = peek().session.earned;
+    const revealedBefore = t0.shown === true;
+    nextHeard = [SCRIPT[t0.phrase.ar]];
+    click({ "data-act": "mic" });
+    check("a clear match settles the round on its own", peek().session.state === "checked");
+    check("and counts it right", peek().session.lastRight && peek().session.earned === before + 1);
+    check("without having had to reveal first", revealedBefore === false);
+
+    // anything less is still yours to call
+    click({ "data-act": "next" });
+    nextHeard = ["قهوة"];
+    click({ "data-act": "mic" });
+    check("a near miss is not marked either way", peek().session.state === "asking");
+    check("a confirmation is offered", /data-act="say-confirm"/.test(h));
+    check("worded as your call, not its verdict", /Yes, that is what I said/.test(h));
+    check("and shows you what it thought", /Closest to/.test(h));
+    const before2 = peek().session.earned;
+    click({ "data-act": "say-confirm" });
+    check("confirming settles it", peek().session.state === "checked" &&
+      peek().session.earned === before2 + 1);
+
+    st.games = undefined;
+  }
+
+  section("confirming a spoken reply in a conversation");
+  {
+    unlockAll();
+    click({ "data-go": "home" });
+    click({ "data-go": "convo", "data-id": CONVOS[0].id });
+    const turn = peek().session.tasks[0];
+
+    // deliberately partial, the way a recogniser drops a word: enough to
+    // name the reply, not enough to send it on its own
+    const full = SCRIPT[turn.answer].split(" ");
+    const partial = full.length > 1 ? full.slice(0, -1).join(" ") : null;
+
+    if (partial) {
+      nextHeard = [partial];
+      click({ "data-act": "mic" });
+      check("a partial hearing does not answer for you", peek().session.state === "asking");
+      check("but it offers to send what it heard", /data-act="convo-confirm"/.test(h));
+      click({ "data-act": "convo-confirm", "data-id": turn.answer });
+      check("confirming answers the turn", peek().session.state === "checked");
+      check("and counts as correct", peek().session.lastRight === true);
+    }
+
+    click({ "data-go": "home" });
+    click({ "data-go": "convo", "data-id": CONVOS[0].id });
+    nextHeard = [SCRIPT[peek().session.tasks[0].answer]];
+    click({ "data-act": "mic" });
+    check("a clear reply is still sent without asking", peek().session.state === "checked");
+  }
+
+  section("free talk makes the choice obvious");
+  {
+    click({ "data-go": "home" });
+    click({ "data-go": "talk" });
+    fields.talk = "ana";
+    inputH({ target: { getAttribute: () => "talk-typing", value: "ana" } });
+    click({ "data-act": "talk-send" });
+    if (peek().talk.options.length) {
+      check("it says the candidates are tappable", /tap to say it/.test(h));
+      check("and offers a way out", /data-act="talk-none"/.test(h));
+      click({ "data-act": "talk-none" });
+      check("none of these clears the guess", peek().talk.options.length === 0 && peek().talk.heard === null);
+    }
+    fields.talk = "";
+  }
+
+  section("turning the microphone off");
+  {
+    unlockAll();
+    const st = peek().store;
+    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    stageRaw.length = 0;
+    nextHeard = ["صباح الخير"];
+    click({ "data-act": "mic" });
+    check("a stop button exists while it listens", stageRaw.every(r => /data-act="mic-stop"/.test(r)));
+    check("and is gone once it is done", !/data-act="mic-stop"/.test(h));
+    st.games = undefined;
+  }
+
+  section("speaking your reply in a conversation");
+  {
+    unlockAll();
+    click({ "data-go": "home" });
+    click({ "data-go": "convo", "data-id": CONVOS[0].id });
+    const turn = peek().session.tasks[0];
+    check("the mic is offered alongside the options", /data-act="mic"/.test(h) && /data-act="answer"/.test(h));
+
+    nextHeard = ["قهوة كثير"];
+    click({ "data-act": "mic" });
+    check("a wrong reply does not answer for you", peek().session.state === "asking");
+
+    nextHeard = [SCRIPT[turn.answer]];
+    click({ "data-act": "mic" });
+    check("saying the right reply answers the turn", peek().session.state === "checked");
+    check("and counts as correct", peek().session.lastRight === true);
+  }
+
+  section("when the microphone is refused");
+  {
+    click({ "data-go": "home" });
+    click({ "data-go": "convo", "data-id": CONVOS[0].id });
+    micErrored = "not-allowed";
+    nextHeard = [];
+    click({ "data-act": "mic" });
+    check("a refusal does not answer anything", peek().session.state === "asking");
+    click({ "data-act": "next" });
+    click({ "data-go": "home" });
+    click({ "data-go": "convo", "data-id": CONVOS[0].id });
+    check("and the mic stops being offered", !/data-act="mic"/.test(h));
+    check("the options still work", /data-act="answer"/.test(h));
+
+    check("it explains itself instead of going quiet", /class="mic-note"/.test(h));
+    check("it names the frame as the cause", /runs inside a frame/.test(h));
+    check("and points at the way round it", /Open the page on its own/.test(h));
+    check("while making clear typing is unaffected", /Typing works either way/.test(h));
+
+    click({ "data-go": "home" });
+    click({ "data-go": "talk" });
+    check("free talk explains it too", /class="mic-note"/.test(h));
+
+    // outside a frame it should name the error and offer a retry
+    const wasSelf = global.window.self, wasTop = global.window.top;
+    global.window.self = global.window.top = global.window;
+    click({ "data-go": "home" });
+    click({ "data-go": "talk" });
+    check("standalone, it names the actual error", /The microphone was refused \(not-allowed\)/.test(h));
+    check("and tells you where iOS hides the switch", /Enable Dictation/.test(h));
+    check("and offers to ask again", /data-act="mic-grant"/.test(h));
+    // each refusal has its own cause and its own remedy
+    const wasReason = peek().ears.reason;
+    peek().ears.reason = "service-not-allowed";
+    click({ "data-go": "home" }); click({ "data-go": "talk" });
+    check("a withheld speech service is named as such", /withholding the speech service/.test(h));
+    check("and Brave is called out by name", /Brave switches it off by default/.test(h));
+    check("no pointless permission prompt for that", !/data-act="mic-grant"/.test(h));
+    check("but a way to try again without reloading", /data-act="mic-again"/.test(h));
+    click({ "data-act": "mic-again" });
+    check("trying again unblocks the mic", peek().ears.blocked === null);
+    peek().ears.blocked = "denied";
+
+    peek().ears.reason = "audio-capture";
+    click({ "data-go": "home" }); click({ "data-go": "talk" });
+    check("no microphone at all is its own message", /No microphone was found/.test(h));
+
+    peek().ears.reason = "not-allowed";
+    click({ "data-go": "home" }); click({ "data-go": "talk" });
+    check("a plain refusal still offers the retry", /data-act="mic-grant"/.test(h));
+    check("every case says typing is unaffected", /Typing works either way/.test(h));
+
+    peek().ears.reason = wasReason;
+    global.window.self = wasSelf; global.window.top = wasTop;
+    check("and its field becomes the way in", /placeholder="type what you want to say"/.test(h));
+    fields.talk = "sabah al kheir";
+    inputH({ target: { getAttribute: () => "talk-typing", value: fields.talk } });
+    click({ "data-act": "talk-send" });
+    check("typing still holds the conversation up",
+      peek().talk.turns.some(t => t.who === "you" && t.ar === "Sabàh al-khèir"));
+    fields.talk = "";
+    micErrored = null;
+  }
+}
+
+section("free talk understands the dialect you chose");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+  st.talkScope = null;
+  st.variety = "lev";
+  const say = t => (fields.talk = t, inputH({ target: { getAttribute: () => "talk-typing", value: t } }),
+    click({ "data-act": "talk-send" }));
+
+  click({ "data-go": "home" });
+  click({ "data-go": "talk" });
+  say("kifak");
+  const mine = peek().talk.turns.filter(t => t.who === "you").pop();
+  check("typed in Levantine, it lands on the right phrase", mine && mine.ar === "Kèifa hàluk?");
+  check("and it comes back in Levantine", visible(h).includes("Kìfak?"));
+
+  say("biddi ahwe lau samaht");
+  const second = peek().talk.turns.filter(t => t.who === "you").pop();
+  check("a whole Levantine line is understood too",
+    second && second.ar === "Urìd qàhwa, min fàdlik");
+
+  // and the fus-ha it teaches still works while you are in the dialect
+  say("shukran");
+  const third = peek().talk.turns.filter(t => t.who === "you").pop();
+  check("without shutting out the fus-ha underneath", third && third.ar === "Shùkran");
+
+  st.variety = "msa";
+  fields.talk = "";
+  click({ "data-go": "home" });
+}
+
+section("free talk");
+{
+  const { talkIndex, bestMatches, replyFor } = global.__data;
+  const idx = talkIndex();
+  check(`it knows every phrase in the course (${idx.all.length})`, idx.all.length > 400);
+  check("every reply it can give is a taught phrase",
+    Object.values(idx.replyTo).every(r => idx.all.some(p => p.ar === r.ar)));
+  check("and so is every follow-up",
+    Object.values(idx.nextAfter).every(r => idx.all.some(p => p.ar === r.ar)));
+  check("it has openers to start from", idx.openers.length >= 5);
+
+  check("a greeting gets its proper answer",
+    (replyFor("Sabàh al-khèir") || {}).line.ar === "Sabàh an-nùr");
+  check("asking how someone is gets an answer",
+    !!replyFor("Kèifa hàluk?"));
+  check("answering carries the conversation on", !!replyFor("Anà bikhèir, shùkran"));
+
+  // matching, in both alphabets and with sloppy spelling
+  const top = s => (bestMatches(s, 3)[0] || {}).p;
+  check("matches sloppy transliteration", (top("sabah al kheir") || {}).ar === "Sabàh al-khèir");
+  check("matches with no accents at all", (top("kayfa haluk") || {}).ar === "Kèifa hàluk?");
+  check("matches Arabic from a recogniser", (top("صباح الخير") || {}).ar === "Sabàh al-khèir");
+  check("gibberish matches nothing", bestMatches("zzz qqq wwww", 3).length === 0);
+
+  // the screen itself
+  click({ "data-go": "home" });
+  check("free talk is reachable from home", /data-go="talk"/.test(h));
+  click({ "data-go": "talk" });
+  check("it has its own address", location.hash === "#/freetalk");
+  check("it opens the conversation itself", peek().talk.turns.length === 1 && peek().talk.turns[0].who === "them");
+  const opener = peek().talk.turns[0].ar;
+  check("with a line from the course", idx.all.some(p => p.ar === opener));
+
+  // say something it understands
+  fields.talk = "sabah al kheir";
+  inputH({ target: { getAttribute: () => "talk-typing", value: fields.talk } });
+  click({ "data-act": "talk-send" });
+  const turns = peek().talk.turns;
+  check("your line joins the transcript", turns.some(t => t.who === "you" && t.ar === "Sabàh al-khèir"));
+  check("and it answers", turns[turns.length - 1].who === "them");
+  check("with something it was taught", idx.all.some(p => p.ar === turns[turns.length - 1].ar));
+
+  // something ambiguous should ask rather than guess
+  fields.talk = "ana";
+  inputH({ target: { getAttribute: () => "talk-typing", value: "ana" } });
+  const before = peek().talk.turns.length;
+  click({ "data-act": "talk-send" });
+  check("a vague attempt asks instead of guessing",
+    peek().talk.turns.length === before && peek().talk.options.length > 0);
+  check("and offers what you might have meant", /Did you mean|I understood/.test(h));
+  const pick = peek().talk.options[0].p.ar;
+  click({ "data-act": "talk-pick", "data-id": pick });
+  check("picking one sends it", peek().talk.turns.some(t => t.who === "you" && t.ar === pick));
+
+  // nothing it knows
+  fields.talk = "zzz qqq wwww";
+  inputH({ target: { getAttribute: () => "talk-typing", value: "zzz qqq wwww" } });
+  const b2 = peek().talk.turns.length;
+  click({ "data-act": "talk-send" });
+  check("nonsense is refused, not guessed", peek().talk.turns.length === b2);
+  check("and it says so plainly", /Nothing I know sounds like that/.test(h));
+
+  click({ "data-act": "talk-reset" });
+  check("start over clears the thread", peek().talk.turns.length === 1);
+
+  // it never dies: even an unanswerable line gets a continuation
+  const dead = idx.all.find(p => !replyFor(p.ar));
+  if (dead) {
+    fields.talk = dead.ar;
+    inputH({ target: { getAttribute: () => "talk-typing", value: dead.ar } });
+    click({ "data-act": "talk-send" });
+    const last = peek().talk.turns[peek().talk.turns.length - 1];
+    check("an unanswerable line still leaves the door open", last.who === "them");
+    check("saying it does not understand, in Arabic",
+      peek().talk.turns.some(t => t.ar === "Là àfham"));
+  }
+  fields.talk = "";
+}
+
+section("choosing what the partner knows");
+{
+  const { talkIndex, bestMatches, replyFor, talkScope } = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.talkScope = null;
+  click({ "data-go": "home" });
+  click({ "data-go": "talk" });
+  check("the picker is on the screen", /data-act="scope"/.test(h));
+  check("it says how many lessons and phrases are in play", /Lessons in play &#183; \d+ of \d+, \d+ phrases/.test(h));
+  check("shortcuts for all and for what you passed", /data-act="scope-all"/.test(h) && /data-act="scope-passed"/.test(h));
+
+  // narrow it to lesson 1 alone
+  click({ "data-act": "scope-all" });
+  const wide = talkIndex().all.length;
+  LESSONS.forEach(l => { if (l.id !== 1) click({ "data-act": "scope", "data-id": String(l.id) }); });
+  check("the scope is now a single lesson", talkScope().join() === "1");
+  const narrow = talkIndex();
+  check(`the vocabulary shrinks with it (${wide} -> ${narrow.all.length})`, narrow.all.length < wide / 4);
+  check("and it is persisted", savedStore().talkScope.join() === "1");
+
+  const L1 = LESSONS[0];
+  const inL1 = new Set([...L1.phrases.map(p => p.ar), ...(L1.dialogue || []).flatMap(d => [d.ask, d.reply])]);
+  check("every phrase it knows comes from that lesson", narrow.all.every(p => inL1.has(p.ar)));
+  check("every answer it can give comes from that lesson",
+    Object.values(narrow.replyTo).every(r => inL1.has(r.ar)));
+  check("every follow-up too", Object.values(narrow.nextAfter).every(r => inL1.has(r.ar)));
+  check("it still has a way to open", narrow.openers.length > 0 && inL1.has(narrow.openers[0].ar));
+
+  // a phrase from outside the scope is now unknown to it
+  check("it no longer understands a lesson 9 phrase", bestMatches("al-hisab min fadlik", 3).length === 0);
+  check("but still understands its own", (bestMatches("sabah al kheir", 1)[0] || {}).p.ar === "Sabàh al-khèir");
+  check("and answers it", (replyFor("Sabàh al-khèir") || {}).line.ar === "Sabàh an-nùr");
+
+  // holding a conversation inside the narrow scope
+  click({ "data-go": "home" });
+  click({ "data-go": "talk" });
+  fields.talk = "sabah al kheir";
+  inputH({ target: { getAttribute: () => "talk-typing", value: fields.talk } });
+  click({ "data-act": "talk-send" });
+  const said = peek().talk.turns;
+  check("it still holds a conversation", said.some(t => t.who === "you") && said[said.length - 1].who === "them");
+  check("without ever leaving the chosen lesson",
+    said.every(t => inL1.has(t.ar) || t.ar === "Là àfham"));
+
+  check("the last lesson cannot be switched off",
+    (click({ "data-act": "scope", "data-id": "1" }), talkScope().length === 1));
+
+  click({ "data-act": "scope-all" });
+  check("All puts everything back", talkScope().length === LESSONS.length);
+  fields.talk = "";
+  st.talkScope = null;
+}
+
+if (withMic) {
+  section("saying it, not typing it");
+  {
+    const D = global.__data;
+    const st = peek().store;
+    // an earlier section leaves the mic refused on purpose
+    peek().ears.blocked = null;
+    peek().ears.reason = null;
+    st.passive = {};
+    st.str = {};
+    unlockAll();
+    click({ "data-go": "moment" });
+    check("the situations offer the microphone", /data-act="mic"/.test(h));
+
+    let mo = peek().moment;
+    nextHeard = [D.spk(mo.m.ok[0])];
+    click({ "data-act": "mic" });
+    check("saying one of the answers is answering", /verdict-msg ok/.test(h));
+    check("it knows which one you said", peek().moment.matched === mo.m.ok[0]);
+    check("and it counts for that phrase like any round",
+      (((peek().store.str || {})[D.lessonTeaching(mo.m.ok[0]) + "|" + mo.m.ok[0]]) || {}).s > 0);
+
+    // one of the later answers, not just the first
+    click({ "data-act": "moment-next" });
+    let g = 0;
+    while (g++ < 40 && peek().moment.m.ok.length < 2) click({ "data-act": "moment-next" });
+    mo = peek().moment;
+    if (mo.m.ok.length > 1) {
+      nextHeard = [D.spk(mo.m.ok[1])];
+      click({ "data-act": "mic" });
+      check("any of the answers counts, not only the first", peek().moment.matched === mo.m.ok[1]);
+    }
+
+    click({ "data-act": "moment-next" });
+    mo = peek().moment;
+    nextHeard = ["قهوة"];
+    click({ "data-act": "mic" });
+    check("something else is reported, not marked wrong", !peek().moment.checked);
+    check("it says what it thought it heard", /class="heard"/.test(h));
+    check("in your letters, never in Arabic ones",
+      !/[\u0621-\u064A]/.test(visible(h)));
+    check("and offers to put it in the box", /data-act="moment-use"/.test(h));
+    click({ "data-act": "moment-use", "data-id": "Qàhwa" });
+    check("which fills it in for you", peek().moment.typed === "Qàhwa");
+
+    nextHeard = [];
+    click({ "data-act": "mic" });
+    check("silence is handled", /Nothing came through/.test(h));
+    check("and typing still works after all that", !peek().moment.checked);
+
+    nextHeard = [];
+    st.str = {};
+    click({ "data-go": "home" });
+  }
+}
+
+console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
+process.exit(fail.length ? 1 : 0);

@@ -1,2 +1,4 @@
 .DS_Store
 node_modules/
+src/extracted.js
+src/extracted.test.js
