@@ -142,7 +142,7 @@ function playRound(right) {
   if (t.type === "say") {
     if (!t.shown) { click({ "data-act": "say-reveal" }); return; }
     click({ "data-act": "say-grade", "data-value": right ? "got" : "missed" });
-  } else if (t.type === "write") {
+  } else if (t.type === "write" || t.type === "dictate") {
     t.typed = right ? t.answer : "zzzqqq";
     click({ "data-act": "check-write" });
   } else if (t.type === "match") {
@@ -278,7 +278,7 @@ section("the app knows what day it is");
 
   // answering re-dates it, from the faded value rather than the stored one
   put(5, HOLDS[5] + 1);
-  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
   click({ "data-go": "home" });
   click({ "data-go": "play", "data-id": "1" });
   let guard = 0, found = false;
@@ -668,7 +668,7 @@ section("saying it out loud");
   unlockAll();
   const st = peek().store;
   st.known = {}; st.hidden = {}; st.str = {};
-  st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+  st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true, dictate: false };
   click({ "data-go": "home" });
   click({ "data-go": "play", "data-id": "1" });
   const s0 = peek().session;
@@ -726,7 +726,8 @@ section("listening and replying carry the weight");
 
 section("the game picker");
 {
-  const ALL = ["quiz", "build", "match", "dialog", "write", "say"].concat(withVoice ? ["listen"] : []);
+  const ALL = ["quiz", "build", "match", "dialog", "write", "say"]
+    .concat(withVoice ? ["listen", "dictate"] : []);
   // only the game chips: the speed and variety pickers wear the same class
   const chipsOn = () => (h.match(/is-on"[^>]*data-act="game"/g) || []).length;
   const setOnly = keys => {
@@ -736,7 +737,7 @@ section("the game picker");
   };
   unlockAll();
   click({ "data-go": "home" });
-  check(`${withVoice ? 7 : 6} games on by default`, chipsOn() === (withVoice ? 7 : 6));
+  check(`${withVoice ? 8 : 6} games on by default`, chipsOn() === (withVoice ? 8 : 6));
 
   const bad = [];
   for (const only of ALL) {
@@ -1047,7 +1048,7 @@ section("choosing which Arabic you are learning");
   check("with the fusha alongside it", /fusha:/.test(h) && visible(h).includes("Kèifa hàluk?"));
 
   click({ "data-go": "home" });
-  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
   click({ "data-go": "play", "data-id": "2" });
   // walk the whole session and prove no fusha-only form is ever shown
   // for a phrase that has an Egyptian one
@@ -1159,7 +1160,7 @@ section("setting aside and hiding from inside any game");
   st.known = {}; st.hidden = {};
   const seen = { withKnown: [], withHide: [] };
   ["quiz", "build", "write", "say", "dialog"].forEach(g => {
-    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
     st.games[g] = true;
     click({ "data-go": "home" });
     click({ "data-go": "play", "data-id": "2" });
@@ -1172,7 +1173,7 @@ section("setting aside and hiding from inside any game");
   check(`so is setting aside, after a right answer (${seen.withKnown.join(", ")})`, seen.withKnown.length === 5);
 
   // and it actually works from there
-  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
   click({ "data-go": "home" });
   click({ "data-go": "play", "data-id": "2" });
   playRound(true);
@@ -1187,7 +1188,7 @@ section("the answer is not handed to you");
 {
   unlockAll();
   const st = peek().store;
-  st.games = { quiz: false, build: false, match: false, dialog: true, write: false, listen: false, say: false };
+  st.games = { quiz: false, build: false, match: false, dialog: true, write: false, listen: false, say: false, dictate: false };
   click({ "data-go": "home" });
   click({ "data-go": "play", "data-id": "2" });
   const t = peek().session.tasks[0];
@@ -1482,7 +1483,7 @@ section("the rule turns up the moment you need it");
 
   unlockAll();
   const st = peek().store;
-  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
 
   // a lesson whose note-carrying phrase is reachable in a quiz round
   const target = noted.find(n => n.l.phrases.length > 3);
@@ -2031,7 +2032,7 @@ section("one job, several phrases");
   const produced = t =>
     t.type === "dialog" ? t.exchange.reply : (t.phrase ? t.phrase.ar : null);
 
-  st.games = { quiz: false, build: true, match: false, dialog: true, write: true, listen: false, say: true };
+  st.games = { quiz: false, build: true, match: false, dialog: true, write: true, listen: false, say: true, dictate: false };
   let seen = new Set(), guard = 0;
   while (guard++ < 40) {
     click({ "data-go": "home" });
@@ -2042,7 +2043,7 @@ section("one job, several phrases");
   check("but the rest of the lesson still is", seen.size > 3);
 
   // it still turns up in the games that only test understanding
-  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
   seen = new Set(); guard = 0;
   let dirs = new Set();
   while (guard++ < 40) {
@@ -2092,7 +2093,7 @@ section("one job, several phrases");
   // and a lesson where you have parked everything still plays
   st.passive = {};
   lesson1.phrases.forEach(p => { st.passive[p.ar] = true; });
-  st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+  st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true, dictate: false };
   click({ "data-go": "home" });
   click({ "data-go": "play", "data-id": "1" });
   check("a lesson you have parked outright still plays", peek().session.tasks.length > 0);
@@ -2114,7 +2115,7 @@ section("one job, several phrases");
   check("tapping again undoes it", !D.isPassive(own));
 
   unlockAll();
-  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
   click({ "data-go": "home" });
   click({ "data-go": "play", "data-id": "5" });
   answerCurrent(true);
@@ -2318,6 +2319,80 @@ section("when you get stuck");
   click({ "data-go": "home" });
 }
 
+section("out loud, and by ear");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+  st.str = {}; st.games = undefined; st.earOnly = false;
+
+  // dictation is a game in the rotation, not a screen off to one side
+  const dict = D.GAMES.find(g => g.key === "dictate");
+  check("dictation is one of the games", !!dict && dict.needsVoice === true);
+  check("it needs at least two words to be worth it",
+    !D.canMake({ ar: "Shùkran", en: "Thank you" }, "dictate") &&
+    D.canMake({ ar: "Sabàh al-khèir", en: "Good morning" }, "dictate"));
+
+  if (withVoice) {
+    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: true };
+    spoken.length = 0;
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    const d = peek().session.tasks[0];
+    check("a dictation session is all dictation", d.type === "dictate");
+    check("it plays on arrival", spoken.length === 1);
+    check("with nothing to read", !visible(h).includes(D.disp(d.phrase.ar)));
+    d.typed = D.disp(d.phrase.ar);
+    click({ "data-act": "check-write" });
+    check("writing what you heard counts", peek().session.lastRight === true);
+    check("and then it shows you", visible(h).includes(D.disp(d.phrase.ar)));
+    st.games = undefined;
+
+    // ear only
+    st.earOnly = true;
+    st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
+    let q = null, g = 0;
+    while (g++ < 40 && !q) {
+      click({ "data-go": "home" });
+      click({ "data-go": "play", "data-id": "1" });
+      const t0 = peek().session.tasks[0];
+      if (t0.toEnglish) q = t0;
+    }
+    check("with ear only on, a quiz is heard and not read", !visible(h).includes(D.disp(q.prompt)));
+    check("and the words are one tap away", /data-act="peek"/.test(h));
+    click({ "data-act": "peek" });
+    check("which shows them", visible(h).includes(D.disp(q.prompt)));
+    st.earOnly = false;
+    st.games = undefined;
+  }
+
+  // shadowing and the run
+  if (withVoice && withMic) {
+    st.str = {};
+    LESSONS[0].phrases.forEach(p => { st.str["1|" + p.ar] = { s: 3, n: 3, day: D.today() }; });
+    click({ "data-go": "shadow" });
+    check("shadowing has a phrase and a microphone",
+      !!peek().loud && peek().loud.mode === "shadow" && /data-act="mic"/.test(h));
+    nextHeard = [D.spk(peek().loud.list[0].ar)];
+    click({ "data-act": "mic" });
+    check("saying it back is scored", peek().loud.run === 1 && peek().loud.got === 1);
+    check("but never in Arabic letters", !/[\u0621-\u064A]/.test(visible(h)));
+    check("and it says a recogniser is not a judge", /not a judge/.test(h));
+    nextHeard = [];
+
+    click({ "data-go": "run" });
+    const run = peek().loud;
+    check("a run is ten at most, all of them ones you know",
+      run.list.length <= 10 && run.list.every(p => p.s !== null && p.s >= 2));
+    check("nothing on the run is marked", !/data-act="mic"/.test(h));
+    for (let i = 0; i < run.list.length + 1; i++) click({ "data-act": "loud-next" });
+    check("it ends by saying how long it took", peek().loud.done === true && /Run over/.test(h));
+    st.str = {};
+  }
+
+  click({ "data-go": "home" });
+}
+
 section("how a phrase arrives");
 {
   const D = global.__data;
@@ -2380,7 +2455,7 @@ section("how a phrase arrives");
 
   // long phrases are built from the tail
   st.str = {};
-  st.games = { quiz: false, build: true, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: false, build: true, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
   let lad = null;
   g = 0;
   while (g++ < 80 && !lad) {
@@ -2422,7 +2497,7 @@ section("difficulty that follows your strength");
   const st = peek().store;
   unlockAll();
   st.known = {}; st.passive = {};
-  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
 
   const optionsAt = s2 => {
     st.str = {};
@@ -2514,7 +2589,7 @@ section("when you are wrong");
   const st = peek().store;
   unlockAll();
   st.str = {}; st.known = {}; st.passive = {};
-  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
 
   // one wrong answer is not the end of the question
   click({ "data-go": "home" });
@@ -2571,7 +2646,7 @@ section("when you are wrong");
     (st.str["1|Marhàban"].s = 3, !D.isLeech(1, "Marhàban")));
   st.str["1|Marhàban"].s = 0;
 
-  st.games = { quiz: false, build: true, match: false, dialog: false, write: true, listen: false, say: true };
+  st.games = { quiz: false, build: true, match: false, dialog: false, write: true, listen: false, say: true, dictate: false };
   let leech = null, g = 0;
   while (g++ < 60 && !leech) {
     click({ "data-go": "home" });
@@ -2581,7 +2656,7 @@ section("when you are wrong");
   check("with only producing games on, a leech still comes as recognition",
     !!leech && leech.isLeech === true && leech.toEnglish === true);
 
-  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
   let shown = null; g = 0;
   while (g++ < 60 && !shown) {
     click({ "data-go": "home" });
@@ -2608,7 +2683,7 @@ section("the games got harder in the right places");
   unlockAll();
 
   // Reply: the wrong answers no longer come from the same four lines
-  st.games = { quiz: false, build: false, match: false, dialog: true, write: false, listen: false, say: false };
+  st.games = { quiz: false, build: false, match: false, dialog: true, write: false, listen: false, say: false, dictate: false };
   click({ "data-go": "home" });
   click({ "data-go": "play", "data-id": "2" });
   const t = peek().session.tasks[0];
@@ -2631,7 +2706,7 @@ section("the games got harder in the right places");
   check("but a different phrase is still different",
     !D.sameSaid("shukran", "ʿÀfwan"));
 
-  st.str = {}; st.games = { quiz: false, build: false, match: false, dialog: false, write: true, listen: false, say: false };
+  st.str = {}; st.games = { quiz: false, build: false, match: false, dialog: false, write: true, listen: false, say: false, dictate: false };
   click({ "data-go": "home" });
   click({ "data-go": "play", "data-id": "1" });
   const tw = peek().session.tasks[0];
@@ -2779,7 +2854,7 @@ section("the phone, not the desktop");
   check("free talk's are too", /class="action-row"/.test(h));
 
   // the long grammar note cannot pin half a screen to the bottom
-  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
   let guard = 0, noted = false;
   while (guard++ < 40 && !noted) {
     click({ "data-go": "home" });
@@ -2919,7 +2994,7 @@ section("the audit's five");
   st.variety = "msa";
 
   // 2. a solved grid has to say it is finished, or walking back is a dead end
-  st.games = { quiz: false, build: false, match: true, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: false, build: false, match: true, dialog: false, write: false, listen: false, say: false, dictate: false };
   click({ "data-go": "home" });
   click({ "data-go": "play", "data-id": "1" });
   const grid = peek().session.tasks[0];
@@ -2949,7 +3024,7 @@ section("the audit's five");
 
   // 4. the speaker under a wrong answer is given the phrase, not the words
   st.variety = "lev";
-  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
   let btn = "", guard = 0;
   while (guard++ < 40 && !/data-say=/.test(btn)) {
     click({ "data-go": "home" });
@@ -3088,7 +3163,7 @@ if (withMic) {
     unlockAll();
     const st = peek().store;
     st.known = {}; st.hidden = {}; st.str = {};
-    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true, dictate: false };
     click({ "data-go": "home" });
     click({ "data-go": "play", "data-id": "1" });
     const t0 = peek().session.tasks[0];
@@ -3135,7 +3210,7 @@ if (withMic) {
   {
     unlockAll();
     const st = peek().store;
-    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true, dictate: false };
     click({ "data-go": "home" });
     click({ "data-go": "play", "data-id": "1" });
     stageSeen.length = 0; stageRaw.length = 0;
@@ -3156,7 +3231,7 @@ if (withMic) {
   {
     unlockAll();
     const st = peek().store;
-    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true, dictate: false };
     click({ "data-go": "home" });
     click({ "data-go": "play", "data-id": "1" });
     const t0 = peek().session.tasks[0];
@@ -3235,7 +3310,7 @@ if (withMic) {
   {
     unlockAll();
     const st = peek().store;
-    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true };
+    st.games = { quiz: false, build: false, match: false, dialog: false, write: false, listen: false, say: true, dictate: false };
     click({ "data-go": "home" });
     click({ "data-go": "play", "data-id": "1" });
     stageRaw.length = 0;

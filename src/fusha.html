@@ -5653,16 +5653,17 @@
     { key: "dialog", label: "Reply", hint: "Answer what is said to you" },
     { key: "say", label: "Say it", hint: "Say it aloud, then mark yourself" },
     { key: "listen", label: "Listen", hint: "Hear it, no text", needsVoice: true },
-    { key: "write", label: "Write", hint: "Type the transliteration from memory" }
+    { key: "write", label: "Write", hint: "Type the transliteration from memory" },
+    { key: "dictate", label: "Dictation", hint: "Hear a whole phrase, write it down", needsVoice: true }
   ];
 
-  var ASKING = ["quiz", "build", "dialog", "say", "listen", "write"];
+  var ASKING = ["quiz", "build", "dialog", "say", "listen", "write", "dictate"];
 
   // Conversation and comprehension lead, because that is the goal:
   // holding a conversation and following one, not spelling.
   // Typing a transliteration is the least conversational thing here and
   // it was taking a third of every session.
-  var TYPE_WEIGHT = { dialog: 3, listen: 3, say: 2, quiz: 2, write: 1, build: 1 };
+  var TYPE_WEIGHT = { dialog: 3, listen: 3, say: 2, quiz: 2, dictate: 2, write: 1, build: 1 };
 
   function gameByKey(k) {
     for (var i = 0; i < GAMES.length; i++) if (GAMES[i].key === k) return GAMES[i];
@@ -6088,6 +6089,18 @@
     return { type: "write", points: 1, srcLesson: lesson, phrase: phrase, answer: disp(phrase.ar), typed: "" };
   }
 
+  // Writing down what you heard, with nothing on the screen to read. The
+  // numbers drill does this for numbers; a whole phrase is the harder
+  // and more useful version, because holding four words in your head
+  // long enough to write them is most of listening.
+  function dictateRound(lesson, phrase) {
+    if (!spk(phrase.ar)) return null;
+    return {
+      type: "dictate", points: 1, srcLesson: lesson, phrase: phrase,
+      answer: disp(phrase.ar), typed: "", played: false
+    };
+  }
+
   function listenRound(lesson, phrase) {
     if (!SCRIPT[phrase.ar]) return null;
     var wrong = distractors(visiblePhrases(lesson), phrase.en, "en", optionsFor(lesson.id, phrase.ar));
@@ -6210,6 +6223,7 @@
       return n >= 2 && n <= 6;
     }
     if (type === "listen") return !!SCRIPT[p.ar];
+    if (type === "dictate") return !!SCRIPT[p.ar] && tokens(disp(p.ar)).length >= 2;
     return true;
   }
 
@@ -6236,6 +6250,7 @@
     if (type === "say") return sayRound(lesson, p);
     if (type === "write") return writeRound(lesson, p);
     if (type === "listen") return listenRound(lesson, p);
+    if (type === "dictate") return dictateRound(lesson, p);
     return quizRound(lesson, p);
   }
 
@@ -7139,6 +7154,7 @@
     if (v.name === "twins") return "#/twins";
     if (v.name === "asked") return "#/asked";
     if (v.name === "numbers") return "#/numbers";
+    if (v.name === "loud") return "#/loud/" + (loud ? loud.mode : "shadow");
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -7217,6 +7233,15 @@
       session = null;
       pbQuery = "";
       view = { name: "phrasebook" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "loud") {
+      session = null;
+      loud = newLoud(parts[1] === "run" ? "run" : "shadow", null);
+      if (loud && loud.mode === "run") loud.startedAt = Date.now();
+      view = { name: "loud" };
       render();
       return;
     }
@@ -7677,9 +7702,25 @@
 
       '<div class="nav-group">One game at a time</div>' + drills +
 
+      '<button class="nav-item' + (canSpeak() ? "" : " is-off") + '" data-act="ear-only"' +
+      (canSpeak() ? "" : " disabled") + ' aria-pressed="' + (store.earOnly ? "true" : "false") + '">' +
+      '<span class="nav-label">Ear only' + (store.earOnly ? " &#183; on" : "") + "</span>" +
+      '<span class="nav-note">' + (canSpeak()
+        ? "Hide the words wherever there is audio"
+        : "Needs an Arabic voice on this device") + "</span>" +
+      (store.earOnly ? '<span class="who-tick" aria-hidden="true"></span>' : "") + "</button>" +
+
       '<div class="nav-group">Speak</div>' +
       '<button class="nav-item" data-go="talk"><span class="nav-label">Free talk</span>' +
       '<span class="nav-note">Say anything; it answers from the lessons you choose</span></button>' +
+      '<button class="nav-item' + (canHear() && canSpeak() ? "" : " is-off") + '" data-go="shadow"' +
+      (canHear() && canSpeak() ? "" : " disabled") + '><span class="nav-label">Shadowing</span>' +
+      '<span class="nav-note">' + (canHear() && canSpeak()
+        ? "Hear it, say it straight back"
+        : "Needs a voice and a microphone") + "</span></button>" +
+      '<button class="nav-item' + (openSits ? "" : " is-off") + '" data-go="run"' +
+      (openSits ? "" : " disabled") + '><span class="nav-label">At a run</span>' +
+      '<span class="nav-note">Ten you know, out loud, without stopping</span></button>' +
       '<button class="nav-item" data-go="numbers"><span class="nav-label">Numbers by ear</span>' +
       '<span class="nav-note">A price or a time, said once. Type the digits</span></button>' +
       '<button class="nav-item' + (openAsks ? "" : " is-off") + '" data-go="asked"' +
@@ -7862,6 +7903,7 @@
   var moment = null;
   var asked = null;
   var numbers = null;
+  var loud = null;
 
   function talkHTML() {
     var lines = talk.turns.map(function (t) {
@@ -9189,7 +9231,7 @@
 
   // Producing it and recognising it are different jobs. These are the
   // games that make you produce.
-  var PRODUCING = { build: true, say: true, write: true, dialog: true };
+  var PRODUCING = { build: true, say: true, write: true, dialog: true, dictate: true };
 
   function twinReached(t) {
     return t.members.filter(function (ar) {
@@ -9619,6 +9661,131 @@
   }
 
   /* ============================================================
+     OUT LOUD
+
+     Two things the course could not ask of you. Shadowing: hear it,
+     say it back at once, and be told how close you got - the only
+     exercise that works on the mouth rather than the memory, which is
+     what the ayn and the kh need. And a run: ten phrases you already
+     know, one after another, timed and unmarked, to make automatic
+     what is merely known.
+     ============================================================ */
+
+  function loudPool() {
+    var out = [];
+    finishedLessons().forEach(function (l) {
+      visiblePhrases(l).forEach(function (p) {
+        if (!spk(p.ar)) return;
+        out.push({ ar: p.ar, en: p.en, lesson: l, s: strengthOf(l.id, p.ar) });
+      });
+    });
+    return out;
+  }
+
+  function newLoud(mode, prev) {
+    var pool = loudPool();
+    if (!pool.length) return null;
+    // Shadowing works on anything; a run is only worth it on phrases you
+    // are supposed to have.
+    var use = mode === "run" ? pool.filter(function (p) { return p.s !== null && p.s >= 2; }) : pool;
+    if (!use.length) use = pool;
+    var list = shuffle(use).slice(0, mode === "run" ? 10 : 1);
+    return {
+      mode: mode,
+      list: list,
+      i: 0,
+      heard: null,
+      score: null,
+      played: false,
+      startedAt: null,
+      done: false,
+      got: prev && prev.mode === mode ? prev.got : 0,
+      run: prev && prev.mode === mode ? prev.run : 0
+    };
+  }
+
+  function loudNow() { return loud && loud.list[loud.i]; }
+
+  function shadowHeard(list) {
+    var p = loudNow();
+    if (!p) return;
+    var best = bestHeard(list, spk(p.ar) || "");
+    loud.heard = best;
+    loud.score = best.score;
+    loud.run += 1;
+    if (best.score >= HEARD_OK) loud.got += 1;
+    render();
+  }
+
+  function loudNext() {
+    if (!loud) return;
+    if (loud.mode === "shadow") { loud = newLoud("shadow", loud); render(); return; }
+    if (loud.i >= loud.list.length - 1) { loud.done = true; render(); return; }
+    loud.i += 1;
+    loud.played = false;
+    render();
+  }
+
+  function loudHTML() {
+    if (!loud) {
+      return topbarHTML("Out loud") +
+        '<p class="pb-lead">Pass a lesson first: there is nothing to say yet.</p>' +
+        '<div class="btn-row"><button class="btn" data-go="home">Back to the lessons</button></div>';
+    }
+
+    var p = loudNow();
+    var shadow = loud.mode === "shadow";
+
+    if (loud.done) {
+      var secs = loud.startedAt ? Math.round((Date.now() - loud.startedAt) / 1000) : null;
+      return topbarHTML("Out loud") +
+        '<div class="card result fade-in"><div class="eyebrow">Run over</div>' +
+        '<div class="result-score mono review">' + loud.list.length + "</div>" +
+        '<p class="result-line">' + (secs !== null ? "Ten phrases in " + secs + " seconds. " : "") +
+        "Nothing was marked. The point was to keep going.</p></div>" +
+        '<div class="btn-row"><button class="btn btn-ghost" data-go="home">Home</button>' +
+        '<button class="btn" data-act="loud-again">Again</button></div>';
+    }
+
+    var stage = shadow
+      ? '<div class="listen-stage">' +
+        '<button class="say say-lg" data-act="say" data-say="' + esc(p.ar) + '"' +
+        ' aria-label="Play it again">' + SPEAKER_SVG + "</button></div>" +
+        '<div class="prompt-sub">' +
+        (loud.heard ? '<span class="ar">' + esc(disp(p.ar)) + "</span>" : "listen, then say it back") +
+        "</div>"
+      : '<div class="prompt-main ar">' + esc(disp(p.ar)) + "</div>" +
+        '<div class="prompt-sub">' + esc(p.en) + "</div>";
+
+    var body = shadow
+      ? (canHear()
+          ? '<div class="mic-row">' + micBtn(loud.heard ? "Say it again" : "Say it back", ears.busy) + "</div>"
+          : micNote()) +
+        (loud.heard
+          ? '<div class="heard' + (loud.score >= HEARD_OK ? " is-close" : "") + '">' +
+            '<span class="heard-label">' +
+            (loud.score >= HEARD_OK ? "That is it" : "Close enough to keep going") + "</span>" +
+            '<span class="heard-text ar">' + esc(nearestTranslit(loud.heard.text).text || "-") + "</span>" +
+            '<span class="heard-note">A recogniser is not a judge. What matters is that your mouth made the shape.</span>' +
+            "</div>"
+          : "") +
+        '<div class="btn-row"><button class="btn btn-wide" data-act="loud-next">' +
+        (loud.heard ? "Another one" : "Skip it") + "</button></div>"
+      : '<div class="btn-row"><button class="btn btn-wide" data-act="loud-next">Next</button></div>';
+
+    return topbarHTML("Out loud", null, shadow
+      ? (loud.run ? loud.got + "/" + loud.run : "")
+      : (loud.i + 1) + " / " + loud.list.length) +
+      '<p class="pb-lead">' +
+      (shadow
+        ? "Hear it, then say it straight back. This one is for your mouth, not your memory: nothing here counts towards anything."
+        : "Ten you already know, out loud, one after another. Do not stop to get them right.") +
+      "</p>" +
+      '<div class="prompt"><div class="prompt-label">' +
+      (shadow ? "Say it back" : "Say this") + "</div>" + stage + "</div>" + body;
+  }
+
+  /* ============================================================
      LESSON, STUDY
      ============================================================ */
 
@@ -9822,6 +9989,7 @@
       t.type === "say" ? sayHTML(t) :
       t.type === "write" ? writeHTML(t) :
       t.type === "listen" ? listenHTML(t) :
+      t.type === "dictate" ? dictateHTML(t) :
       t.type === "follow" ? followHTML(t) :
       t.type === "convoturn" ? convoTurnHTML(t) : dialogHTML(t);
     var title = session.isToday ? "Today"
@@ -9885,8 +10053,24 @@
       : "";
   }
 
+  // Reading is the crutch that stops you listening. With this on, any
+  // round that can be heard is heard, and the words are one tap away
+  // rather than in front of you.
+  function earOnly() {
+    return !!store.earOnly && canSpeak();
+  }
+
   function quizHTML(t) {
     var hear = t.toEnglish ? sayBtn(t.prompt, true) : "";
+    if (t.toEnglish && earOnly() && !!spk(t.prompt) && session.state !== "checked" && !t.peeked) {
+      return '<div class="prompt">' +
+        '<div class="prompt-label">What does this mean?</div>' +
+        '<div class="listen-stage">' +
+        '<button class="say say-lg" data-act="say" data-say="' + esc(t.prompt) + '"' +
+        ' aria-label="Play it again">' + SPEAKER_SVG + "</button></div>" +
+        '<div class="prompt-sub"><button class="peek" data-act="peek">Show me the words</button></div>' +
+        "</div>" + leechAid(t) + optionsHTML(t.options, !t.toEnglish, t);
+    }
     return '<div class="prompt">' +
       '<div class="prompt-label">' + (t.toEnglish ? "What does this mean?" : "How do you say this?") + "</div>" +
       '<div class="say-row"><div class="prompt-main' + (t.toEnglish ? " ar" : "") + '">' +
@@ -9954,6 +10138,24 @@
       '<input class="' + cls + '" data-act="typing" type="text" value="' + esc(t.typed) + '"' +
       ' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"' +
       ' aria-label="Type the Arabic phrase"' + (checked ? " disabled" : "") + ">" +
+      (checked ? "" :
+        '<div class="btn-row"><button class="btn btn-wide" data-act="check-write">Check</button></div>');
+  }
+
+  function dictateHTML(t) {
+    var checked = session.state === "checked";
+    var cls = "type-in" + (checked ? (session.lastRight ? " is-right" : " is-wrong") : "");
+    return '<div class="prompt">' +
+      '<div class="prompt-label">Write down what you hear</div>' +
+      '<div class="listen-stage">' +
+      '<button class="say say-lg" data-act="say" data-say="' + esc(t.phrase.ar) + '"' +
+      ' aria-label="Play it again">' + SPEAKER_SVG + "</button></div>" +
+      '<div class="prompt-sub">' +
+      (checked ? '<span class="ar">' + esc(disp(t.phrase.ar)) + "</span>" : "tap to hear it again") +
+      "</div></div>" +
+      '<input class="' + cls + '" data-act="typing" type="text" value="' + esc(t.typed) + '"' +
+      ' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"' +
+      ' aria-label="Type what you heard"' + (checked ? " disabled" : "") + ">" +
       (checked ? "" :
         '<div class="btn-row"><button class="btn btn-wide" data-act="check-write">Check</button></div>');
   }
@@ -10554,6 +10756,7 @@
     if (view.name === "twins") return twinsHTML();
     if (view.name === "asked") return askedHTML();
     if (view.name === "numbers") return numbersHTML();
+    if (view.name === "loud") return loudHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -10638,6 +10841,14 @@
       }
       return;
     }
+    if (view.name === "loud") {
+      var lp = loudNow();
+      if (loud && lp && !loud.played && canSpeak() && loud.mode === "shadow") {
+        loud.played = true;
+        speak(lp.ar);
+      }
+      return;
+    }
     if (view.name === "numbers") {
       if (numbers && !numbers.played && canSpeak()) { numbers.played = true; speak(numbers.w.ar); }
       var nf = numbers && !numbers.checked && app.querySelector('[data-act="numbers-typing"]');
@@ -10693,7 +10904,7 @@
       if (cell && typeof cell.focus === "function") cell.focus();
     }
 
-    if (t.type === "listen" && !t.played) { t.played = true; speak(t.phrase.ar); }
+    if ((t.type === "listen" || t.type === "dictate") && !t.played) { t.played = true; speak(t.phrase.ar); }
     if (t.type === "follow" && !t.played) { t.played = true; playRun(t.lines); }
   }
 
@@ -10749,6 +10960,13 @@
       if (dest === "twins") { session = null; go({ name: "twins" }); return; }
       if (dest === "asked") { session = null; asked = newAsked(null); go({ name: "asked" }); return; }
       if (dest === "numbers") { session = null; numbers = newNumbers(null); go({ name: "numbers" }); return; }
+      if (dest === "shadow" || dest === "run") {
+        session = null;
+        loud = newLoud(dest === "run" ? "run" : "shadow", null);
+        if (loud && loud.mode === "run") loud.startedAt = Date.now();
+        go({ name: "loud" });
+        return;
+      }
       if (dest === "talk") { talk = newTalk(); go({ name: "talk" }); return; }
       if (dest === "lesson") { go({ name: "lesson", lesson: lessonById(el.getAttribute("data-id")) }); return; }
       if (dest === "learn") {
@@ -11059,11 +11277,14 @@
     }
     if (act === "mic") {
       if (view.name === "talk") return;
-      if (view.name === "asked") {
-      if (asked && !asked.played && canSpeak()) { asked.played = true; speak(asked.q.ar); }
-      return;
-    }
-    if (view.name === "moment") { listenMoment(); return; }
+      if (view.name === "moment") { listenMoment(); return; }
+      if (view.name === "loud") {
+        if (!loud || ears.busy) return;
+        loud.heard = null;
+        listenOnce(function (list) { shadowHeard(list); },
+          function () { render(); }, function () { render(); });
+        return;
+      }
       var tm = session && session.tasks[session.i];
       if (!tm || session.state === "checked" || ears.busy) return;
       tm.heard = null;
@@ -11167,6 +11388,19 @@
     }
     if (act === "unpassive-all") {
       if (window.confirm("Ask you to produce all of them again?")) { unpassiveAll(); render(); }
+      return;
+    }
+    if (act === "ear-only") {
+      store.earOnly = !store.earOnly;
+      save();
+      render();
+      return;
+    }
+    if (act === "loud-next") { stopSpeech(); loudNext(); return; }
+    if (act === "loud-again") {
+      loud = newLoud(loud ? loud.mode : "run", null);
+      if (loud && loud.mode === "run") loud.startedAt = Date.now();
+      render();
       return;
     }
     if (act === "numbers-check") { checkNumbers(); return; }

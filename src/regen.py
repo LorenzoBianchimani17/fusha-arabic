@@ -13,7 +13,7 @@ js = re.search(r"<script>(.*)</script>", src, re.S).group(1)
 HOOKS = (
     '\n  global.__peek = function () { return { session: session, view: view, store: store,'
     ' learn: learn, talk: talk, ears: ears, navOpen: navOpen, people: people, made: made,'
-    ' moment: moment, asked: asked, numbers: numbers }; };'
+    ' moment: moment, asked: asked, numbers: numbers, loud: loud }; };'
     '\n  global.__data = { LESSONS: LESSONS, SCRIPT: SCRIPT, CONVOS: CONVOS,'
     ' PHRASEBOOK: PHRASEBOOK, GAMES: GAMES, VARIETIES: VARIETIES, DIALECT: DIALECT,'
     ' SAME: SAME, GLOSS: GLOSS, GLOSS_LEV: GLOSS_LEV, glossesFor: glossesFor,'
