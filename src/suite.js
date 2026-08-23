@@ -3366,6 +3366,23 @@ section("the phone, not the desktop");
   }
   st.games = undefined;
 
+  // seen on a real phone: the two pills at the top of the home screen
+  // were both absolute, so Right now sat exactly on top of Menu and the
+  // one screen with no topbar had no way into the drawer at all
+  click({ "data-go": "home" });
+  const top = h.split("</nav>")[1].split("</header>")[0];
+  check("both pills at the top of home are there",
+    /data-act="nav-open"/.test(top) && /data-go="now"/.test(top));
+  check("side by side in a row, not stacked on each other",
+    /class="masthead-top"/.test(top) &&
+    top.indexOf('class="masthead-top"') < top.indexOf('data-act="nav-open"') &&
+    top.indexOf('data-act="nav-open"') < top.indexOf('data-go="now"'));
+  const css = require("fs").readFileSync("fusha.html", "utf8").split("</style>")[0];
+  check("and nothing pins them to the same corner any more",
+    !/\.pb-link \{[^}]*position: absolute/.test(css));
+  check("a long foot note keeps its link on one line",
+    /\.foot \.link-btn \{[^}]*white-space: nowrap/.test(css));
+
   // the three buttons that used to wrap five lines each
   click({ "data-go": "home" });
   st.passive = { "Àhlan": true };

@@ -294,7 +294,7 @@
 
   .masthead {
     position: relative;
-    padding: 44px 0 30px;
+    padding: 18px 0 30px;
     margin-bottom: 28px;
     border-bottom: 1px solid var(--line);
   }
@@ -758,11 +758,18 @@
 
   /* ---------- phrasebook ---------- */
 
+  /* Two of these sit side by side at the top of the home screen. They
+     were both absolute and one covered the other, which on a phone left
+     no way at all into the menu. */
+  .masthead-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+    margin-bottom: 22px;
+  }
+
   .pb-link {
-    position: absolute;
-    top: 18px;
-    right: 0;
-    z-index: 1;
     font-weight: 600;
     letter-spacing: .04em;
     color: var(--accent-ink);
@@ -1815,6 +1822,9 @@
     font-size: var(--t-2);
     color: var(--ink-3);
   }
+
+  .foot > span { min-width: 0; }
+  .foot .link-btn { flex: 0 0 auto; white-space: nowrap; }
 
   .link-btn { font-size: var(--t-2); color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px; }
   .link-btn:hover { color: var(--ink); }
@@ -9312,8 +9322,10 @@
     }).join("");
 
     return '<header class="masthead">' +
+      '<div class="masthead-top">' +
       '<button class="pill pill--md pb-link" data-act="nav-open" aria-label="Open the menu">&#9776; Menu</button>' +
       '<button class="pill pill--md pb-link now-link" data-go="now">Right now</button>' +
+      "</div>" +
       '<div class="eyebrow">' + esc(variety() === "msa"
         ? "Modern Standard Arabic"
         : varietyInfo().label + " Arabic") + "</div>" +
