@@ -46,6 +46,16 @@ every device.
 Sections 5 to 11 below are not scheduled. They are the decided list to
 draw from once the mechanisms are in and have been used for a week.
 
+## Done, 2026-08-23
+
+Delivery 0 (the source into the repository) and deliveries 1 to 4 (the
+sixteen learning mechanisms) are built and live. Sections 1 to 4 below
+are kept as the record of what they were meant to do; the code is in
+`src/fusha.html` and the tests that hold each one in place are in
+`src/suite.js`.
+
+What is left to draw from: sections 5 to 11.
+
 ## 0. Before anything else
 
 - **The source of truth goes into this repository.** `fusha.html` and
