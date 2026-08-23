@@ -268,7 +268,7 @@
   }
 
   .who-row { display: flex; flex-wrap: wrap; gap: var(--s-2); padding: var(--s-3) var(--s-2) var(--s-1); }
-  .who-row .chip { padding: var(--s-2) var(--s-4); font-size: var(--t-2); }
+
 
   @media (prefers-reduced-motion: reduce) {
     .nav { transition: none; }
@@ -472,11 +472,8 @@
   .lesson-score {
     font-family: var(--mono);
     font-variant-numeric: tabular-nums;
-    font-size: var(--t-3);
     font-weight: 600;
     color: var(--good);
-    padding: var(--s-1) var(--s-3);
-    border-radius: 999px;
     background: var(--good-soft);
   }
 
@@ -485,9 +482,6 @@
   .convo-follow {
     float: right;
     margin: var(--s-2) 0 0 var(--s-3);
-    padding: var(--s-2) var(--s-4);
-    border-radius: 999px;
-    font-size: var(--t-1);
     font-weight: 600;
     color: var(--accent-ink);
     background: var(--accent-soft);
@@ -556,11 +550,8 @@
   .review-score {
     font-family: var(--mono);
     font-variant-numeric: tabular-nums;
-    font-size: var(--t-3);
     font-weight: 600;
     color: var(--accent-ink);
-    padding: var(--s-1) var(--s-3);
-    border-radius: 999px;
     background: var(--surface);
   }
 
@@ -618,45 +609,60 @@
 
   .chips { display: flex; flex-wrap: wrap; gap: var(--s-3); }
 
-  .chip {
+  /* ---------- pill (chip / aside / tag / link / score - one shape) ---------- */
+
+  .pill {
     display: inline-flex;
     align-items: center;
-    gap: var(--s-3);
-    padding: var(--s-3) var(--s-5) var(--s-3) var(--s-4);
     border-radius: 999px;
-    font-size: var(--t-4);
-    font-weight: 500;
-    color: var(--ink-3);
-    background: var(--surface);
-    border: 1px solid var(--line);
+    border: 1px solid transparent;
     transition: color .12s ease, border-color .12s ease, background .12s ease;
   }
 
-  .chip:hover { border-color: var(--line-strong); color: var(--ink-2); }
-  .chip.is-on { color: var(--accent-ink); background: var(--accent-soft); border-color: transparent; font-weight: 600; }
+  /* Static badges only (never a tap target): core-tag, review-score, lesson-score. */
+  .pill--tag { gap: var(--s-2); padding: var(--s-1) var(--s-3); font-size: var(--t-3); }
 
-  .chip-tick {
+  /* Standard tappable pill. Sized to the largest of the eleven so nothing shrank;
+     min-height is a floor, not a target - no tappable pill may render under 32px. */
+  /* Sized to the middle of the eleven rather than the largest of them: the
+     floor is the 32px tap target, and letting the widest one set the padding
+     made a dense list of tagged rows look like a row of buttons. */
+  .pill--md { gap: var(--s-3); padding: var(--s-2) var(--s-4); font-size: var(--t-2); min-height: 32px; }
+
+  /* mic-stop alone: it was already the biggest of the eleven, so it keeps being the biggest. */
+  .pill--lg { gap: var(--s-3); padding: var(--s-3) var(--s-5); font-size: var(--t-3); min-height: 34px; }
+
+  /* One checkmark drawing, one size, colored via currentColor so it always
+     matches whatever tone/state color the pill itself is showing. Resting
+     state is a ring; .is-on reveals the stroke. No separate fill color, no
+     separate contrast color - this replaces both chip-tick and aside-tick. */
+  .tick {
     width: 15px;
     height: 15px;
     flex: none;
     border-radius: 50%;
-    border: 1px solid var(--line-strong);
+    border: 1px solid currentColor;
     position: relative;
   }
 
-  .chip.is-on .chip-tick { border-color: var(--accent); background: var(--accent); }
-
-  .chip.is-on .chip-tick::after {
+  .tick::after {
     content: "";
     position: absolute;
     left: 4px;
     top: 1px;
     width: 4px;
     height: 8px;
-    border: solid var(--on-accent);
+    border: solid currentColor;
     border-width: 0 1.6px 1.6px 0;
     transform: rotate(42deg);
+    opacity: 0;
   }
+
+  .is-on .tick::after { opacity: 1; }
+
+  .chip { color: var(--ink-3); background: var(--surface); border-color: var(--line); font-weight: 500; }
+  .chip:hover { border-color: var(--line-strong); color: var(--ink-2); }
+  .chip.is-on { color: var(--accent-ink); background: var(--accent-soft); border-color: transparent; font-weight: 600; }
 
   /* ---------- phrasebook ---------- */
 
@@ -665,13 +671,10 @@
     top: 18px;
     right: 0;
     z-index: 1;
-    font-size: var(--t-2);
     font-weight: 600;
     letter-spacing: .04em;
     color: var(--accent-ink);
     background: var(--accent-soft);
-    padding: var(--s-2) var(--s-4);
-    border-radius: 999px;
   }
 
   .pb-link:hover { filter: brightness(.95); }
@@ -723,13 +726,10 @@
     margin-left: auto;
     flex: none;
     font-family: var(--mono);
-    font-size: var(--t-1);
     letter-spacing: .06em;
     color: var(--ink-3);
     background: var(--surface-2);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: var(--s-2) var(--s-4);
+    border-color: var(--line);
     cursor: pointer;
   }
 
@@ -784,13 +784,10 @@
   .word-undo {
     margin-left: auto;
     flex: none;
-    padding: var(--s-2) var(--s-4);
-    border-radius: 999px;
-    font-size: var(--t-2);
     font-weight: 600;
     color: var(--ink-3);
     background: var(--surface-2);
-    border: 1px solid var(--line);
+    border-color: var(--line);
   }
 
   .word-undo:hover { color: var(--accent-ink); background: var(--accent-soft); border-color: transparent; }
@@ -1075,17 +1072,10 @@
   .aside-hide.is-off { color: var(--ink-2); background: var(--line); border-color: transparent; font-weight: 600; }
 
   .aside {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--s-3);
-    padding: var(--s-3) var(--s-5) var(--s-3) var(--s-4);
-    border-radius: 999px;
-    font-size: var(--t-3);
     font-weight: 500;
     color: var(--ink-3);
     background: var(--surface-2);
-    border: 1px solid var(--line);
-    transition: color .12s ease, background .12s ease, border-color .12s ease;
+    border-color: var(--line);
   }
 
   .aside:hover { color: var(--ink-2); border-color: var(--line-strong); }
@@ -1103,43 +1093,17 @@
 
   .aside-inline:hover { opacity: 1; color: inherit; }
 
-  .aside-tick {
-    width: 14px;
-    height: 14px;
-    flex: none;
-    border-radius: 50%;
-    border: 1px solid currentColor;
-    position: relative;
-    opacity: .55;
-  }
 
-  .aside.is-on .aside-tick { background: var(--good); border-color: var(--good); opacity: 1; }
-
-  .aside.is-on .aside-tick::after {
-    content: "";
-    position: absolute;
-    left: 4px;
-    top: 1px;
-    width: 3px;
-    height: 7px;
-    border: solid var(--surface);
-    border-width: 0 1.6px 1.6px 0;
-    transform: rotate(42deg);
-  }
 
   .aside-note { font-size: var(--t-2); color: var(--ink-3); font-style: italic; text-align: center; }
   .verdict-msg .aside-note { margin-left: auto; font-style: normal; }
 
   .core-tag {
-    display: inline-block;
-    font-size: var(--t-1);
     font-weight: 600;
     letter-spacing: .1em;
     text-transform: uppercase;
     color: var(--accent-ink);
     background: var(--accent-soft);
-    padding: var(--s-1) var(--s-3);
-    border-radius: 999px;
   }
 
   /* ---------- conversation transcript ---------- */
@@ -1326,17 +1290,11 @@
   .mic[disabled] { opacity: 1; }
 
   .mic-stop {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--s-3);
     margin-left: var(--s-3);
-    padding: var(--s-4) var(--s-6);
-    border-radius: 999px;
-    font-size: var(--t-4);
     font-weight: 600;
     color: var(--ink-2);
     background: var(--surface);
-    border: 1px solid var(--line-strong);
+    border-color: var(--line-strong);
   }
 
   .mic-stop:hover { color: var(--bad); border-color: var(--bad); }
@@ -1393,24 +1351,18 @@
   .heard-note { font-size: var(--t-2); color: var(--ink-3); line-height: 1.4; margin-top: var(--s-1); }
 
   .heard-yes {
-    display: inline-flex;
-    align-items: center;
     justify-content: center;
-    gap: var(--s-3);
     align-self: center;
     margin-top: var(--s-4);
-    padding: var(--s-3) var(--s-6) var(--s-3) var(--s-5);
-    border-radius: 999px;
-    font-size: var(--t-3);
     font-weight: 600;
     color: var(--good);
     background: var(--surface);
-    border: 1px solid var(--good);
+    border-color: var(--good);
   }
 
   .heard-yes:hover { background: var(--good-soft); }
   .heard.is-close .heard-yes { background: var(--surface); }
-  .heard-yes .aside-tick { opacity: 1; border-color: currentColor; }
+
 
   .understood-hint {
     float: right;
@@ -4967,7 +4919,7 @@
     // While it is open you can shut it: waiting for a recogniser to
     // decide you have finished is the most irritating way to wait.
     var stop = busy
-      ? '<button class="mic-stop" data-act="mic-stop" aria-label="Stop listening">' +
+      ? '<button class="pill pill--lg mic-stop" data-act="mic-stop" aria-label="Stop listening">' +
         '<span class="mic-stop-box" aria-hidden="true"></span>Stop</button>'
       : "";
     return main + stop;
@@ -4984,9 +4936,9 @@
     // Whatever it thinks it heard, the last word is yours: one tap to
     // confirm and carry on, rather than being left looking at a guess.
     var yes = confirm
-      ? '<button class="heard-yes" data-act="' + confirm.act + '"' +
+      ? '<button class="pill pill--md heard-yes" data-act="' + confirm.act + '"' +
         (confirm.id ? ' data-id="' + esc(confirm.id) + '"' : "") + ">" +
-        '<span class="aside-tick" aria-hidden="true"></span>' + esc(confirm.label) + "</button>"
+        '<span class="tick" aria-hidden="true"></span>' + esc(confirm.label) + "</button>"
       : "";
     return '<div class="heard' + (close ? " is-close" : "") + '">' +
       '<span class="heard-label">' +
@@ -7112,9 +7064,9 @@
     var cov = varietyCoverage();
     var chips = VARIETIES.map(function (v) {
       var on = v.key === cur;
-      return '<button class="chip vchip' + (on ? " is-on" : "") + '" data-act="variety" data-id="' + v.key +
+      return '<button class="pill pill--md chip vchip' + (on ? " is-on" : "") + '" data-act="variety" data-id="' + v.key +
         '" aria-pressed="' + (on ? "true" : "false") + '" title="' + esc(v.where) + '">' +
-        '<span class="chip-tick" aria-hidden="true"></span>' + esc(v.label) + "</button>";
+        '<span class="tick" aria-hidden="true"></span>' + esc(v.label) + "</button>";
     }).join("");
 
     return '<div class="picker variety-pick">' +
@@ -7145,10 +7097,10 @@
       '<div class="chips">' + GAMES.map(function (x) {
         var isOn = g[x.key];
         var lastOne = isOn && on === 1;
-        return '<button class="chip' + (isOn ? " is-on" : "") + '" data-act="game" data-key="' + x.key +
+        return '<button class="pill pill--md chip' + (isOn ? " is-on" : "") + '" data-act="game" data-key="' + x.key +
           '" aria-pressed="' + (isOn ? "true" : "false") +
           '" title="' + esc(lastOne ? "Keep at least one game switched on" : x.hint) + '">' +
-          '<span class="chip-tick" aria-hidden="true"></span>' + esc(x.label) + "</button>";
+          '<span class="tick" aria-hidden="true"></span>' + esc(x.label) + "</button>";
       }).join("") + "</div></div>";
   }
 
@@ -7183,7 +7135,7 @@
     return '<button class="review is-lead" data-go="review">' + head +
       '<span class="review-meta">' + esc(meta) + "</span></span>" +
       (rv.runs
-        ? '<span class="review-score">' + rv.best + "%</span>"
+        ? '<span class="pill pill--tag review-score">' + rv.best + "%</span>"
         : '<span class="lesson-lock" aria-hidden="true">&rarr;</span>') +
       "</button>";
   }
@@ -7239,10 +7191,10 @@
         ? c.turns.length + " turns · " + c.setting
         : "Opens after lesson" + (missing.length === 1 ? " " : "s ") + missing.join(", ");
       var right = best !== null
-        ? '<span class="lesson-score">' + best + "%</span>"
+        ? '<span class="pill pill--tag lesson-score">' + best + "%</span>"
         : '<span class="lesson-lock" aria-hidden="true">' + (open ? "&rarr;" : "&#9679;") + "</span>";
       var follow = open && canSpeak()
-        ? '<button class="convo-follow" data-go="follow" data-id="' + esc(c.id) +
+        ? '<button class="pill pill--md convo-follow" data-go="follow" data-id="' + esc(c.id) +
           '" title="Hear the whole thing and answer questions">Listen through</button>'
         : "";
       return follow +
@@ -7294,9 +7246,9 @@
           (on ? '<span class="who-tick" aria-hidden="true"></span>' : "") + "</button>";
       }).join("") +
       '<div class="who-row">' +
-      '<button class="chip" data-act="who-add">Add someone</button>' +
-      '<button class="chip" data-act="who-rename">Rename</button>' +
-      (people.list.length > 1 ? '<button class="chip" data-act="who-remove">Remove</button>' : "") +
+      '<button class="pill pill--md chip" data-act="who-add">Add someone</button>' +
+      '<button class="pill pill--md chip" data-act="who-rename">Rename</button>' +
+      (people.list.length > 1 ? '<button class="pill pill--md chip" data-act="who-remove">Remove</button>' : "") +
       "</div>" +
 
       '<button class="nav-item" data-go="you"><span class="nav-label">Your own answers</span>' +
@@ -7374,7 +7326,7 @@
       var open = unlocked(l);
       var cls = "lesson" + (open ? "" : " is-locked") + (r && r.done ? " is-done" : "");
       var right = r && r.done
-        ? '<span class="lesson-score">' + r.best + "%</span>"
+        ? '<span class="pill pill--tag lesson-score">' + r.best + "%</span>"
         : open
           ? '<span class="lesson-lock" aria-hidden="true">&rarr;</span>'
           : '<span class="lesson-lock" aria-hidden="true">&#9679;</span>';
@@ -7389,7 +7341,7 @@
     }).join("");
 
     return '<header class="masthead">' +
-      '<button class="pb-link" data-act="nav-open" aria-label="Open the menu">&#9776; Menu</button>' +
+      '<button class="pill pill--md pb-link" data-act="nav-open" aria-label="Open the menu">&#9776; Menu</button>' +
       '<div class="eyebrow">Modern Standard Arabic</div>' +
       '<h1 class="wordmark">Fus<em>&#183;</em>ha</h1>' +
       '<p class="tagline">The Arabic every Arab country understands, in ' + LESSONS.length +
@@ -7460,9 +7412,9 @@
         { k: "normal", l: "Always natural", t: "Full speed, the way you will hear it" }
       ].map(function (o2) {
         var on = (store.speed || "auto") === o2.k;
-        return '<button class="chip schip' + (on ? " is-on" : "") + '" data-act="speed" data-id="' + o2.k +
+        return '<button class="pill pill--md chip schip' + (on ? " is-on" : "") + '" data-act="speed" data-id="' + o2.k +
           '" aria-pressed="' + (on ? "true" : "false") + '" title="' + esc(o2.t) + '">' +
-          '<span class="chip-tick" aria-hidden="true"></span>' + esc(o2.l) + "</button>";
+          '<span class="tick" aria-hidden="true"></span>' + esc(o2.l) + "</button>";
       }).join("") + "</div></div>" +
       "</div></details>" +
 
@@ -7539,13 +7491,13 @@
       ", " + pool + " phrases</summary><div class=\"guide-body\">" +
       "<p>It can only understand, and only answer with, what these lessons teach. Narrow it and you know exactly where the edges are.</p>" +
       '<div class="scope-row">' +
-      '<button class="chip" data-act="scope-all">All</button>' +
-      '<button class="chip" data-act="scope-passed">Only what I have passed</button>' +
+      '<button class="pill pill--md chip" data-act="scope-all">All</button>' +
+      '<button class="pill pill--md chip" data-act="scope-passed">Only what I have passed</button>' +
       "</div>" +
       '<div class="scope-grid">' + LESSONS.map(function (l) {
         var on = ids.indexOf(l.id) !== -1;
         return '<button class="scope-cell' + (on ? " is-on" : "") + '" data-act="scope" data-id="' + l.id +
-          '" title="' + esc(l.title) + '" aria-pressed="' + (on ? "true" : "false") + '">' + l.id + "</button>";
+          '" title="' + esc(l.title) + '" aria-pressed="' + (on ? "true" : "false") + '">' + lessonNo(l) + "</button>";
       }).join("") + "</div>" +
       '<p class="scope-list">' + esc(idx.lessons.map(function (l) { return l.title; }).join(" &#183; ")) + "</p>" +
       "</div></details>";
@@ -7625,7 +7577,7 @@
     return '<div class="pb-row">' + sayBtn(it.ar, true) +
       '<span class="pb-text"><span class="ar">' + esc(disp(it.ar)) + "</span>" +
       '<span class="pb-en">' + esc(it.en) + " &#183; lesson " + lessonNo(it.lesson) + "</span></span>" +
-      '<button class="word-undo" data-act="' + act + '" data-id="' + esc(it.ar) +
+      '<button class="pill pill--md word-undo" data-act="' + act + '" data-id="' + esc(it.ar) +
       '" data-lesson="' + it.lesson.id + '">' + esc(label) + "</button></div>";
   }
 
@@ -7743,7 +7695,7 @@
           rest += '<div class="pb-row">' + sayBtn(item.ar, true) +
             '<span class="pb-text"><span class="ar">' + esc(disp(item.ar)) + "</span>" +
             '<span class="pb-en">' + esc(item.en) + "</span></span>" +
-            '<button class="pb-tag" data-go="lesson" data-id="' + item.lesson.id +
+            '<button class="pill pill--md pb-tag" data-go="lesson" data-id="' + item.lesson.id +
             '" aria-label="Go to lesson ' + lessonNo(item.lesson) + ', ' + esc(item.lesson.title) +
             '">L' + lessonNo(item.lesson) + "</button></div>";
         });
@@ -8423,9 +8375,9 @@
       return '<div class="you-row"><div class="you-head"><span class="you-label">' + esc(label) +
         "</span></div><div class=\"chips\">" + list.map(function (o) {
           var is = o.key === on;
-          return '<button class="chip' + (is ? " is-on" : "") + '" data-act="' + act + '" data-id="' +
+          return '<button class="pill pill--md chip' + (is ? " is-on" : "") + '" data-act="' + act + '" data-id="' +
             esc(o.key) + '" aria-pressed="' + (is ? "true" : "false") + '">' +
-            '<span class="chip-tick" aria-hidden="true"></span>' + esc(o.en) + "</button>";
+            '<span class="tick" aria-hidden="true"></span>' + esc(o.en) + "</button>";
         }).join("") + "</div></div>";
     };
 
@@ -8448,9 +8400,9 @@
       '<div class="you-row"><div class="you-head"><span class="you-label">Speaking as</span></div>' +
       '<div class="chips">' + [{ key: "m", en: "A man" }, { key: "f", en: "A woman" }].map(function (o) {
         var is = (y.gender || "m") === o.key;
-        return '<button class="chip' + (is ? " is-on" : "") + '" data-act="you-gender" data-id="' + o.key +
+        return '<button class="pill pill--md chip' + (is ? " is-on" : "") + '" data-act="you-gender" data-id="' + o.key +
           '" aria-pressed="' + (is ? "true" : "false") + '">' +
-          '<span class="chip-tick" aria-hidden="true"></span>' + o.en + "</button>";
+          '<span class="tick" aria-hidden="true"></span>' + o.en + "</button>";
       }).join("") + "</div>" +
       '<p class="make-note">Arabic marks it on the job, not on the name: ' +
       esc((job || JOBS[0]).ar) + " for a man, " + esc((job || JOBS[0]).far) + " for a woman.</p></div>" +
@@ -8658,8 +8610,8 @@
       '<span class="heard-text ar">' + esc(near.text || "-") + "</span>" +
       '<span class="heard-note">Not one of the answers, but recognisers are shaky on Arabic. ' +
       "Put it in the box and check it if that is what you said.</span>" +
-      '<button class="heard-yes" data-act="moment-use" data-id="' + esc(near.text || "") + '">' +
-      '<span class="aside-tick" aria-hidden="true"></span>That is what I said</button></div>';
+      '<button class="pill pill--md heard-yes" data-act="moment-use" data-id="' + esc(near.text || "") + '">' +
+      '<span class="tick" aria-hidden="true"></span>That is what I said</button></div>';
   }
 
   function momentHTML() {
@@ -8681,7 +8633,7 @@
           return '<div class="pb-row' + (mine ? " is-yours" : "") + '">' + sayBtn(ar, true) +
             '<span class="pb-text"><span class="ar">' + esc(disp(ar)) + "</span>" +
             '<span class="pb-en">' + esc(englishFor(ar) || "") + "</span></span>" +
-            (mine ? '<span class="pb-tag">yours</span>' : "") + "</div>";
+            (mine ? '<span class="pill pill--md pb-tag">yours</span>' : "") + "</div>";
         }).join("") + "</div>"
       : "";
 
@@ -8878,7 +8830,7 @@
           '<div class="twin-line">' + sayBtn(ar, true) +
           '<span class="pb-text"><span class="ar">' + esc(disp(ar)) + "</span>" +
           '<span class="pb-en">' + esc(englishFor(ar) || "") + "</span></span>" +
-          '<button class="pb-tag" data-act="passive" data-id="' + esc(ar) + '">' +
+          '<button class="pill pill--md pb-tag" data-act="passive" data-id="' + esc(ar) + '">' +
           (off ? "Say it too" : "Recognise only") + "</button></div>" +
           (note ? '<div class="twin-note">' + note + "</div>" : "") + "</div>";
       }).join("");
@@ -9316,16 +9268,16 @@
     var only = isPassive(p.ar);
     var aside = '<div class="aside-row"><div class="aside-pair">' +
       (hidden ? "" :
-        '<button class="aside' + (known ? " is-on" : "") + '" data-act="known" data-id="' + esc(p.ar) + '"' +
+        '<button class="pill pill--md aside' + (known ? " is-on" : "") + '" data-act="known" data-id="' + esc(p.ar) + '"' +
         ' aria-pressed="' + (known ? "true" : "false") + '">' +
-        '<span class="aside-tick" aria-hidden="true"></span>' +
+        '<span class="tick" aria-hidden="true"></span>' +
         (known ? "Set aside" : "I know this one") + "</button>") +
       (hidden ? "" :
-        '<button class="aside' + (only ? " is-on" : "") + '" data-act="passive" data-id="' + esc(p.ar) + '"' +
+        '<button class="pill pill--md aside' + (only ? " is-on" : "") + '" data-act="passive" data-id="' + esc(p.ar) + '"' +
         ' aria-pressed="' + (only ? "true" : "false") + '">' +
-        '<span class="aside-tick" aria-hidden="true"></span>' +
+        '<span class="tick" aria-hidden="true"></span>' +
         (only ? "Recognise only" : "I will not say this one") + "</button>") +
-      '<button class="aside aside-hide' + (hidden ? " is-off" : "") + '" data-act="hide" data-id="' + esc(p.ar) + '"' +
+      '<button class="pill pill--md aside aside-hide' + (hidden ? " is-off" : "") + '" data-act="hide" data-id="' + esc(p.ar) + '"' +
       ' aria-pressed="' + (hidden ? "true" : "false") + '">' +
       (hidden ? "Hidden" : "Not for me") + "</button>" +
       "</div>" +
@@ -9337,7 +9289,7 @@
 
     return topbarHTML(l.title + " &#183; study", pct, (learn.i + 1) + " / " + l.phrases.length) +
       '<div class="card flashcard fade-in">' +
-      (p.core ? '<div><span class="core-tag">Core phrase</span></div>' : "") +
+      (p.core ? '<div><span class="pill pill--tag core-tag">Core phrase</span></div>' : "") +
       '<div class="say-row"><div class="flash-ar ar">' + esc(disp(p.ar)) + "</div>" + sayBtn(p.ar) + "</div>" +
       // Silence here was making fus-ha look like the dialect you chose.
       (variety() === "msa" ? ""
@@ -9642,21 +9594,21 @@
     if (!lsn) return "";
     if (isHidden(lsn.id, ph.ar)) {
       return '<div class="round-controls"><span class="aside-note">Hidden. It will not come up again.</span>' +
-        '<button class="aside aside-hide is-off" data-act="hide" data-id="' + esc(ph.ar) +
+        '<button class="pill pill--md aside aside-hide is-off" data-act="hide" data-id="' + esc(ph.ar) +
         '" data-lesson="' + lsn.id + '">Show it again</button></div>';
     }
     var known = !!knownRec(lsn.id, ph.ar);
     var bits = "";
     if (session.lastRight && !t.isRetry) {
-      bits += '<button class="aside' + (known ? " is-on" : "") + '" data-act="known" data-id="' + esc(ph.ar) +
-        '" data-lesson="' + lsn.id + '"><span class="aside-tick" aria-hidden="true"></span>' +
+      bits += '<button class="pill pill--md aside' + (known ? " is-on" : "") + '" data-act="known" data-id="' + esc(ph.ar) +
+        '" data-lesson="' + lsn.id + '"><span class="tick" aria-hidden="true"></span>' +
         (known ? "Set aside" : "I know this one") + "</button>";
     }
     var onlyR = isPassive(ph.ar);
-    bits += '<button class="aside' + (onlyR ? " is-on" : "") + '" data-act="passive" data-id="' + esc(ph.ar) +
-      '"><span class="aside-tick" aria-hidden="true"></span>' +
+    bits += '<button class="pill pill--md aside' + (onlyR ? " is-on" : "") + '" data-act="passive" data-id="' + esc(ph.ar) +
+      '"><span class="tick" aria-hidden="true"></span>' +
       (onlyR ? "Recognise only" : "I will not say this one") + "</button>";
-    bits += '<button class="aside aside-hide" data-act="hide" data-id="' + esc(ph.ar) +
+    bits += '<button class="pill pill--md aside aside-hide" data-act="hide" data-id="' + esc(ph.ar) +
       '" data-lesson="' + lsn.id + '">Not for me</button>';
     return '<div class="round-controls">' + bits + "</div>";
   }
