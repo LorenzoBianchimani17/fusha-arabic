@@ -22,6 +22,7 @@ HOOKS = (
     ' COUNTRIES: COUNTRIES, JOBS: JOBS, MOMENTS: MOMENTS, openMoments: openMoments,'
     ' lessonTeaching: lessonTeaching, TWINS: TWINS, openTwins: openTwins,'
     ' twinsToDecide: twinsToDecide, twinReached: twinReached, isPassive: isPassive,'
+    ' isLeech: isLeech, missCount: missCount, missedEarlier: missedEarlier, LEECH_AT: LEECH_AT,'
     ' ASK_KINDS: ASK_KINDS, askKind: askKind, askPool: askPool, compose: compose,'
     ' englishFor: englishFor, courseIndex: courseIndex, normalise: normalise,'
     ' sameSaid: sameSaid, tokens: tokens, canMake: canMake, coreCounts: coreCounts,'

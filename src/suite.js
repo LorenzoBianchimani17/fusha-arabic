@@ -2316,6 +2316,99 @@ section("when you get stuck");
   click({ "data-go": "home" });
 }
 
+section("when you are wrong");
+{
+  const D = global.__data;
+  const st = peek().store;
+  unlockAll();
+  st.str = {}; st.known = {}; st.passive = {};
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+
+  // one wrong answer is not the end of the question
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+  const t = peek().session.tasks[0];
+  const wrong = t.options.filter(o => o !== t.answer);
+  click({ "data-act": "answer", "data-value": wrong[0] });
+  check("a wrong answer does not settle the round", peek().session.state === "asking");
+  check("the one you chose is struck out", /is-struck/.test(h));
+  check("and cannot be chosen again",
+    new RegExp('data-value="' + wrong[0].replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + '"[^>]*disabled').test(h));
+
+  click({ "data-act": "answer", "data-value": t.answer });
+  check("the second attempt settles it", peek().session.state === "checked");
+  check("and says it was the second", /second time/i.test(h));
+  check("a second-go answer scores no point", peek().session.earned === 0);
+  check("and does not climb the phrase", (st.str["1|" + t.phrase.ar] || {}).s === 0);
+  check("but it does keep it off the immediate queue", (st.str["1|" + t.phrase.ar] || {}).day === D.today());
+
+  // the error names what you confused it with
+  click({ "data-act": "next" });
+  const t2 = peek().session.tasks[peek().session.i];
+  const w2 = t2.options.filter(o => o !== t2.answer);
+  click({ "data-act": "answer", "data-value": w2[0] });
+  click({ "data-act": "answer", "data-value": w2[1] });
+  check("a second wrong answer settles it too", peek().session.state === "checked");
+  check("and the verdict names what you chose", /You chose/.test(h));
+
+  // what you missed on an earlier day leads the next session
+  st.str = {};
+  ["Marhàban", "Àhlan", "Sabàh al-khèir"].forEach(ar => {
+    st.str["1|" + ar] = { s: 0, n: 3, day: D.today() - 1, miss: 2, missDay: D.today() - 1 };
+  });
+  check("a phrase missed yesterday is known to be", D.missedEarlier(1, "Marhàban"));
+  check("one missed today is not", (st.str["1|Àhlan"].missDay = D.today(), !D.missedEarlier(1, "Àhlan")));
+  st.str["1|Àhlan"].missDay = D.today() - 1;
+  st.games = undefined;
+  click({ "data-go": "home" });
+  click({ "data-go": "review" });
+  const lead = peek().session.tasks.filter(x => x.isMiss);
+  check(`yesterday's misses are in the session (${lead.length})`, lead.length > 0);
+  check("and they lead it",
+    peek().session.tasks.findIndex(x => x.isMiss) <= peek().session.tasks.filter(x => x.type === "match").length);
+  peek().session.i = peek().session.tasks.findIndex(x => x.isMiss);
+  peek().session.state = "asking";
+  click({ "data-act": "peek" });
+  check("the round says why it is in front of you", /You missed this one recently/.test(h) || /round-why/.test(h));
+
+  // a phrase you keep missing is taken apart instead of served again
+  st.str = {};
+  st.str["1|Marhàban"] = { s: 0, n: 9, day: D.today() - 3, miss: D.LEECH_AT + 1, missDay: D.today() - 3 };
+  check("five misses and no strength makes a leech", D.isLeech(1, "Marhàban"));
+  check("but not if it has since gone up",
+    (st.str["1|Marhàban"].s = 3, !D.isLeech(1, "Marhàban")));
+  st.str["1|Marhàban"].s = 0;
+
+  st.games = { quiz: false, build: true, match: false, dialog: false, write: true, listen: false, say: true };
+  let leech = null, g = 0;
+  while (g++ < 60 && !leech) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    leech = peek().session.tasks.find(x => x.phrase && x.phrase.ar === "Marhàban");
+  }
+  check("with only producing games on, a leech still comes as recognition",
+    !!leech && leech.isLeech === true && leech.toEnglish === true);
+
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false };
+  let shown = null; g = 0;
+  while (g++ < 60 && !shown) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": "1" });
+    const s2 = peek().session;
+    const i = s2.tasks.findIndex(x => x.phrase && x.phrase.ar === "Marhàban");
+    if (i >= 0) { s2.i = i; s2.state = "asking"; shown = s2.tasks[i]; }
+  }
+  click({ "data-act": "peek" });   // any tap re-renders on the round we moved to
+  check("a leech arrives with its pieces showing", /class="why"/.test(h));
+  const bad2 = shown.options.filter(o => o !== shown.answer);
+  click({ "data-act": "answer", "data-value": bad2[0] });
+  click({ "data-act": "answer", "data-value": bad2[1] });
+  check("and the verdict counts the slips and offers the way out", /has slipped \d+ times/.test(h));
+
+  st.str = {}; st.games = undefined;
+  click({ "data-go": "home" });
+}
+
 section("the games got harder in the right places");
 {
   const D = global.__data;
@@ -2742,7 +2835,9 @@ if (withVoice) {
     check("with the Arabic voice", spoken[0].voice.name === "Maged");
     check("slowed down for a phrase you have not learned", spoken[0].rate === 0.75);
 
-    // listening game
+    // listening game. Start from the defaults rather than from whatever
+    // an earlier section left behind.
+    peek().store.games = undefined;
     click({ "data-go": "home" });
     // derive the keys from the page, so a new game cannot silently
     // slip past this and leave the session mixed

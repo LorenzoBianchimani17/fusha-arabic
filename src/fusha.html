@@ -733,6 +733,15 @@
   .make-note { color: var(--ink-3); font-size: var(--t-3); margin: var(--s-4) 0 0; }
   .whoami { margin: var(--s-3) 0 0; font-size: var(--t-2); color: var(--ink-3); }
   .learn-jump { text-align: center; margin-top: var(--s-6); }
+  .round-why {
+    margin: var(--s-2) 0 calc(var(--s-2) * -1);
+    font-size: var(--t-2);
+    color: var(--ink-3);
+    text-align: center;
+  }
+
+  .confused { margin: var(--s-3) 0 0; font-size: var(--t-3); color: var(--ink-2); text-align: left; }
+  .confused .ar { color: var(--ink); }
   .circuit { margin: var(--s-6) 0 var(--s-2); text-align: center; }
   .circuit-why { display: block; margin-top: var(--s-2); font-size: var(--t-2); color: var(--ink-3); }
   .learn-jump .link-btn:hover { color: var(--accent); }
@@ -1423,6 +1432,9 @@
 
   .option:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
   .option:disabled { cursor: default; }
+
+  /* The one you have just ruled out, on the way to a second try. */
+  .option.is-struck { opacity: .5; text-decoration: line-through; border-style: dashed; }
 
   .option-key {
     flex: none;
@@ -5710,7 +5722,10 @@
     return !!rec && strengthOf(lessonId, ar) < rec.s;
   }
 
-  function bumpStrength(lessonId, ar, right, soft) {
+  // mode: "soft" for a typing slip, which costs one step instead of two;
+  // "held" for an answer found on the second attempt, which keeps the
+  // phrase off the immediate queue without letting it climb.
+  function bumpStrength(lessonId, ar, right, mode) {
     if (!lessonId || !ar) return;
     if (!store.str) store.str = {};
     var k = phraseKey(lessonId, ar);
@@ -5720,7 +5735,15 @@
     rec.n += 1;
     // Right climbs one step; wrong drops two, so a phrase you keep
     // missing stays in rotation instead of ageing out.
-    rec.s = right ? Math.min(MAX_STRENGTH, rec.s + 1) : Math.max(0, rec.s - (soft ? 1 : 2));
+    if (right) {
+      if (mode !== "held") rec.s = Math.min(MAX_STRENGTH, rec.s + 1);
+    } else {
+      rec.s = Math.max(0, rec.s - (mode === "soft" ? 1 : 2));
+      // Kept so a phrase that keeps slipping can be recognised as one,
+      // and so today's misses can lead tomorrow.
+      rec.miss = (rec.miss || 0) + 1;
+      rec.missDay = today();
+    }
     rec.day = today();
     store.str[k] = rec;
   }
@@ -5733,6 +5756,31 @@
   // a permanent tick would quietly retire things you would now fail.
   var RECHECK_AFTER = 10;       // days before a set-aside phrase is checked
   var CHECKS_PER_SESSION = 2;   // how many overdue checks a session leads with
+  var MISSES_FIRST = 3;         // how many of yesterday's misses a session leads with
+  var LEECH_AT = 5;             // misses before a phrase is treated as stuck
+
+  // A phrase you have missed five times and still cannot hold is not
+  // learning, it is grinding. It gets treated differently rather than
+  // served again identically.
+  function missCount(lessonId, ar) {
+    var rec = rawStrength(lessonId, ar);
+    return rec ? (rec.miss || 0) : 0;
+  }
+
+  function isLeech(lessonId, ar) {
+    var rec = rawStrength(lessonId, ar);
+    if (!rec || (rec.miss || 0) < LEECH_AT) return false;
+    return strengthOf(lessonId, ar) <= 1;
+  }
+
+  // Missed on an earlier day and not since put right.
+  function missedEarlier(lessonId, ar) {
+    var rec = rawStrength(lessonId, ar);
+    if (!rec || rec.missDay === undefined) return false;
+    if ((rec.s || 0) > 1) return false;
+    var since = daysSince(rec.missDay);
+    return since !== null && since >= 1 && since <= 14;
+  }
   var REPLIES_PER_SESSION = 2;  // guaranteed conversation rounds, when there are any
 
   function runCount() { return store.runs || 0; }
@@ -6085,6 +6133,21 @@
   function makeRound(lesson, item, type) {
     if (!canMake(item, type)) return null;
     var p = item.phrase || item;
+    // Five misses and still nothing: asking for it cold a sixth time is
+    // not teaching. It comes with its pieces shown, and only ever to be
+    // recognised, until it starts sticking.
+    if (isLeech(lesson.id, p.ar)) {
+      var stuck = quizRound(lesson, p);
+      if (stuck) {
+        stuck.isLeech = true;
+        stuck.toEnglish = true;
+        stuck.prompt = p.ar;
+        stuck.answer = p.en;
+        stuck.options = shuffle(distractors(visiblePhrases(lesson), p.en, "en", 3)
+          .concat([p]).map(function (x) { return x.en; }));
+      }
+      return stuck;
+    }
     if (type === "dialog") return item.exchange ? dialogRound(lesson, item.exchange) : null;
     if (type === "build") return canMake(item, "build") ? buildRound(lesson, p) : null;
     if (type === "say") return sayRound(lesson, p);
@@ -6331,6 +6394,17 @@
       if (r) { r.isCheck = true; picked.push(r); }
     });
 
+    // What you got wrong on an earlier day comes first, marked as such.
+    // Left to the weighted draw it could be weeks before it came back,
+    // which is exactly the wrong interval for something you just failed.
+    var missed = usable.filter(function (it) {
+      return !it.known && missedEarlier(it.lesson.id, it.ar);
+    });
+    shuffle(missed).slice(0, MISSES_FIRST).forEach(function (item) {
+      var r = roundFor(item);
+      if (r) { r.isMiss = true; picked.push(r); }
+    });
+
     // The rest of the session ignores anything you have set aside.
     var open = usable.filter(function (it) { return !it.known; });
     if (!open.length) open = usable;
@@ -6372,12 +6446,21 @@
       return matchRound({ phrases: [], pool: dedupePhrases(draw).slice(0, MATCH_PAIRS) });
     }
 
+    // The spot checks and yesterday's misses were seeded by hand and are
+    // meant to lead: interleaving them with everything else buried them
+    // in the middle of the session.
+    var leads = picked.filter(function (r) { return r.isCheck || r.isMiss; });
+    var rest = picked.filter(function (r) { return !r.isCheck && !r.isMiss; });
+
     var tasks = [];
     for (var i = 0; i < matchCount(asking); i++) {
       var grid = mixedMatch();
       if (grid) tasks.push(grid);
     }
-    if (asking.length) tasks = tasks.concat(interleave(picked, REVIEW_ROUNDS));
+    if (asking.length) {
+      tasks = tasks.concat(leads,
+        interleave(rest, Math.max(0, REVIEW_ROUNDS - leads.length)));
+    }
     if (!tasks.length) {
       var only = mixedMatch();
       tasks = only ? [only] : [];
@@ -9532,6 +9615,13 @@
      PLAY
      ============================================================ */
 
+  function roundNote(t) {
+    if (t.isCheck) return "A phrase you set aside, coming back for its check";
+    if (t.isMiss) return "You missed this one recently";
+    if (t.isLeech) return "This one keeps slipping, so here it is in pieces";
+    return "";
+  }
+
   function playHTML() {
     var t = session.tasks[session.i];
     var pct = Math.round(session.i / session.tasks.length * 100);
@@ -9551,7 +9641,9 @@
       : session.isReview ? "Mixed review"
       : session.isConvo ? session.convo.title
       : session.lesson.title;
+    var note = roundNote(t);
     return topbarHTML(title, pct, (session.i + 1) + " / " + session.tasks.length) +
+      (note ? '<p class="round-why">' + esc(note) + "</p>" : "") +
       '<div class="fade-in">' + body + "</div>" + verdictHTML(t);
   }
 
@@ -9560,17 +9652,38 @@
     return '<div class="options">' + list.map(function (opt, i) {
       var cls = "option" + (arabic ? " ar" : "");
       var state = "";
+      var struck = !checked && t.tried === opt;
       if (checked) {
         if (opt === t.answer) { cls += " is-right"; state = "Correct answer"; }
         else if (opt === t.chosen) { cls += " is-wrong"; state = "Your answer, incorrect"; }
         else cls += " is-dim";
+      } else if (struck) {
+        cls += " is-struck";
+        state = "Ruled out";
       }
       return '<button class="' + cls + '" data-act="answer" data-value="' + esc(opt) + '"' +
-        (checked ? " disabled" : "") + ">" +
+        (checked || struck ? " disabled" : "") + ">" +
         '<span class="option-key">' + (i + 1) + "</span><span>" +
         esc(arabic ? disp(opt) : opt) + "</span>" +
         (state ? '<span class="sr-only">, ' + state + "</span>" : "") + "</button>";
     }).join("") + "</div>";
+  }
+
+  // A stuck phrase is shown in pieces rather than asked for cold. A
+  // one-word phrase has no pieces, so it gets whatever the course knows
+  // about it instead: the rule it was taught with, or its own meaning.
+  function leechAid(t) {
+    if (!t.isLeech || !t.phrase) return "";
+    var g = glossHTML(t.phrase.ar);
+    if (g) return '<div class="why">' + g + "</div>";
+    var n = noteFor(t.phrase.ar);
+    if (n) return '<div class="why">' + n + "</div>";
+    var one = glossFor(disp(t.phrase.ar));
+    return one
+      ? '<div class="why"><div class="gloss"><span class="gloss-row">' +
+        '<span class="ar">' + esc(disp(t.phrase.ar)) + '</span><span class="gloss-eq">=</span>' +
+        '<span class="gloss-en">' + esc(one) + "</span></span></div></div>"
+      : "";
   }
 
   function quizHTML(t) {
@@ -9579,7 +9692,7 @@
       '<div class="prompt-label">' + (t.toEnglish ? "What does this mean?" : "How do you say this?") + "</div>" +
       '<div class="say-row"><div class="prompt-main' + (t.toEnglish ? " ar" : "") + '">' +
       esc(t.toEnglish ? disp(t.prompt) : t.prompt) + "</div>" + hear + "</div></div>" +
-      optionsHTML(t.options, !t.toEnglish, t);
+      leechAid(t) + optionsHTML(t.options, !t.toEnglish, t);
   }
 
   function dialogHTML(t) {
@@ -9802,6 +9915,18 @@
   // Setting a phrase aside or hiding it should be possible wherever you
   // meet it, not only on the study card. Only "I know this" is withheld
   // after a wrong answer, because you plainly did not.
+  function leechOut(t) {
+    if (!t.isLeech || !t.phrase) return "";
+    var lsn = lessonOf(t, t.phrase);
+    if (!lsn) return "";
+    return '<div class="confused">This one has slipped ' +
+      missCount(lsn.id, t.phrase.ar) + " times. " +
+      (isPassive(t.phrase.ar)
+        ? "It is on recognise only, so you are not asked to say it."
+        : "You can put it on recognise only and stop being asked to produce it.") +
+      "</div>";
+  }
+
   function roundControls(t) {
     var ph = t.phrase || (t.exchange ? { ar: t.exchange.reply } : null);
     if (!ph || !ph.ar) return "";
@@ -9828,13 +9953,37 @@
     return '<div class="round-controls">' + bits + "</div>";
   }
 
+  // What you picked, and what it actually is. "Wrong" teaches nothing;
+  // "you chose lau samàht, which is for getting attention" teaches the
+  // difference that caught you.
+  function confusedWith(t) {
+    var picked = t.chosen;
+    if (!picked || picked === t.answer) return "";
+    var ar = null, en = null;
+    if (t.type === "quiz" && t.toEnglish) {
+      // the options were English: find the phrase that means it
+      LESSONS.forEach(function (l) {
+        l.phrases.forEach(function (p) { if (!ar && p.en === picked) { ar = p.ar; en = p.en; } });
+      });
+    } else {
+      ar = picked;
+      en = englishFor(picked);
+    }
+    if (!ar || !en) return "";
+    return '<div class="confused">You chose <span class="ar">' + esc(disp(ar)) +
+      "</span>, which is <b>" + esc(en) + "</b>.</div>";
+  }
+
   function verdictHTML(t) {
     if (session.state !== "checked") return "";
     var last = session.i === session.tasks.length - 1;
     var msg;
     if (session.lastRight) {
-      // Getting it right is the honest moment to say you have it.
-      msg = '<div class="verdict-msg ok"><b>Correct.</b></div>';
+      // Getting it right is the honest moment to say you have it, and
+      // getting it on the second go is the honest moment to say that.
+      msg = t.secondTry
+        ? '<div class="verdict-msg ok"><b>Right, second time.</b>&nbsp;<span>It will come round again.</span></div>'
+        : '<div class="verdict-msg ok"><b>Correct.</b></div>';
     } else {
       var answer = t.type === "build" ? t.target.join(" ") : (arabicAnswerFor(t) ? disp(t.answer) : t.answer);
       var arabicAnswer = arabicAnswerFor(t);
@@ -9847,6 +9996,7 @@
     }
     var ending = last && (session.retried || session.missed.length === 0);
     return '<div class="verdict" tabindex="-1">' + msg +
+      (session.lastRight ? "" : confusedWith(t)) + leechOut(t) +
       (session.lastRight ? "" : whyHTML(t)) + roundControls(t) +
       '<button class="btn btn-wide" data-act="next">' +
       (ending ? "See your score" : "Continue") + "</button></div>";
@@ -9971,7 +10121,7 @@
     if (!l) return;
     // Typing it is the one game where a miss can be a spelling and not a
     // gap, so it costs a step instead of two.
-    bumpStrength(l.id, phrase.ar, right, task && task.type === "write");
+    bumpStrength(l.id, phrase.ar, right, task && task.type === "write" ? "soft" : null);
 
     // This was a phrase you had set aside, coming back for its check.
     var rec = knownRec(l.id, phrase.ar);
@@ -9982,26 +10132,44 @@
     save();
   }
 
-  function settle(task, right, phrase) {
+  function settle(task, right, phrase, secondTry) {
     session.state = "checked";
     session.lastRight = right;
     task.settled = true;
     task.wasRight = right;
-    if (right && task.points > 0) session.earned += 1;
+    task.secondTry = !!secondTry;
+    if (right && !secondTry && task.points > 0) session.earned += 1;
     if (!right && phrase && !task.isRetry) noteMiss(task, phrase);
-    scorePhrase(task, right, phrase);
+    // Getting there on the second go is not knowing it: the round moves
+    // on, but the phrase does not climb for it.
+    if (right && secondTry) {
+      var l = phrase && lessonOf(task, phrase);
+      if (l) { bumpStrength(l.id, phrase.ar, true, "held"); save(); }
+    } else {
+      scorePhrase(task, right, phrase);
+    }
     render();
   }
 
   function answer(value) {
     if (session.state === "checked") return;
     var t = session.tasks[session.i];
+
+    // One wrong answer is not the end of the question. The one you chose
+    // is struck out and you go again: a second try is retrieval, reading
+    // the answer is not. The second one settles it either way.
+    if (value !== t.answer && !t.tried && t.options && t.options.length > 2 && !t.isRetry) {
+      t.tried = value;
+      render();
+      return;
+    }
+
     t.chosen = value;
     var phrase =
       t.type === "dialog" ? { ar: t.exchange.reply, en: t.exchange.en } :
       t.type === "convoturn" ? { ar: t.turn.reply, en: t.turn.replyEn } :
       t.phrase;
-    settle(t, value === t.answer, phrase);
+    settle(t, value === t.answer, phrase, !!t.tried);
   }
 
   function checkWrite() {
