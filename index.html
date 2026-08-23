@@ -168,6 +168,18 @@
 
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .eyebrow {
     font-size: var(--t-1);
     font-weight: 600;
@@ -736,6 +748,7 @@
   .pb-tag:hover { color: var(--ink); border-color: var(--accent); }
   .pb-more { color: var(--ink-3); font-size: var(--t-3); margin: -12px 0 26px; }
   .make-note { color: var(--ink-3); font-size: var(--t-3); margin: var(--s-4) 0 0; }
+  .whoami { margin: var(--s-3) 0 0; font-size: var(--t-2); color: var(--ink-3); }
   .learn-jump { text-align: center; margin-top: var(--s-6); }
   .circuit { margin: var(--s-6) 0 var(--s-2); text-align: center; }
   .circuit-why { display: block; margin-top: var(--s-2); font-size: var(--t-2); color: var(--ink-3); }
@@ -1714,7 +1727,9 @@
   }
 </style>
 
-<div id="app"></div>
+<div id="app" role="main"></div>
+
+<div id="sr-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 (function () {
@@ -5065,6 +5080,13 @@
     }
   }
 
+  // A status message for anyone who cannot see the screen change, on a
+  // node render() never touches, so it survives every full re-render.
+  function announce(text) {
+    var node = document.getElementById("sr-status");
+    if (node) node.textContent = text || "";
+  }
+
   var SPEAKER_SVG =
     '<svg viewBox="0 0 18 18" width="15" height="15" aria-hidden="true" focusable="false">' +
     '<path d="M9 2.4 5.1 5.6H2.5v6.8h2.6L9 15.6z" fill="currentColor"/>' +
@@ -5242,7 +5264,7 @@
     ears.stage = "starting";
     ears.active = r;
     var finished = false;
-    function stage(name) { ears.stage = name; onStage && onStage(); }
+    function stage(name) { ears.stage = name; announce(STAGE_TEXT[name] || ""); onStage && onStage(); }
     function done(list) {
       if (finished) return;
       finished = true;
@@ -7420,8 +7442,8 @@
         '<span class="nav-note">' + esc(why || x.hint) + "</span></button>";
     }).join("");
 
-    return '<div class="nav-veil' + (navOpen ? " is-open" : "") + '" data-act="nav-close"></div>' +
-      '<nav class="nav' + (navOpen ? " is-open" : "") + '" aria-hidden="' + (navOpen ? "false" : "true") + '">' +
+    return '<div class="nav-veil' + (navOpen ? " is-open" : "") + '" data-act="nav-close" aria-hidden="true"></div>' +
+      '<nav class="nav' + (navOpen ? " is-open" : "") + '" aria-hidden="' + (navOpen ? "false" : "true") + '" aria-label="Menu">' +
       '<div class="nav-head"><span class="nav-title">Fus&#183;ha</span>' +
       '<button class="icon-btn" data-act="nav-close" aria-label="Close the menu">&times;</button></div>' +
 
@@ -7536,6 +7558,9 @@
       '<h1 class="wordmark">Fus<em>&#183;</em>ha</h1>' +
       '<p class="tagline">The Arabic every Arab country understands, in ' + LESSONS.length +
       ' lessons. No alphabet required.</p>' +
+      (people.list.length > 1 && currentPerson()
+        ? '<p class="whoami">Practising as <b>' + esc(currentPerson().name) + "</b></p>"
+        : "") +
       "</header>" +
 
       (dataProblems.length
@@ -7543,6 +7568,10 @@
         : "") +
       (storageOff
         ? '<div class="notice">This browser is blocking local storage, so scores will not survive a reload. Everything else works.</div>'
+        : "") +
+      (whoNote
+        ? '<div class="notice">Now practising as <b>' + esc(whoNote) +
+          "</b>. This is a separate set of progress; switch back from the menu at any time.</div>"
         : "") +
       (canSpeak() ? "" :
         '<div class="notice">' + esc(speakWhy()) +
@@ -7851,7 +7880,7 @@
       '<input class="pb-search" data-act="search" type="text" value="' + esc(pbQuery) + '"' +
       ' placeholder="Search the whole course, English or Arabic" autocomplete="off" autocorrect="off"' +
       ' autocapitalize="off" spellcheck="false" aria-label="Search every phrase in the course">' +
-      '<div data-results>' + phrasebookResults() + "</div>";
+      '<div data-results aria-live="polite">' + phrasebookResults() + "</div>";
   }
 
   function phrasebookResults() {
@@ -8194,14 +8223,16 @@
   function makeHearHTML(m) {
     var opts = '<div class="options">' + m.options.map(function (opt, i) {
       var cls = "option";
+      var state = "";
       if (m.checked) {
-        if (opt === m.s.en) cls += " is-right";
-        else if (opt === m.chosen) cls += " is-wrong";
+        if (opt === m.s.en) { cls += " is-right"; state = "Correct answer"; }
+        else if (opt === m.chosen) { cls += " is-wrong"; state = "Your answer, incorrect"; }
         else cls += " is-dim";
       }
       return '<button class="' + cls + '" data-act="make-answer" data-value="' + esc(opt) + '"' +
         (m.checked ? " disabled" : "") + ">" +
-        '<span class="option-key">' + (i + 1) + "</span><span>" + esc(opt) + "</span></button>";
+        '<span class="option-key">' + (i + 1) + "</span><span>" + esc(opt) + "</span>" +
+        (state ? '<span class="sr-only">, ' + state + "</span>" : "") + "</button>";
     }).join("") + "</div>";
 
     return topbarHTML("Make a sentence", null, m.run ? m.got + "/" + m.run : "") +
@@ -8215,7 +8246,7 @@
       "</div></div>" +
       opts +
       (m.checked
-        ? '<div class="verdict">' +
+        ? '<div class="verdict" tabindex="-1">' +
           (m.right
             ? '<div class="verdict-msg ok"><b>Correct.</b></div>'
             : '<div class="verdict-msg no"><b>Not quite.</b>&nbsp;<span>' + esc(m.s.en) + "</span></div>") +
@@ -8258,7 +8289,7 @@
     var body;
     if (m.checked) {
       var gloss = glossesFor(m.s.ar).length ? '<div class="why">' + glossHTML(m.s.ar) + "</div>" : "";
-      body = '<div class="verdict">' +
+      body = '<div class="verdict" tabindex="-1">' +
         (m.right
           ? '<div class="verdict-msg ok"><b>Correct.</b>&nbsp;<span class="ar">' + esc(m.s.ar) + "</span>" +
             sayBtn(m.s.ar, true) + "</div>"
@@ -8828,7 +8859,7 @@
       : "";
 
     var verdict = mo.checked
-      ? '<div class="verdict">' +
+      ? '<div class="verdict" tabindex="-1">' +
         (mo.right
           ? '<div class="verdict-msg ok"><b>That works.</b></div>'
           : mo.shown
@@ -8848,7 +8879,7 @@
       "</div>" +
       '<input class="' + cls + '" data-act="moment-typing" type="text" value="' + esc(mo.typed) + '"' +
       ' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"' +
-      ' aria-label="Say something that works"' + (mo.checked ? " disabled" : "") + ">" +
+      ' aria-label="Type something that works"' + (mo.checked ? " disabled" : "") + ">" +
       (mo.checked ? "" :
         '<div class="action-row">' +
         (canHear()
@@ -9239,14 +9270,16 @@
     var opts = '<div class="options">' + a.options.map(function (key, i) {
       var k = askKindByKey(key);
       var cls = "option";
+      var state = "";
       if (a.checked) {
-        if (key === a.q.kind) cls += " is-right";
-        else if (key === a.chosen) cls += " is-wrong";
+        if (key === a.q.kind) { cls += " is-right"; state = "Correct answer"; }
+        else if (key === a.chosen) { cls += " is-wrong"; state = "Your answer, incorrect"; }
         else cls += " is-dim";
       }
       return '<button class="' + cls + '" data-act="asked-answer" data-value="' + esc(key) + '"' +
         (a.checked ? " disabled" : "") + ">" +
-        '<span class="option-key">' + (i + 1) + "</span><span>" + esc(k ? k.en : key) + "</span></button>";
+        '<span class="option-key">' + (i + 1) + "</span><span>" + esc(k ? k.en : key) + "</span>" +
+        (state ? '<span class="sr-only">, ' + state + "</span>" : "") + "</button>";
     }).join("") + "</div>";
 
     var stage = heard
@@ -9267,7 +9300,7 @@
       (heard ? "Listen to the question" : "Read the question") + "</div>" + stage + "</div>" +
       opts +
       (a.checked
-        ? '<div class="verdict">' +
+        ? '<div class="verdict" tabindex="-1">' +
           (a.right
             ? '<div class="verdict-msg ok"><b>Yes.</b>&nbsp;<span>' + esc(askWord(a.q.kind)) + "</span></div>"
             : '<div class="verdict-msg no"><b>It was ' + esc(kind ? kind.en.toLowerCase() : "") +
@@ -9403,7 +9436,7 @@
     return '<div class="topbar">' +
       '<button class="icon-btn" data-act="back" aria-label="Back">&larr;</button>' +
       '<button class="icon-btn" data-act="nav-open" aria-label="Open the menu">&#9776;</button>' +
-      '<span class="topbar-title">' + esc(title) + "</span>" +
+      '<h1 class="topbar-title">' + esc(title) + "</h1>" +
       (counter ? '<span class="counter">' + esc(counter) + "</span>" : "") +
       "</div>" +
       (typeof barPct === "number" ? '<div class="bar"><i style="width:' + barPct + '%"></i></div>' : "");
@@ -9481,7 +9514,7 @@
       "</div>";
 
     return topbarHTML(l.title + " &#183; study", pct, (learn.i + 1) + " / " + l.phrases.length) +
-      '<div class="card flashcard fade-in">' +
+      '<div class="card flashcard fade-in" tabindex="-1">' +
       (p.core ? '<div><span class="pill pill--tag core-tag">Core phrase</span></div>' : "") +
       '<div class="say-row"><div class="flash-ar ar">' + esc(disp(p.ar)) + "</div>" + sayBtn(p.ar) + "</div>" +
       // Silence here was making fus-ha look like the dialect you chose.
@@ -9502,7 +9535,7 @@
       '<button class="btn btn-ghost btn-step" data-act="learn-prev"' +
       (learn.i === 0 ? " disabled" : "") + ' aria-label="Previous phrase">&larr;</button>' +
       '<button class="btn" data-act="' + (learn.shown ? "learn-next" : "learn-reveal") + '">' +
-      (learn.shown ? (last ? "Finish and play" : "Next phrase") : "Reveal") + "</button>" +
+      (learn.shown ? (last ? "Finish and play" : "Next phrase") : "Show meaning") + "</button>" +
       '<button class="btn btn-ghost btn-step" data-act="learn-fwd"' +
       (last ? " disabled" : "") + ' aria-label="Next phrase, without revealing">&rarr;</button>' +
       "</div>" +
@@ -9528,7 +9561,8 @@
       t.type === "listen" ? listenHTML(t) :
       t.type === "follow" ? followHTML(t) :
       t.type === "convoturn" ? convoTurnHTML(t) : dialogHTML(t);
-    var title = session.isFixup ? "Fixing what you missed"
+    var title = session.isToday ? "Today"
+      : session.isFixup ? "Fixing what you missed"
       : session.isFollow ? session.convo.title + " \u00b7 listening"
       : session.isDrill ? (gameByKey(session.isDrill) || {}).label + " only"
       : session.isReview ? "Mixed review"
@@ -9542,15 +9576,17 @@
     var checked = session.state === "checked";
     return '<div class="options">' + list.map(function (opt, i) {
       var cls = "option" + (arabic ? " ar" : "");
+      var state = "";
       if (checked) {
-        if (opt === t.answer) cls += " is-right";
-        else if (opt === t.chosen) cls += " is-wrong";
+        if (opt === t.answer) { cls += " is-right"; state = "Correct answer"; }
+        else if (opt === t.chosen) { cls += " is-wrong"; state = "Your answer, incorrect"; }
         else cls += " is-dim";
       }
       return '<button class="' + cls + '" data-act="answer" data-value="' + esc(opt) + '"' +
         (checked ? " disabled" : "") + ">" +
         '<span class="option-key">' + (i + 1) + "</span><span>" +
-        esc(arabic ? disp(opt) : opt) + "</span></button>";
+        esc(arabic ? disp(opt) : opt) + "</span>" +
+        (state ? '<span class="sr-only">, ' + state + "</span>" : "") + "</button>";
     }).join("") + "</div>";
   }
 
@@ -9731,10 +9767,13 @@
       var gone = t.done.indexOf(item.i) !== -1;
       var picked = t.picked && t.picked.side === side && t.picked.i === item.i;
       var miss = t.miss && t.miss.side === side && t.miss.i === item.i;
+      var state = gone ? "Matched" : miss ? "No match, try again" : "";
       return '<button class="match-cell' + (side === "l" ? " ar" : "") +
         (gone ? " is-gone" : "") + (picked ? " is-picked" : "") + (miss ? " is-miss" : "") +
         '" data-act="match" data-side="' + side + '" data-i="' + item.i + '"' +
-        (gone ? " disabled" : "") + ">" + esc(item.text) + "</button>";
+        (gone ? "" : ' aria-pressed="' + (picked ? "true" : "false") + '"') +
+        (gone ? " disabled" : "") + ">" + esc(item.text) +
+        (state ? '<span class="sr-only">, ' + state + "</span>" : "") + "</button>";
     }
     var rows = "";
     for (var i = 0; i < t.pairs.length; i++) rows += cell("l", t.left[i]) + cell("r", t.right[i]);
@@ -9824,7 +9863,7 @@
         (arabicAnswer ? sayBtn(heard, true) : "") + "</div>";
     }
     var ending = last && (session.retried || session.missed.length === 0);
-    return '<div class="verdict">' + msg +
+    return '<div class="verdict" tabindex="-1">' + msg +
       (session.lastRight ? "" : whyHTML(t)) + roundControls(t) +
       '<button class="btn btn-wide" data-act="next">' +
       (ending ? "See your score" : "Continue") + "</button></div>";
@@ -9919,11 +9958,12 @@
         ? '<button class="btn" data-go="lesson" data-id="' + next.id + '">Next lesson</button>'
         : '<button class="btn" data-go="home">Back to lessons</button>';
 
-    return topbarHTML(session.isFixup ? "Fixing what you missed"
+    return topbarHTML(session.isToday ? "Today"
+      : session.isFixup ? "Fixing what you missed"
       : session.isConvo ? session.convo.title
       : session.isDrill ? (gameByKey(session.isDrill) || {}).label + " only"
       : session.isReview ? "Mixed review" : lesson.title) +
-      '<div class="card result fade-in">' +
+      '<div class="card result fade-in" tabindex="-1">' +
       '<div class="eyebrow">' + eyebrow + "</div>" +
       '<div class="result-score mono ' + tone + '">' + score + "%</div>" +
       '<p class="result-line">' + esc(line) + "</p>" + misses + circuit + "</div>" +
@@ -10125,6 +10165,7 @@
   }
 
   var wantFold = null;
+  var whoNote = null;
 
   // A fold the menu is sending you to is emitted open, so it is open in
   // the first paint rather than a frame later.
@@ -10146,10 +10187,12 @@
 
   function render() {
     bumpTick();
+    var noteWas = whoNote;
     if (YOU_KEY !== youKey()) applyPersonal();
     var folds = foldState();
     app.innerHTML = navHTML() + screenHTML();
     restoreFolds(folds);
+    if (noteWas && noteWas === whoNote) whoNote = null;
     markPlaying();
     afterRender();
   }
@@ -10173,8 +10216,17 @@
       }
       return;
     }
+    if (view.name === "result") {
+      var resultCard = app.querySelector(".result");
+      if (resultCard && typeof resultCard.focus === "function") resultCard.focus();
+      return;
+    }
     if (view.name === "asked") {
       if (asked && !asked.played && canSpeak()) { asked.played = true; speak(asked.q.ar); }
+      if (asked && asked.checked) {
+        var askedVerdict = app.querySelector(".verdict");
+        if (askedVerdict && typeof askedVerdict.focus === "function") askedVerdict.focus();
+      }
       return;
     }
     if (view.name === "numbers") {
@@ -10186,15 +10238,32 @@
     if (view.name === "moment") {
       var mf = moment && !moment.checked && app.querySelector('[data-act="moment-typing"]');
       if (mf && typeof mf.focus === "function") mf.focus();
+      if (moment && moment.checked) {
+        var momentVerdict = app.querySelector(".verdict");
+        if (momentVerdict && typeof momentVerdict.focus === "function") momentVerdict.focus();
+      }
       return;
     }
     if (view.name === "make") {
       if (made && made.hear && !made.played) { made.played = true; speak(made.s.ar); }
+      if (made && made.checked) {
+        var makeVerdict = app.querySelector(".verdict");
+        if (makeVerdict && typeof makeVerdict.focus === "function") makeVerdict.focus();
+      }
+      return;
+    }
+    if (view.name === "learn") {
+      var flash = app.querySelector(".flashcard");
+      if (flash && typeof flash.focus === "function") flash.focus();
       return;
     }
     if (view.name !== "play" || !session) return;
     var t = session.tasks[session.i];
-    if (session.state === "checked") return;
+    if (session.state === "checked") {
+      var playVerdict = app.querySelector(".verdict");
+      if (playVerdict && typeof playVerdict.focus === "function") playVerdict.focus();
+      return;
+    }
 
     if (t.type === "write") {
       var field = app.querySelector('[data-act="typing"]');
@@ -10205,6 +10274,14 @@
         }
       }
       return;
+    }
+
+    if (t.type === "match") {
+      var cellTarget = t.miss || t.picked;
+      var cell = cellTarget
+        ? app.querySelector('[data-act="match"][data-side="' + cellTarget.side + '"][data-i="' + cellTarget.i + '"]')
+        : app.querySelector('[data-act="match"]:not([disabled])');
+      if (cell && typeof cell.focus === "function") cell.focus();
     }
 
     if (t.type === "listen" && !t.played) { t.played = true; speak(t.phrase.ar); }
@@ -10303,7 +10380,10 @@
 
     if (act === "who") {
       var wid = el.getAttribute("data-id");
-      if (wid !== people.current) { stopSpeech(); session = null; learn = null; switchTo(wid); }
+      if (wid !== people.current) {
+        stopSpeech(); session = null; learn = null; switchTo(wid);
+        whoNote = currentPerson() ? currentPerson().name : null;
+      }
       go({ name: "home" });
       return;
     }
@@ -10315,6 +10395,7 @@
       stopSpeech();
       session = null; learn = null;
       addPerson(name);
+      whoNote = name;
       go({ name: "home" });
       return;
     }
@@ -10339,8 +10420,20 @@
       go({ name: "home" });
       return;
     }
-    if (act === "nav-open") { navOpen = true; render(); return; }
-    if (act === "nav-close") { navOpen = false; render(); return; }
+    if (act === "nav-open") {
+      navOpen = true;
+      render();
+      var navFirst = app.querySelector('[data-act="nav-close"]');
+      if (navFirst && typeof navFirst.focus === "function") navFirst.focus();
+      return;
+    }
+    if (act === "nav-close") {
+      navOpen = false;
+      render();
+      var navOpener = app.querySelector('[data-act="nav-open"]');
+      if (navOpener && typeof navOpener.focus === "function") navOpener.focus();
+      return;
+    }
     if (act === "nav-today") { navOpen = false; stopSpeech(); startToday(); return; }
     if (act === "nav-course" || act === "nav-convos") {
       navOpen = false;
@@ -10730,6 +10823,26 @@
 
   document.addEventListener("keydown", function (ev) {
     if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+
+    if (navOpen) {
+      if (ev.key === "Escape") {
+        ev.preventDefault();
+        navOpen = false;
+        render();
+        var navOpener = app.querySelector('[data-act="nav-open"]');
+        if (navOpener && typeof navOpener.focus === "function") navOpener.focus();
+        return;
+      }
+      if (ev.key === "Tab") {
+        var navFocusable = app.querySelectorAll('.nav button:not([disabled])');
+        if (navFocusable.length) {
+          var navFirst = navFocusable[0], navLast = navFocusable[navFocusable.length - 1];
+          if (ev.shiftKey && document.activeElement === navFirst) { ev.preventDefault(); navLast.focus(); }
+          else if (!ev.shiftKey && document.activeElement === navLast) { ev.preventDefault(); navFirst.focus(); }
+        }
+        return;
+      }
+    }
 
     var field = ev.target && ev.target.getAttribute && ev.target.getAttribute("data-act");
     if (field === "typing") {
