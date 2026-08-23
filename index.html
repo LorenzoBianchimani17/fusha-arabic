@@ -671,6 +671,8 @@
   .pb-tag:hover { color: var(--ink); border-color: var(--accent); }
   .pb-more { color: var(--ink-3); font-size: 13px; margin: -12px 0 26px; }
   .make-note { color: var(--ink-3); font-size: 13px; margin: 10px 0 0; }
+  .learn-jump { text-align: center; margin-top: 16px; }
+  .learn-jump .link-btn:hover { color: var(--accent); }
 
   .twin-group { margin-bottom: 30px; }
   .twin { padding: 10px 0; border-bottom: 1px solid var(--line); }
@@ -4319,11 +4321,133 @@
   };
 
   // Strip the article and the punctuation, then look the word up.
+  // The word-by-word breakdown has to be in the Arabic you are reading.
+  // Every word below appears in a Levantine line somewhere in the course;
+  // anything the two varieties share falls through to the fus-ha table.
+  var GLOSS_LEV = {
+    "shu": "what", "wèin": "where", "èmta": "when", "addèsh": "how much, how many",
+    "mìn": "who", "kìf": "how", "ànu": "which", "willa": "or", "èh": "yes",
+    "laʾ": "no, not", "làʾ": "no, not", "mà": "not", "w": "and", "bas": "only, just",
+    "ktìr": "very, a lot", "shwày": "a little", "sàwa": "together", "hòn": "here",
+    "hunìk": "there", "baʿdèin": "later, afterwards", "hàllaʾ": "now", "bùkra": "tomorrow",
+    "mbàrih": "yesterday", "yòm": "day", "al-yòm": "today", "lau": "if",
+    "samàht": "you allow (lau samàht, excuse me)", "samàhti": "you allow (to a woman)",
+    "ʿa": "to, on", "ʿala": "on, to", "ʿàla": "on, to", "bi": "in, at", "maʿ": "with",
+    "fàdlak": "your kindness (min fàdlak, please)", "as-salàme": "safety, peace",
+
+    "ìnta": "you (to a man)", "ìnti": "you (to a woman)", "hùwe": "he, it",
+    "hìyye": "she, it", "hàda": "this (masculine)", "hàdi": "this (feminine)",
+    "hày": "this (feminine)",
+
+    "bìddi": "I want", "bìddak": "you want", "làzem": "I need, I must",
+    "mùmken": "may I, is it possible", "rah": "will (about to happen)",
+    "ʿam": "right now (an action in progress)",
+    "bhèbb": "I like, I love", "bthèbb": "you like", "bithìbbi": "you like (to a woman)",
+    "btìhki": "you speak", "ìhki": "speak", "bèfham": "I understand",
+    "bàʿref": "I know", "btàʿref": "you know", "bròh": "I go", "btròh": "you go",
+    "ràyeh": "going", "bòkol": "I eat", "bìshrab": "I drink", "nìshrab": "shall we drink",
+    "bìktob": "I write", "bìʾra": "I read", "btìʾra": "you are reading", "bshùf": "I see",
+    "bshùfak": "I will see you", "bshùfik": "I will see you (to a woman)",
+    "bìshtighel": "I work", "btìshtighel": "you work", "btìshtighli": "you work (to a woman)",
+    "byìshtighel": "it works", "sàken": "living, staying", "làbes": "wearing",
+    "kàn": "it was", "kint": "I was", "riht": "I went", "akàlt": "I ate",
+    "shrìbt": "I drank", "katàbt": "I wrote", "arèit": "I read (in the past)",
+    "shift": "I saw", "ʿmìlt": "I did", "wsìlna": "we have arrived",
+    "dàʿ": "it is lost", "dàʿet": "it is lost (feminine)", "byùjaʿni": "it hurts me",
+    "stànna": "wait", "yàlla": "let us go", "tʾlàʾ": "worry (mà tʾlàʾ, do not worry)",
+    "fùt": "come in", "sàwwer": "take a photo", "khod": "take", "khùdni": "take me",
+    "tàʿa": "come", "ìjʿod": "sit down", "wàʾʾef": "stop", "sàʿedni": "help me",
+    "tfàddal": "here you are, go ahead", "tìsbah": "may you wake",
+    "tsharràfna": "pleased to meet you", "màshi": "going along; on foot",
+    "kamàn": "too, also", "ʿlèsh": "never mind (mà ʿlèsh, no harm done)",
+    "musàʿade": "help", "àkhod": "I take", "fàkker": "think it over",
+    "tshàtti": "it is raining", "byìji": "it comes",
+
+    "ʿàndi": "I have", "ʿàndak": "you have", "ʿàndkun": "you have (more than one of you)",
+    "ʿànna": "we have",
+
+    "màrhaba": "hello", "kìfak": "how are you", "kìfik": "how are you (to a woman)",
+    "mnìh": "fine, well", "wàlaw": "not at all (answering thanks)",
+    "bkhàtrak": "goodbye (said by the one leaving)", "al-hàl": "the state of things",
+    "àhlo": "his people", "allàh": "God", "màʿak": "with you",
+
+    "ìsem": "name", "ìsmi": "my name", "ìsmak": "your name",
+    "ìsmik": "your name (to a woman)", "ìsmo": "his name", "ìsma": "her name",
+    "abùk": "your father", "sàhbi": "my friend", "al-ʿèile": "the family",
+    "ʿèilti": "my family", "bàyi": "my father", "ìmmi": "my mother", "khàyyi": "my brother",
+    "jìddi": "my grandfather", "sìtti": "my grandmother", "bìnti": "my daughter",
+    "jòzi": "my husband", "màrti": "my wife", "ìkhwe": "brothers and sisters",
+    "àkh": "a brother", "ùkht": "a sister",
+
+    "mày": "water", "àhwe": "coffee", "ʾàhwe": "coffee", "al-ʾàhwe": "the coffee",
+    "rìz": "rice", "làhme": "meat", "jàj": "chicken", "al-hsàb": "the bill",
+    "masàri": "money", "dàwa": "medicine", "ad-dàwa": "the medicine",
+    "haràra": "a temperature, a fever", "wàjaʿ": "a pain", "ràs": "head", "ràsi": "my head",
+    "zòr": "throat", "ìd": "hand", "ìjer": "leg", "àhsan": "better",
+
+    "shànta": "a bag, a suitcase", "shànti": "my bag", "sabbàt": "shoes",
+    "as-sabbàt": "the shoes", "awàʿi": "clothes", "jàket": "a coat", "barnèta": "a hat",
+    "ʿwaynàt": "glasses", "amìs": "a shirt", "al-amìs": "the shirt", "tàwle": "a table",
+    "at-tàwle": "the table", "takht": "a bed", "telefòn": "a phone", "ktàb": "a book",
+    "ghùrfe": "a room", "ghùrfet": "the room of", "ghùrftak": "your room",
+    "an-nòm": "sleep", "al-muftàh": "the key", "bèit": "house", "al-bèit": "the house",
+    "bil-bèit": "at home", "ʿal-bèit": "to the house", "al-bàs": "the bus",
+    "at-tayyàra": "the plane", "al-ʾitàr": "the train", "bisiklèit": "a bicycle",
+    "safìne": "a ship", "bis-sayyàra": "by car", "tàzkara": "a ticket",
+    "sàfari": "my travel", "sàfarak": "your travel", "iyyàm": "days", "tlàt": "three",
+    "nìmret": "the number of", "ràqm": "number", "tilifònik": "your phone (to a woman)",
+    "ash-shùghel": "the work", "shùghlak": "your work", "shàrike": "a company",
+    "al-mushkìle": "the problem", "kàlmet": "the word of", "ash-shmàl": "the left",
+
+    "ad-dìnye": "the weather (literally the world)", "shòb": "hot", "bard": "cold",
+    "al-hàwa": "the wind", "at-tàlj": "the snow", "ghèim": "cloudy",
+    "as-sèif": "summer", "ash-shìte": "winter", "fasl": "a season",
+    "as-sàma": "the sky", "al-lòn": "the colour", "lòn": "colour", "lòno": "its colour",
+    "al-àbyad": "the white one", "al-àkhdar": "the green one", "àzraʾ": "blue",
+    "zàrʾa": "blue (feminine)", "hàmra": "red (feminine)", "sòda": "black (feminine)",
+
+    "ʿasfùr": "a bird", "sàmake": "a fish", "fàr": "a mouse", "bìsse": "a cat",
+    "al-bìsse": "the cat", "jàmal": "a camel", "al-hayawanàt": "the animals",
+    "zghìr": "small", "zghìre": "small (feminine)", "kbìr": "big", "jdìd": "new",
+    "adìm": "old", "hìlu": "nice, lovely", "hèlu": "nice, lovely",
+    "hìlwe": "nice, lovely (feminine)", "arìb": "near", "ʾarìb": "near, soon",
+    "bʿìd": "far", "rkhìs": "cheap", "maftùh": "open", "msàkkar": "closed",
+    "jùʿan": "hungry", "sàyeh": "a tourist", "doktòr": "a doctor",
+    "doktòra": "a doctor (a woman)", "shofèir": "a driver", "mashghùle": "busy (a woman)",
+    "àsef": "sorry", "àsfe": "sorry (a woman)", "latìfe": "kind (to a woman)",
+    "inglìzi": "English", "ʿùmrak": "your age",
+
+    "wàhid": "one", "tnèin": "two", "tlàte": "three", "khàmse": "five", "sìtte": "six",
+    "tmàne": "eight", "tìsʿa": "nine", "ʿàshra": "ten", "hdàʿsh": "eleven",
+    "tnàʿsh": "twelve", "ʿìshrin": "twenty", "tlatìn": "thirty", "arbʿìn": "forty",
+    "khamsìn": "fifty", "sittìn": "sixty", "sabʿìn": "seventy", "tmanìn": "eighty",
+    "tisʿìn": "ninety", "mìyye": "one hundred",
+
+    "al-àhad": "Sunday", "at-tnèin": "Monday", "at-talàta": "Tuesday",
+    "al-àrbʿa": "Wednesday", "al-khamìs": "Thursday", "al-jùmʿa": "Friday",
+    "as-sabt": "Saturday"
+  };
+
+  var GLOSS_BY_VARIETY = { lev: GLOSS_LEV };
+
+  // Levantine glues b-, w-, l- and ʿa- straight onto the article, so the
+  // article has to come off before anything can be looked up.
+  function bareWord(w) {
+    return w.replace(/^[bwlʿ](?=(a|i)(l|sh|s|t|th|r|n|z|d)-)/, "")
+      .replace(/^(a|i)(l|sh|s|t|th|r|n|z|d)-/, "");
+  }
+
   function glossFor(word) {
     var w = String(word).toLowerCase().replace(/[?!.,;:]/g, "").trim();
     if (!w) return null;
+    var dia = GLOSS_BY_VARIETY[variety()];
+    var bare = bareWord(w);
+    if (dia) {
+      if (dia[w]) return dia[w];
+      if (dia[bare]) return dia[bare];
+      if (dia["al-" + bare]) return dia["al-" + bare];
+    }
     if (GLOSS[w]) return GLOSS[w];
-    var bare = w.replace(/^(al|ash|as|at|ath|ar|an|az|ad)-/, "");
     if (GLOSS[bare]) return GLOSS[bare];
     if (GLOSS["al-" + bare]) return GLOSS["al-" + bare];
     return null;
@@ -8432,7 +8556,7 @@
   }
 
   function glossHTML(ar) {
-    var parts = glossesFor(ar);
+    var parts = glossesFor(disp(ar));
     if (!parts.length) return "";
     return '<div class="gloss">' + parts.map(function (g) {
       return '<span class="gloss-row"><span class="ar">' + esc(g.word) + "</span>" +
@@ -8502,7 +8626,11 @@
       (learn.shown ? (last ? "Finish and play" : "Next phrase") : "Reveal") + "</button>" +
       '<button class="btn btn-ghost btn-step" data-act="learn-fwd"' +
       (last ? " disabled" : "") + ' aria-label="Next phrase, without revealing">&rarr;</button>' +
-      "</div>";
+      "</div>" +
+      // Reading the cards is not learning them. This is the way out of
+      // the pile at any point, not only at the last card.
+      '<div class="learn-jump"><button class="link-btn" data-go="play" data-id="' + l.id +
+      '">Enough reading, play lesson ' + l.id + "</button></div>";
   }
 
   /* ============================================================
