@@ -1,28 +1,65 @@
-# Fusha - Modern Standard Arabic
+# Fusha
 
-One self-contained page. No build step, no dependencies, no server code.
+## What it is
 
-## Putting it online
+Fusha is a single-page web app for learning to speak and understand Arabic. It teaches Modern Standard Arabic (fus-ha) by default, with Egyptian, Levantine and Gulf Arabic layered on top as switchable varieties, all sharing one course and one set of progress. It never shows the Arabic alphabet: every phrase is written in the Latin alphabet, with an accent mark showing which syllable is stressed. The course is built around speaking and understanding spoken Arabic, not reading a new script, so the script is left out on purpose.
 
-Any static host works. The only thing that matters is that it is served
-as a normal page over HTTPS, not embedded in someone else's iframe,
-because the microphone is refused inside a frame.
+## How to use it
 
-**Render** - New > Static Site > connect this repo.
-  Build command: leave empty.
-  Publish directory: `.`
+Open https://lorenzobianchimani17.github.io/fusha-arabic/. It is one HTML file with no server behind it: once it has loaded, it keeps working with no connection at all.
 
-**Netlify Drop** - drag this folder onto https://app.netlify.com/drop.
-  No account needed, no repo needed.
+Everything - which lessons you have passed, the strength of each phrase, which variety you are studying, phrases set aside, marked recognise-only or hidden, your own name and details - is stored in the browser's local storage, on that one device and browser. Nothing is sent anywhere.
 
-**GitHub Pages** - push, then Settings > Pages > deploy from branch, root.
+To move progress to another device: open the menu, copy the backup code shown on the home screen, and paste it into the same box on the other device. It asks for confirmation before replacing whatever is already there.
 
-## What needs what
+## What is in it
 
-- Reading, games, conversations, progress: nothing. Works offline once loaded.
-- Hearing the phrases: an Arabic voice installed on the device.
-- Speaking into it: HTTPS, a top-level page, and Safari or Chrome.
-  On iOS also check Settings > General > Keyboard > Enable Dictation.
+27 lessons, greetings through travel, illness and talking about the past: 357 phrases in total, 80 of them marked core, meaning they can carry a conversation by themselves. 19 scripted conversations, each unlocked once you have passed the lessons it draws on.
 
-Progress lives in the browser's local storage. The backup code at the
-bottom of the home screen moves it between devices.
+Practice screens, beyond the lessons themselves:
+
+- **Today**: one button. It decides what is most needed - the next lesson, core phrases still shaky, or whatever else is weak - and starts it.
+- **Mixed review**: everything passed so far, once at least one lesson is passed.
+- **Seven games**, one phrase at a time: Quiz (pick the meaning), Build (put the words in order), Match (pair phrase to meaning), Reply (answer what is said to you), Say it (say it aloud, then mark yourself), Listen (hear it, no text, needs a voice on the device), Write (type the transliteration from memory).
+- **Free talk**: say or type anything; it answers from the lessons you choose.
+- **Numbers by ear**: a number said once, the way a price or a departure time actually arrives, and you type back the digits.
+- **What are they asking?**: 100 real questions drawn from the course, by ear. You pick what kind of question it is - where, when, how much, yes or no, and so on - not what it means.
+- **What would you say?**: 58 situations with no English to translate. You say or type something that works.
+- **Make a sentence**: 125 sentences built from 13 patterns and words the course has already taught, none of them a phrase the course teaches directly.
+- **One job, several phrases**: 10 groups of near-synonyms - four ways to say hello, five to say goodbye - so you can pick the one you will actually say and keep the rest for recognising only.
+- **Your words** and **Phrasebook**: the phrases you have set aside or hidden, and a search over every phrase and every line of dialogue in the course.
+
+Four varieties, switchable at any time, progress shared across all of them. Fusha is the base text the other three are written against. Levantine is finished: of the 357 phrases, 275 have their own Levantine wording and the other 82 have been checked and are identical to fus-ha, so nothing is left unlooked-at; 66 of the 80 core phrases have a distinct Levantine form. Egyptian and Gulf are much earlier: 91 and 46 of the 357 phrases done, with most of the course not yet looked at for either.
+
+## How the memory works
+
+Every phrase carries a strength from 0 to 5. A right answer raises it one step, up to 5. A wrong answer drops it two steps, or one step for a typing slip, since a typo is not the same as not knowing the phrase.
+
+Each strength holds for a number of days before the phrase is due again: 0, 2, 5, 12, 30 and 75 days for strengths 0 through 5. A day away does not erase progress: a phrase left past its hold drops exactly one step, however long you were gone. A month away does not put a phrase back to zero.
+
+Three ways to take a phrase out of normal rotation, all reversible:
+
+- **Set aside**: you already know it. It leaves rotation at once but comes back once, after 10 days, for a spot check.
+- **Recognise only**: you want to understand it but never plan to say it yourself. It is never asked of you in the games that make you produce an answer - Build, Say it, Write, Reply - but keeps turning up in Listen and Match, and the quiz still shows it starting from the Arabic.
+- **Hidden**: out entirely. It never comes back and stops counting toward anything. Hiding a phrase also clears any "set aside" mark on it.
+
+## How to work on it
+
+`fusha.html` is the source of truth: title, styles, markup and the whole script, in one file. It is not part of this repository. `index.html` here is the deployed page, generated from it.
+
+The test suite is `suite.js`, run under Node against the script pulled out of `fusha.html` (with a couple of lines added at the end to expose its internals to the tests). It runs in four configurations, one for each combination of two flags describing what the device can do:
+
+    node suite.js
+    node suite.js --voice
+    node suite.js --mic
+    node suite.js --voice --mic
+
+Each run prints a checklist and finishes with "ALL CHECKS PASS" or a list of failures, and exits non-zero if anything failed.
+
+## What it does not do
+
+- It does not teach the Arabic alphabet, or reading or writing the script, at all.
+- Egyptian and Gulf are thin: most of the course has not been looked at for either yet.
+- Hearing the phrases needs an Arabic voice installed on the device. Speaking into it needs a microphone, HTTPS, and a top-level page rather than an embedded frame.
+- Progress does not sync anywhere by itself; moving it between devices is a manual copy and paste of the backup code.
+- No accounts, no server, no analytics.
