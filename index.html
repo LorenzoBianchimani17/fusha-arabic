@@ -5416,7 +5416,9 @@
 
   // Conversation and comprehension lead, because that is the goal:
   // holding a conversation and following one, not spelling.
-  var TYPE_WEIGHT = { dialog: 3, listen: 3, say: 2, quiz: 2, write: 2, build: 1 };
+  // Typing a transliteration is the least conversational thing here and
+  // it was taking a third of every session.
+  var TYPE_WEIGHT = { dialog: 3, listen: 3, say: 2, quiz: 2, write: 1, build: 1 };
 
   function gameByKey(k) {
     for (var i = 0; i < GAMES.length; i++) if (GAMES[i].key === k) return GAMES[i];
@@ -6083,7 +6085,10 @@
     if (item.core && !isPassive((item.phrase || item).ar)) {
       var produce = ["say", "write"].filter(function (t) { return usable.indexOf(t) !== -1; });
       if (produce.length) {
-        var lead = shuffle(produce)[0];
+        // With a microphone, saying it out loud is the real thing and
+        // typing it is the stand-in. Without one, Say can only mark
+        // itself, so the two take turns as they always did.
+        var lead = canHear() && produce.indexOf("say") !== -1 ? "say" : shuffle(produce)[0];
         order = [lead].concat(order.filter(function (t) { return t !== lead; }));
       }
     }
