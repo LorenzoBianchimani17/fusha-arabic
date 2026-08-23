@@ -26,12 +26,12 @@
     --line-strong: #BFCACB;
     --ink: #131E22;
     --ink-2: #566468;
-    --ink-3: #7E8D91;
+    --ink-3: #607177;
     --accent: #0B6E7F;
     --accent-ink: #084C58;
     --accent-soft: #E2EFF1;
     --amber: #B0790B;
-    --good: #1E7D4E;
+    --good: #17693F;
     --good-soft: #E3F2EA;
     --bad: #B23A32;
     --bad-soft: #FAE9E7;
@@ -58,7 +58,7 @@
       --line-strong: #35494F;
       --ink: #E7EEEF;
       --ink-2: #93A5A9;
-      --ink-3: #71858A;
+      --ink-3: #7E9297;
       --accent: #3FB3C4;
       --accent-ink: #7FD3DF;
       --accent-soft: #14343B;
@@ -82,7 +82,7 @@
     --line-strong: #35494F;
     --ink: #E7EEEF;
     --ink-2: #93A5A9;
-    --ink-3: #71858A;
+    --ink-3: #7E9297;
     --accent: #3FB3C4;
     --accent-ink: #7FD3DF;
     --accent-soft: #14343B;
@@ -105,7 +105,7 @@
     --line-strong: #BFCACB;
     --ink: #131E22;
     --ink-2: #566468;
-    --ink-3: #7E8D91;
+    --ink-3: #607177;
     --accent: #0B6E7F;
     --accent-ink: #084C58;
     --accent-soft: #E2EFF1;
@@ -265,7 +265,11 @@
   .masthead::before {
     content: "";
     position: absolute;
-    inset: -20px -100vw 0;
+    top: -20px;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    margin-left: -50vw;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M12.9 0 L31.1 0 L44 12.9 L44 31.1 L31.1 44 L12.9 44 L0 31.1 L0 12.9 Z' fill='none' stroke='rgba(11,110,127,0.55)' stroke-width='1'/%3E%3C/svg%3E");
     opacity: var(--pattern-op);
     -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 92%);
@@ -1247,7 +1251,7 @@
   }
 
   .heard.is-close .heard-label { color: var(--good); }
-  .heard-text { font-size: 19px; line-height: 1.4; direction: rtl; }
+  .heard-text { font-size: 19px; line-height: 1.4; }
   .heard-note { font-size: 12px; color: var(--ink-3); line-height: 1.4; margin-top: 3px; }
 
   .heard-yes {
@@ -3115,7 +3119,7 @@
       lev: ["Anà kamàn", "أنا كمان"]
     },
     "Là bà's": {
-      egy: ["Mà ʿalèish", "معلش"], lev: ["Mà ʿlèsh", "معليش"], gulf: ["Mà ʿalèih", "ما عليه"]
+      egy: ["Mà ʿalèish", "معلش"], lev: ["Màshi al-hàl", "ماشي الحال"], gulf: ["Mà ʿalèih", "ما عليه"]
     },
     "Anà bikhèir, shùkran": {
       lev: ["Anà mnìh, shùkran", "أنا منيح شكرا"]
@@ -3124,7 +3128,7 @@
       lev: ["Anà mnìh. W ìnta?", "أنا منيح وانت؟"]
     },
     "Kèifa hàluki?": {
-      egy: ["Izzàyik?", "إزيك؟"], lev: ["Kìfik?", "كيفك؟"], gulf: ["Shlònich?", "شلونچ؟"]
+      egy: ["Izzàyik?", "إزيك؟"], lev: ["Kìfik?", "كيفكِ؟"], gulf: ["Shlònich?", "شلونچ؟"]
     },
     "Là bà's, al-hàmdu lillàh": {
       lev: ["Màshi al-hàl, al-hàmdu lillàh", "ماشي الحال الحمد لله"]
@@ -3157,7 +3161,7 @@
       lev: ["Ìsma Sara", "اسمها سارة"]
     },
     "Mà ìsmuki?": {
-      egy: ["Ìsmik èh?", "اسمك إيه؟"], lev: ["Shu ìsmik?", "شو اسمك؟"], gulf: ["Shu ìsmich?", "شو اسمچ؟"]
+      egy: ["Ìsmik èh?", "اسمك إيه؟"], lev: ["Shu ìsmik?", "شو اسمكِ؟"], gulf: ["Shu ìsmich?", "شو اسمچ؟"]
     },
     "Min àina ànta?": {
       egy: ["Ìnta minèin?", "انت منين؟"], lev: ["Min wèin ìnta?", "من وين انت؟"], gulf: ["Min wèin ìnta?", "من وين انت؟"]
@@ -3178,7 +3182,7 @@
       egy: ["Shwàyya bas", "شوية بس"], lev: ["Shwày bas", "شوي بس"]
     },
     "Min àina ànti?": {
-      egy: ["Ìnti minèin?", "انت منين؟"], lev: ["Min wèin ìnti?", "من وين انت؟"], gulf: ["Min wèin ìnti?", "من وين انت؟"]
+      egy: ["Ìnti minèin?", "انت منين؟"], lev: ["Min wèin ìnti?", "من وين انتِ؟"], gulf: ["Min wèin ìnti?", "من وين انت؟"]
     },
     "Min fàdlik": {
       lev: ["Min fàdlak", "من فضلك"]
@@ -3406,7 +3410,7 @@
       egy: ["Hùwa beʿìd?", "هو بعيد؟"], lev: ["Hùwe bʿìd?", "هو بعيد؟"]
     },
     "Là, hùwa qarìb": {
-      lev: ["Laʾ, hùwe arìb", "لأ هو قريب"]
+      lev: ["Làʾ, hùwe arìb", "لأ هو قريب"]
     },
     "Lau samàht, àina al-hammàm?": {
       lev: ["Lau samàht, wèin al-hammàm?", "لو سمحت وين الحمام؟"]
@@ -3421,7 +3425,7 @@
       lev: ["Al-ʿèile", "العيلة"]
     },
     "Àbi": {
-      egy: ["Bàba", "بابا"], lev: ["Bàyi", "بيي"], gulf: ["Ùbuy", "أبوي"]
+      egy: ["Bàba", "بابا"], lev: ["Bàyyi", "بيي"], gulf: ["Ùbuy", "أبوي"]
     },
     "Ùmmi": {
       egy: ["Màma", "ماما"], lev: ["Ìmmi", "إمي"], gulf: ["Ùmmi", "أمي"]
@@ -3481,7 +3485,7 @@
       lev: ["Shu lòn as-sàma?", "شو لون السما؟"]
     },
     "Ày làun tùhib?": {
-      lev: ["Ànu lòn bthèbb?", "أنو لون بتحب؟"]
+      lev: ["Ày lòn bthèbb?", "أي لون بتحب؟"]
     },
     "Ùhib al-àkhdar": {
       lev: ["Bhèbb al-àkhdar", "بحب الأخضر"]
@@ -3490,7 +3494,7 @@
       lev: ["Hìyye hàmra?", "هي حمرا؟"]
     },
     "Là, hìya sàuda": {
-      lev: ["Laʾ, hìyye sòda", "لأ هي سودا"]
+      lev: ["Làʾ, hìyye sòda", "لأ هي سودا"]
     },
     "Mà mìhnatuk?": {
       egy: ["Bitìshtaghal èh?", "بتشتغل إيه؟"], lev: ["Shu btìshtighel?", "شو بتشتغل؟"]
@@ -3562,7 +3566,7 @@
       lev: ["Al-kalb kbìr?", "الكلب كبير؟"]
     },
     "Là, hùwa saghìr": {
-      lev: ["Laʾ, hùwe zghìr", "لأ هو زغير"]
+      lev: ["Làʾ, hùwe zghìr", "لأ هو زغير"]
     },
     "Ày hayawàn tùhib?": {
       lev: ["Ày hayawàn bthèbb?", "أي حيوان بتحب؟"]
@@ -3613,13 +3617,13 @@
       lev: ["As-sabbàt jdìd?", "الصباط جديد؟"]
     },
     "Là, hùwa qadìm": {
-      lev: ["Laʾ, hùwe adìm", "لأ هو قديم"]
+      lev: ["Làʾ, hùwe adìm", "لأ هو قديم"]
     },
     "Hal tùhib hàdha al-fustàn?": {
       lev: ["Bthèbb hàda al-fustàn?", "بتحب هدا الفستان؟"]
     },
     "Naʿam, jamìl": {
-      lev: ["Èh, hèlu", "إي حلو"]
+      lev: ["Èh, hìlu", "إي حلو"]
     },
     "Àdhhab": {
       egy: ["Barùh", "بروح"], lev: ["Bròh", "بروح"], gulf: ["Arùh", "أروح"]
@@ -3649,7 +3653,7 @@
       egy: ["Fàhim", "فاهم"], lev: ["Bèfham", "بفهم"], gulf: ["Àfham", "أفهم"]
     },
     "Ahtàj": {
-      egy: ["Mihtàg", "محتاج"], lev: ["Làzem", "لازم"], gulf: ["Ahtàj", "أحتاج"]
+      egy: ["Mihtàg", "محتاج"], lev: ["Làzemni", "لازمني"], gulf: ["Ahtàj", "أحتاج"]
     },
     "Urìd": {
       egy: ["ʿÀyiz", "عايز"], lev: ["Bìddi", "بدي"], gulf: ["Àbi", "أبي"]
@@ -3694,7 +3698,7 @@
       egy: ["Otobìs", "أوتوبيس"], lev: ["Al-bàs", "الباص"], gulf: ["Bàs", "باص"]
     },
     "Tàdhkara": {
-      lev: ["Tàzkara", "تذكرة"]
+      lev: ["Tàzkara", "تزكرة"]
     },
     "Haqìba": {
       lev: ["Shànta", "شنطة"]
@@ -3757,22 +3761,22 @@
       lev: ["Btìhki inglìzi?", "بتحكي إنكليزي؟"]
     },
     "Hal ànti min hùna?": {
-      lev: ["Ìnti min hòn?", "انت من هون؟"]
+      lev: ["Ìnti min hòn?", "انتِ من هون؟"]
     },
     "Hal tuhibbìn al-qàhwa?": {
-      lev: ["Bithìbbi al-ʾàhwe?", "بتحبي القهوة؟"]
+      lev: ["Bithìbbi al-àhwe?", "بتحبي القهوة؟"]
     },
     "Hal nàshrab qàhwa màʿan?": {
-      lev: ["Nìshrab ʾàhwe sàwa?", "نشرب قهوة سوا؟"]
+      lev: ["Nìshrab àhwe sàwa?", "نشرب قهوة سوا؟"]
     },
     "Ànti latìfa": {
-      lev: ["Ìnti latìfe", "انت لطيفة"]
+      lev: ["Ìnti latìfe", "انتِ لطيفة"]
     },
     "Ànti jamìla": {
-      lev: ["Ìnti hìlwe", "انت حلوة"]
+      lev: ["Ìnti hìlwe", "انتِ حلوة"]
     },
     "Mà raqm hàtifiki?": {
-      lev: ["Shu ràqm tilifònik?", "شو رقم تلفونك؟"]
+      lev: ["Shu nìmret tilifònik?", "شو نمرة تلفونكِ؟"]
     },
     "Là, shùkran": {
       lev: ["Làʾ, shùkran", "لأ شكرا"]
@@ -3781,10 +3785,10 @@
       lev: ["Àsfe, anà mashghùle", "آسفة أنا مشغولة"]
     },
     "Là bà's, maʿa salàma": {
-      lev: ["Mà ʿlèsh, maʿ as-salàme", "معليش مع السلامة"]
+      lev: ["Maʿlèsh, maʿ as-salàme", "معليش مع السلامة"]
     },
     "Ilà al-liqà qarìban": {
-      lev: ["Bshùfik ʾarìb", "بشوفك قريب"]
+      lev: ["Bshùfik arìb", "بشوفكِ قريب"]
     },
     "Lau samàhti, hal tatakàllamìn al-inglizìyya?": {
       lev: ["Lau samàhti, btìhki inglìzi?", "لو سمحتي بتحكي إنكليزي؟"]
@@ -3838,13 +3842,13 @@
       lev: ["Shu nìmret ghùrftak?", "شو نمرة غرفتك؟"]
     },
     "At-tàqs": {
-      lev: ["Ad-dìnye", "الدني"]
+      lev: ["Ad-dìnye", "الدنيا"]
     },
     "Al-jàww hàrr": {
-      egy: ["Ig-gàww hàrr", "الجو حر"], lev: ["Ad-dìnye shòb", "الدني شوب"]
+      egy: ["Ig-gàww hàrr", "الجو حر"], lev: ["Ad-dìnye shòb", "الدنيا شوب"]
     },
     "Al-jàww bàrid": {
-      egy: ["Ig-gàww bàrid", "الجو بارد"], lev: ["Ad-dìnye bard", "الدني برد"]
+      egy: ["Ig-gàww bàrid", "الجو بارد"], lev: ["Ad-dìnye bard", "الدنيا برد"]
     },
     "Ar-rìh": {
       lev: ["Al-hàwa", "الهوا"]
@@ -3853,13 +3857,13 @@
       lev: ["At-tàlj", "التلج"]
     },
     "Mùshmis": {
-      lev: ["Ad-dìnye shàms", "الدني شمس"]
+      lev: ["Ad-dìnye shàms", "الدنيا شمس"]
     },
     "Ghà'im": {
-      lev: ["Ad-dìnye ghèim", "الدني غيم"]
+      lev: ["Ad-dìnye ghèim", "الدنيا غيم"]
     },
     "Mùmtir": {
-      lev: ["Ad-dìnye ʿam tshàtti", "الدني عم تشتي"]
+      lev: ["Ad-dìnye ʿam tshàtti", "الدنيا عم تشتي"]
     },
     "As-sàif": {
       lev: ["As-sèif", "الصيف"]
@@ -3868,13 +3872,13 @@
       lev: ["Ash-shìte", "الشتي"]
     },
     "Kèifa at-tàqs?": {
-      egy: ["Ig-gàww ʿàmil èh?", "الجو عامل إيه؟"], lev: ["Kìf ad-dìnye?", "كيف الدني؟"]
+      egy: ["Ig-gàww ʿàmil èh?", "الجو عامل إيه؟"], lev: ["Kìf ad-dìnye?", "كيف الدنيا؟"]
     },
     "Al-jàww jamìl al-yàum": {
-      lev: ["Ad-dìnye hìlwe al-yòm", "الدني حلوة اليوم"]
+      lev: ["Ad-dìnye hìlwe al-yòm", "الدنيا حلوة اليوم"]
     },
     "Hal al-jàww bàrid?": {
-      lev: ["Ad-dìnye bard?", "الدني برد؟"]
+      lev: ["Ad-dìnye bard?", "الدنيا برد؟"]
     },
     "Naʿam, wa mùmtir": {
       lev: ["Èh, w ʿam tshàtti", "إي وعم تشتي"]
@@ -3886,7 +3890,7 @@
       lev: ["Bhèbb ar-rabìʿ", "بحب الربيع"]
     },
     "Kèifa at-tàqs ghàdan?": {
-      lev: ["Kìf ad-dìnye bùkra?", "كيف الدني بكرة؟"]
+      lev: ["Kìf ad-dìnye bùkra?", "كيف الدنيا بكرة؟"]
     },
     "Al-bàit": {
       lev: ["Al-bèit", "البيت"]
@@ -3895,7 +3899,7 @@
       lev: ["Ghùrfet an-nòm", "غرفة النوم"]
     },
     "Al-mìftah": {
-      lev: ["Al-muftàh", "المفتاح"]
+      lev: ["Al-miftàh", "المفتاح"]
     },
     "Tàwila": {
       egy: ["Tarabèza", "ترابيزة"], lev: ["Tàwle", "طاولة"]
@@ -3903,20 +3907,26 @@
     "Sarìr": {
       lev: ["Takht", "تخت"]
     },
+    "Kitàb": {
+      lev: ["Ktàb", "كتاب"]
+    },
     "Hàtif": {
       lev: ["Telefòn", "تلفون"]
+    },
+    "Fi": {
+      lev: ["Bi", "بي"]
     },
     "ʿAlà": {
       lev: ["ʿÀla", "على"]
     },
     "Al-kitàb ʿalà at-tàwila": {
-      lev: ["Al-kitàb ʿala at-tàwle", "الكتاب على الطاولة"]
+      lev: ["Al-ktàb ʿala at-tàwle", "الكتاب على الطاولة"]
     },
     "Anà fi al-bàit": {
       lev: ["Anà bil-bèit", "أنا بالبيت"]
     },
     "Àina al-mìftah?": {
-      egy: ["Fèin il-muftàh?", "فين المفتاح؟"], lev: ["Wèin al-muftàh?", "وين المفتاح؟"]
+      egy: ["Fèin il-muftàh?", "فين المفتاح؟"], lev: ["Wèin al-miftàh?", "وين المفتاح؟"]
     },
     "ʿAlà at-tàwila": {
       lev: ["ʿAla at-tàwle", "على الطاولة"]
@@ -3934,7 +3944,7 @@
       lev: ["Al-bàb maftùh?", "الباب مفتوح؟"]
     },
     "Là, hùwa mughlàq": {
-      lev: ["Laʾ, hùwe msàkkar", "لأ هو مسكر"]
+      lev: ["Làʾ, hùwe msàkkar", "لأ هو مسكر"]
     },
     "Anà marìd": {
       egy: ["Anà ʿayyàn", "أنا عيان"]
@@ -3976,7 +3986,7 @@
       lev: ["Anà àhsan al-yòm", "أنا أحسن اليوم"]
     },
     "Àina al-àlam?": {
-      egy: ["Fèin al-àlam?", "فين الألم؟"], lev: ["Wèin al-àlam?", "وين الألم؟"]
+      egy: ["Fèin al-àlam?", "فين الألم؟"], lev: ["Wèin al-wàjaʿ?", "وين الوجع؟"]
     },
     "Hal tahtàj tabìb?": {
       lev: ["Bìddak doktòr?", "بدك دكتور؟"]
@@ -4111,10 +4121,10 @@
       lev: ["Tàʿa", "تعا"]
     },
     "Ijlis": {
-      egy: ["Òʿʿod", "أقعد"], lev: ["Ìjʿod", "إجعد"]
+      egy: ["Òʿʿod", "أقعد"], lev: ["Ùʾʿod", "اقعد"]
     },
     "Là tàqlaq": {
-      egy: ["Matʾlàʾsh", "ماتقلقش"], lev: ["Mà tʾlàʾ", "ما تقلق"]
+      egy: ["Matʾlàʾsh", "ماتقلقش"], lev: ["Mà tìʾlaʾ", "ما تقلق"]
     },
     "Hal yùmkin ad-dukhùl?": {
       lev: ["Mùmken fùt?", "ممكن فوت؟"]
@@ -4123,7 +4133,7 @@
       lev: ["Làʾ, mamnùʿ", "لأ ممنوع"]
     },
     "Tàʿal, ijlis": {
-      lev: ["Tàʿa, ìjʿod", "تعا إجعد"]
+      lev: ["Tàʿa, ùʾʿod", "تعا اقعد"]
     },
     "Sayyàra": {
       egy: ["ʿArabèyya", "عربية"]
@@ -4141,13 +4151,13 @@
       egy: ["ʿÀyiz tàksi", "عايز تاكسي"], lev: ["Bìddi tàksi", "بدي تاكسي"], gulf: ["Àbi tàksi", "أبي تاكسي"]
     },
     "Khudhni ilà al-matàr": {
-      egy: ["Wàddini al-matàr", "وديني المطار"], lev: ["Khùdni ʿa al-matàr", "خدني ع المطار"]
+      egy: ["Wàddini al-matàr", "وديني المطار"], lev: ["Khùdni ʿal-matàr", "خدني عالمطار"]
     },
     "Bikàm ilà al-fùnduq?": {
       egy: ["Bikàm lil-fùnduq?", "بكام للفندق؟"], lev: ["Addèsh ʿal-fùnduq?", "قديش عالفندق؟"]
     },
     "Qif hùna, min fàdlik": {
-      egy: ["Wàʾʾaf hèna, lau samàht", "وقف هنا لو سمحت"], lev: ["Wàʾʾef hòn", "وقف هون"]
+      egy: ["Wàʾʾaf hèna, lau samàht", "وقف هنا لو سمحت"], lev: ["Wàʾʾef hòn, lau samàht", "وقف هون لو سمحت"]
     },
     "Bi as-sayyàra": {
       lev: ["Bis-sayyàra", "بالسيارة"]
@@ -4198,7 +4208,7 @@
       "Bantalòn": 1, "Fustàn": 1, "Sàʿa": 1, "As-sàfar": 1, "Al-matàr": 1, "Jawàz safar": 1,
       "Al-fùnduq": 1, "Al-wàifài": 1, "Lau samàhti": 1, "Bikùll surùr": 1, "Ash-shàms": 1,
       "Al-màtar": 1, "Al-fùsul": 1, "Ar-rabìʿ": 1, "Al-kharìf": 1, "Al-màtbakh": 1, "Al-bàb": 1,
-      "Ash-shùbbak": 1, "Kùrsi": 1, "Kitàb": 1, "Fi": 1, "Anà marìd": 1, "Bàtn": 1, "As-sùq": 1,
+      "Ash-shùbbak": 1, "Kùrsi": 1, "Anà marìd": 1, "Bàtn": 1, "As-sùq": 1,
       "Ghàli": 1, "Masmùh": 1, "Mamnùʿ": 1, "Mamnùʿ at-taswìr": 1, "Sayyàra": 1, "Tàksi": 1,
       "Al-mìtro": 1, "Sarìʿ": 1, "Batì'": 1
     }
@@ -4326,12 +4336,12 @@
   // anything the two varieties share falls through to the fus-ha table.
   var GLOSS_LEV = {
     "shu": "what", "wèin": "where", "èmta": "when", "addèsh": "how much, how many",
-    "mìn": "who", "kìf": "how", "ànu": "which", "willa": "or", "èh": "yes",
-    "laʾ": "no, not", "làʾ": "no, not", "mà": "not", "w": "and", "bas": "only, just",
+    "mìn": "who", "kìf": "how", "willa": "or", "èh": "yes",
+    "làʾ": "no, not", "mà": "not", "w": "and", "bas": "only, just",
     "ktìr": "very, a lot", "shwày": "a little", "sàwa": "together", "hòn": "here",
     "hunìk": "there", "baʿdèin": "later, afterwards", "hàllaʾ": "now", "bùkra": "tomorrow",
     "mbàrih": "yesterday", "yòm": "day", "al-yòm": "today", "lau": "if",
-    "samàht": "you allow (lau samàht, excuse me)", "samàhti": "you allow (to a woman)",
+    "samàht": "you permitted (lau samàht, please)", "samàhti": "you allow (to a woman)",
     "ʿa": "to, on", "ʿala": "on, to", "ʿàla": "on, to", "bi": "in, at", "maʿ": "with",
     "fàdlak": "your kindness (min fàdlak, please)", "as-salàme": "safety, peace",
 
@@ -4339,11 +4349,11 @@
     "hìyye": "she, it", "hàda": "this (masculine)", "hàdi": "this (feminine)",
     "hày": "this (feminine)",
 
-    "bìddi": "I want", "bìddak": "you want", "làzem": "I need, I must",
+    "bìddi": "I want", "bìddak": "you want", "làzem": "must, have to", "làzemni": "I need",
     "mùmken": "may I, is it possible", "rah": "will (about to happen)",
     "ʿam": "right now (an action in progress)",
     "bhèbb": "I like, I love", "bthèbb": "you like", "bithìbbi": "you like (to a woman)",
-    "btìhki": "you speak", "ìhki": "speak", "bèfham": "I understand",
+    "btìhki": "you speak (the same form to a woman)", "ìhki": "speak", "bèfham": "I understand",
     "bàʿref": "I know", "btàʿref": "you know", "bròh": "I go", "btròh": "you go",
     "ràyeh": "going", "bòkol": "I eat", "bìshrab": "I drink", "nìshrab": "shall we drink",
     "bìktob": "I write", "bìʾra": "I read", "btìʾra": "you are reading", "bshùf": "I see",
@@ -4354,14 +4364,14 @@
     "shrìbt": "I drank", "katàbt": "I wrote", "arèit": "I read (in the past)",
     "shift": "I saw", "ʿmìlt": "I did", "wsìlna": "we have arrived",
     "dàʿ": "it is lost", "dàʿet": "it is lost (feminine)", "byùjaʿni": "it hurts me",
-    "stànna": "wait", "yàlla": "let us go", "tʾlàʾ": "worry (mà tʾlàʾ, do not worry)",
+    "stànna": "wait", "yàlla": "let us go", "tìʾlaʾ": "worry (mà tìʾlaʾ, do not worry)",
     "fùt": "come in", "sàwwer": "take a photo", "khod": "take", "khùdni": "take me",
-    "tàʿa": "come", "ìjʿod": "sit down", "wàʾʾef": "stop", "sàʿedni": "help me",
+    "tàʿa": "come", "ùʾʿod": "sit down", "wàʾʾef": "stop", "sàʿedni": "help me",
     "tfàddal": "here you are, go ahead", "tìsbah": "may you wake",
     "tsharràfna": "pleased to meet you", "màshi": "going along; on foot",
-    "kamàn": "too, also", "ʿlèsh": "never mind (mà ʿlèsh, no harm done)",
-    "musàʿade": "help", "àkhod": "I take", "fàkker": "think it over",
-    "tshàtti": "it is raining", "byìji": "it comes",
+    "kamàn": "too, also", "maʿlèsh": "never mind, no harm done",
+    "musàʿade": "help", "àkhod": "I take", "fàkker": "think (rah fàkker, I will think it over)",
+    "tshàtti": "it is raining",
 
     "ʿàndi": "I have", "ʿàndak": "you have", "ʿàndkun": "you have (more than one of you)",
     "ʿànna": "we have",
@@ -4374,12 +4384,12 @@
     "ìsem": "name", "ìsmi": "my name", "ìsmak": "your name",
     "ìsmik": "your name (to a woman)", "ìsmo": "his name", "ìsma": "her name",
     "abùk": "your father", "sàhbi": "my friend", "al-ʿèile": "the family",
-    "ʿèilti": "my family", "bàyi": "my father", "ìmmi": "my mother", "khàyyi": "my brother",
+    "ʿèilti": "my family", "bàyyi": "my father", "ìmmi": "my mother", "khàyyi": "my brother",
     "jìddi": "my grandfather", "sìtti": "my grandmother", "bìnti": "my daughter",
     "jòzi": "my husband", "màrti": "my wife", "ìkhwe": "brothers and sisters",
     "àkh": "a brother", "ùkht": "a sister",
 
-    "mày": "water", "àhwe": "coffee", "ʾàhwe": "coffee", "al-ʾàhwe": "the coffee",
+    "mày": "water", "àhwe": "coffee", "al-àhwe": "the coffee",
     "rìz": "rice", "làhme": "meat", "jàj": "chicken", "al-hsàb": "the bill",
     "masàri": "money", "dàwa": "medicine", "ad-dàwa": "the medicine",
     "haràra": "a temperature, a fever", "wàjaʿ": "a pain", "ràs": "head", "ràsi": "my head",
@@ -4390,17 +4400,17 @@
     "ʿwaynàt": "glasses", "amìs": "a shirt", "al-amìs": "the shirt", "tàwle": "a table",
     "at-tàwle": "the table", "takht": "a bed", "telefòn": "a phone", "ktàb": "a book",
     "ghùrfe": "a room", "ghùrfet": "the room of", "ghùrftak": "your room",
-    "an-nòm": "sleep", "al-muftàh": "the key", "bèit": "house", "al-bèit": "the house",
+    "an-nòm": "sleep", "al-miftàh": "the key", "bèit": "house", "al-bèit": "the house",
     "bil-bèit": "at home", "ʿal-bèit": "to the house", "al-bàs": "the bus",
     "at-tayyàra": "the plane", "al-ʾitàr": "the train", "bisiklèit": "a bicycle",
     "safìne": "a ship", "bis-sayyàra": "by car", "tàzkara": "a ticket",
     "sàfari": "my travel", "sàfarak": "your travel", "iyyàm": "days", "tlàt": "three",
-    "nìmret": "the number of", "ràqm": "number", "tilifònik": "your phone (to a woman)",
+    "nìmret": "the number of", "tilifònik": "your phone (to a woman)",
     "ash-shùghel": "the work", "shùghlak": "your work", "shàrike": "a company",
     "al-mushkìle": "the problem", "kàlmet": "the word of", "ash-shmàl": "the left",
 
     "ad-dìnye": "the weather (literally the world)", "shòb": "hot", "bard": "cold",
-    "al-hàwa": "the wind", "at-tàlj": "the snow", "ghèim": "cloudy",
+    "al-hàwa": "the wind", "at-tàlj": "the snow", "ghèim": "cloud (ad-dìnye ghèim, it is cloudy)",
     "as-sèif": "summer", "ash-shìte": "winter", "fasl": "a season",
     "as-sàma": "the sky", "al-lòn": "the colour", "lòn": "colour", "lòno": "its colour",
     "al-àbyad": "the white one", "al-àkhdar": "the green one", "àzraʾ": "blue",
@@ -4410,7 +4420,7 @@
     "al-bìsse": "the cat", "jàmal": "a camel", "al-hayawanàt": "the animals",
     "zghìr": "small", "zghìre": "small (feminine)", "kbìr": "big", "jdìd": "new",
     "adìm": "old", "hìlu": "nice, lovely", "hèlu": "nice, lovely",
-    "hìlwe": "nice, lovely (feminine)", "arìb": "near", "ʾarìb": "near, soon",
+    "hìlwe": "nice, lovely (feminine)", "arìb": "near, soon", "ʾarìb": "near, soon",
     "bʿìd": "far", "rkhìs": "cheap", "maftùh": "open", "msàkkar": "closed",
     "jùʿan": "hungry", "sàyeh": "a tourist", "doktòr": "a doctor",
     "doktòra": "a doctor (a woman)", "shofèir": "a driver", "mashghùle": "busy (a woman)",
@@ -4488,7 +4498,9 @@
 
   function buildable(lesson) {
     return visiblePhrases(lesson).filter(function (p) {
-      var n = tokens(p.ar).length;
+      // Count the words you will actually be dealt, which in a dialect
+      // is not the same phrase.
+      var n = tokens(disp(p.ar)).length;
       return n >= 2 && n <= 6;
     });
   }
@@ -5050,6 +5062,7 @@
   }
 
   function save() {
+    bumpTick();
     if (storageOff) return;
     writeRaw(storeKeyFor(people.current), JSON.stringify(store));
   }
@@ -5609,6 +5622,7 @@
 
   function matchRound(lesson) {
     var picks = shuffle(lesson.pool || visiblePhrases(lesson)).slice(0, MATCH_PAIRS);
+    if (picks.length < 2) return null;
     return {
       type: "match",
       points: picks.length,
@@ -5632,7 +5646,7 @@
     }
     if (type === "dialog") return !!item.exchange;
     if (type === "build") {
-      var n = tokens(p.ar).length;
+      var n = tokens(disp(p.ar)).length;
       return n >= 2 && n <= 6;
     }
     if (type === "listen") return !!SCRIPT[p.ar];
@@ -5732,7 +5746,10 @@
   function buildSession(lesson) {
     var asking = askingGames();
     var tasks = [];
-    for (var i = 0; i < matchCount(asking); i++) tasks.push(matchRound(lesson));
+    for (var i = 0; i < matchCount(asking); i++) {
+      var grid = matchRound(lesson);
+      if (grid) tasks.push(grid);
+    }
     if (asking.length) tasks = tasks.concat(fillRounds(lesson, asking, ROUNDS));
     if (!tasks.length) tasks = fillRounds(lesson, ["quiz"], ROUNDS);
     return newSession({ lesson: lesson, tasks: tasks });
@@ -5880,9 +5897,16 @@
     }
 
     var tasks = [];
-    for (var i = 0; i < matchCount(asking); i++) tasks.push(mixedMatch());
+    for (var i = 0; i < matchCount(asking); i++) {
+      var grid = mixedMatch();
+      if (grid) tasks.push(grid);
+    }
     if (asking.length) tasks = tasks.concat(interleave(picked, REVIEW_ROUNDS));
-    if (!tasks.length) tasks = [mixedMatch()];
+    if (!tasks.length) {
+      var only = mixedMatch();
+      tasks = only ? [only] : [];
+    }
+    if (!tasks.length) return null;
 
     var f = fields || {};
     return newSession({
@@ -5898,7 +5922,29 @@
   // you want twelve rounds of one thing rather than a mixed session.
   // Everything you can already open, not only what you have passed:
   // there is no reason to bar practice on a lesson you are working on.
+  var SWEEP = null, SWEEP_TICK = "", TICK = 0;
+
+  function bumpTick() { TICK++; }
+
+  // What every cached sweep of the course depends on. The tick moves on
+  // each render and each save; the counts catch anything that changes
+  // the store without going through either.
+  function cacheKey() {
+    return TICK + "|" + variety() + "|" +
+      Object.keys(store.lessons || {}).length + "|" +
+      Object.keys(store.passive || {}).length + "|" +
+      Object.keys(store.hidden || {}).length;
+  }
+
   function reachable() {
+    var key = cacheKey();
+    if (SWEEP && SWEEP_TICK === key) return SWEEP;
+    SWEEP_TICK = key;
+    SWEEP = reachableNow();
+    return SWEEP;
+  }
+
+  function reachableNow() {
     var out = [];
     LESSONS.filter(unlocked).forEach(function (l) {
       phrasesOf(l).forEach(function (item) {
@@ -5916,6 +5962,19 @@
 
   function canDrill(type) {
     return playable(type) && reachable().some(function (it) { return canMake(it, type); });
+  }
+
+  // The menu asks the same question of the same pool seven times over,
+  // once per game, on every single render.
+  var DRILLS = null, DRILLS_TICK = "";
+
+  function drillable() {
+    var key = cacheKey();
+    if (DRILLS && DRILLS_TICK === key) return DRILLS;
+    DRILLS_TICK = key;
+    DRILLS = {};
+    GAMES.forEach(function (g) { DRILLS[g.key] = canDrill(g.key); });
+    return DRILLS;
   }
 
   function buildDrill(type) {
@@ -6816,7 +6875,7 @@
     var drills = GAMES.map(function (x) {
       var why = null;
       if (x.needsVoice && !canSpeak()) why = "Needs an Arabic voice on this device";
-      else if (!canDrill(x.key)) why = "Nothing to draw on yet";
+      else if (!drillable()[x.key]) why = "Nothing to draw on yet";
       return '<button class="nav-item nav-sub' + (why ? " is-off" : "") + '" data-act="drill" data-id="' +
         x.key + '"' + (why ? " disabled" : "") + ">" +
         '<span class="nav-label">' + esc(x.label) + "</span>" +
@@ -6966,26 +7025,26 @@
       // Everything else is here when you want it and out of the way when
       // you do not. One screen with five things shouting at once is how
       // Today stopped being the obvious thing to press.
-      '<details class="guide fold"' + (doneCount ? "" : " open") + '>' +
+      '<details class="guide fold" data-fold="course"' + (doneCount ? "" : " open") + '>' +
       '<summary>The course<span class="fold-count">' + doneCount + " / " + LESSONS.length + "</span></summary>" +
       '<div class="fold-body"><div class="track">' + rows + "</div></div></details>" +
 
-      '<details class="guide fold"><summary>Conversations' +
+      '<details class="guide fold" data-fold="convos"><summary>Conversations' +
       '<span class="fold-count">' + CONVOS.length + "</span></summary>" +
       '<div class="fold-body">' + convosHTML() + "</div></details>" +
 
-      '<details class="guide fold"><summary>Games<span class="fold-count">' +
+      '<details class="guide fold" data-fold="games"><summary>Games<span class="fold-count">' +
       GAMES.filter(function (g) { return games()[g.key]; }).length + " on</span></summary>" +
       '<div class="fold-body">' + pickerHTML("used in lessons and review") + "</div></details>" +
 
-      '<details class="guide"><summary>How to read the spelling</summary><div class="guide-body">' +
+      '<details class="guide" data-fold="spelling"><summary>How to read the spelling</summary><div class="guide-body">' +
       '<p>Every phrase is written in the Latin alphabet. The accent marks the syllable you lean on: <span class="ar">Sab&agrave;h al-kh&egrave;ir</span> is <i>sa-BAAH al-KHAYR</i>.</p>' +
       "<p><b>kh</b> is the rasp in Scottish <i>loch</i> or German <i>Bach</i>. <b>th</b> is the soft one in <i>three</i>. <b>&#703;</b> is <i>ayn</i>, a tightening deep in the throat with no English equivalent; getting close is fine.</p>" +
       '<p>Arabic has no word for <b>is</b> or <b>are</b> in the present tense. <span class="ar">An&agrave; bikh&egrave;ir</span> is literally <i>I in-goodness</i>, and that is already a complete sentence.</p>' +
       "<p>Arabic marks gender in places English does not: who you are speaking to, and what a colour or a job title is attached to. The lessons teach one form and the flashcard shows the other, labelled with which is which.</p>" +
       "</div></details>" +
 
-      '<details class="guide"><summary>About the audio</summary><div class="guide-body">' +
+      '<details class="guide" data-fold="audio"><summary>About the audio</summary><div class="guide-body">' +
       (canSpeak()
         ? "<p>The speaker button uses the Arabic voice installed on this device (<b>" + esc(speech.voice.name) + "</b>), slowed down a little. Nothing is sent anywhere.</p>"
         : "<p><b>" + esc(speakWhy()) + "</b> The speaker buttons stay switched off rather than mispronouncing the phrases with an English voice.</p>" +
@@ -7004,7 +7063,7 @@
       }).join("") + "</div></div>" +
       "</div></details>" +
 
-      '<details class="guide"><summary>Back up your progress</summary><div class="guide-body">' +
+      '<details class="guide" data-fold="backup"><summary>Back up your progress</summary><div class="guide-body">' +
       "<p>Everything you have done lives in this browser alone. Clearing site data, switching device, or using a private window loses it. The code below is your progress; copy it somewhere safe.</p>" +
       '<textarea class="backup" data-act="backup" rows="3" spellcheck="false" aria-label="Backup code">' +
       esc(backupCode()) + "</textarea>" +
@@ -7347,22 +7406,33 @@
     return String(w).replace(/[A-Za-z\u00c0-\u024f]/, function (ch) { return ch.toLowerCase(); });
   }
 
-  var TAUGHT_STARTS = null;
+  var TAUGHT_STARTS = null, TAUGHT_KEY = null;
+
+  // Everything the course says outright, in the Arabic you are reading
+  // it in: a sentence that collides with a taught phrase on screen is a
+  // collision even when the two keys differ.
+  function taughtStarts() {
+    var key = variety();
+    if (TAUGHT_STARTS && TAUGHT_KEY === key) return TAUGHT_STARTS;
+    TAUGHT_KEY = key;
+    TAUGHT_STARTS = [];
+    var push = function (ar) {
+      if (!ar) return;
+      TAUGHT_STARTS.push(ar);
+      var shown = disp(ar);
+      if (shown !== ar) TAUGHT_STARTS.push(shown);
+    };
+    LESSONS.forEach(function (l) {
+      l.phrases.forEach(function (p) { push(p.ar); });
+      (l.dialogue || []).forEach(function (d) { push(d.ask); push(d.reply); });
+    });
+    return TAUGHT_STARTS;
+  }
 
   // A combination that the course already says outright is not a new
   // sentence, so it never comes up here.
   function alreadyTaught(plain) {
-    if (!TAUGHT_STARTS) {
-      TAUGHT_STARTS = [];
-      LESSONS.forEach(function (l) {
-        l.phrases.forEach(function (p) { TAUGHT_STARTS.push(p.ar); });
-        (l.dialogue || []).forEach(function (d) {
-          TAUGHT_STARTS.push(d.ask);
-          TAUGHT_STARTS.push(d.reply);
-        });
-      });
-    }
-    return TAUGHT_STARTS.some(function (k) { return k.indexOf(plain) === 0; });
+    return taughtStarts().some(function (k) { return k.indexOf(plain) === 0; });
   }
 
   var WORD_LESSON = null;
@@ -7379,7 +7449,17 @@
 
   // Only patterns and words from lessons you have passed, so the screen
   // never asks you for a word you have not met.
+  var COMBOS = null, COMBOS_TICK = "";
+
   function combos() {
+    var key = cacheKey();
+    if (COMBOS && COMBOS_TICK === key) return COMBOS;
+    COMBOS_TICK = key;
+    COMBOS = combosNow();
+    return COMBOS;
+  }
+
+  function combosNow() {
     var done = {};
     finishedLessons().forEach(function (l) { done[l.id] = true; });
     var out = [];
@@ -7677,17 +7757,39 @@
     90: { ar: "tisʿùn", s: "تِسْعُون" }, 100: { ar: "mi'a", s: "مِائَة" }
   };
 
+  // The same numbers as the course teaches them in Levantine, and the
+  // "wa" that joins them leans on the word after it there too.
+  var UNITS_LEV = [null, null, { ar: "tnèin", s: "تنين" }, { ar: "tlàte", s: "تلاتة" },
+    null, { ar: "khàmse", s: "خمسة" }, { ar: "sìtte", s: "ستة" }, null,
+    { ar: "tmàne", s: "تمانة" }, null];
+
+  var TENS_LEV = {
+    10: { ar: "ʿàshra", s: "عشرة" }, 11: { ar: "hdàʿsh", s: "حداعش" },
+    12: { ar: "tnàʿsh", s: "تناعش" }, 20: { ar: "ʿìshrin", s: "عشرين" },
+    30: { ar: "tlatìn", s: "تلاتين" }, 40: { ar: "arbʿìn", s: "أربعين" },
+    50: { ar: "khamsìn", s: "خمسين" }, 60: { ar: "sittìn", s: "ستين" },
+    70: { ar: "sabʿìn", s: "سبعين" }, 80: { ar: "tmanìn", s: "تمانين" },
+    90: { ar: "tisʿìn", s: "تسعين" }, 100: { ar: "mìyye", s: "مية" }
+  };
+
   // Thirteen to nineteen are not in the course and their agreement is a
   // trap, so they are left alone rather than guessed at.
-  function numberWords(n) {
+  function numberWords(n, dialect) {
     n = Math.floor(Number(n));
     if (!(n > 0)) return null;
-    if (TENS[n]) return TENS[n];
-    if (n < 10) return UNITS[n];
+    var lev = dialect === "lev";
+    var tens = lev ? TENS_LEV : TENS, units = lev ? UNITS_LEV : UNITS;
+    var join = lev ? " w " : " wa ";
+    var joinS = lev ? " و" : " وَ";
+    var pick = function (table, fallback, k) { return table[k] || fallback[k] || null; };
+    if (n <= 12 || n % 10 === 0 || n === 100) {
+      if (tens[n] || TENS[n]) return pick(tens, TENS, n);
+      if (n < 10) return pick(units, UNITS, n);
+    }
     if (n < 20 || n > 99) return null;
-    var unit = UNITS[n % 10], ten = TENS[Math.floor(n / 10) * 10];
+    var unit = pick(units, UNITS, n % 10), ten = pick(tens, TENS, Math.floor(n / 10) * 10);
     if (!unit || !ten) return null;
-    return { ar: unit.ar + " wa " + ten.ar, s: unit.s + " وَ" + ten.s };
+    return { ar: unit.ar + join + ten.ar, s: unit.s + joinS + ten.s };
   }
 
   // A name is the one thing here the course cannot have taught. Letter
@@ -7721,7 +7823,8 @@
   }
 
   var PERSONAL = [
-    { key: "Ismì Marco", field: "name", stem: "Ismì", stemS: "اسْمِي", en: "My name is " },
+    { key: "Ismì Marco", field: "name", stem: "Ismì", stemS: "اسْمِي", en: "My name is ",
+      dia: { lev: ["Ìsmi", "اسمي"] } },
     { key: "Anà min Itàlya", field: "from", stem: "Anà min", stemS: "أَنَا مِنْ", en: "I am from " },
     { key: "Anà muhàndis", field: "job", stem: "Anà", stemS: "أَنَا", en: "I am " },
     { key: "ʿÙmri thalathùn", field: "age", stem: "ʿÙmri", stemS: "عُمْرِي", en: "I am " }
@@ -7758,7 +7861,7 @@
       return { ar: f ? j.far : j.ar, s: f ? j.fs : j.s, en: j.en };
     }
     if (field === "age") {
-      var w = numberWords(y.age);
+      var w = numberWords(y.age, variety());
       return w ? { ar: w.ar, s: w.s, en: String(Math.floor(Number(y.age))) } : null;
     }
     return null;
@@ -7772,9 +7875,11 @@
     PERSONAL.forEach(function (p) {
       var v = yourAnswer(p.field);
       if (!v) return;
-      var ar = p.stem + " " + v.ar;
+      var d = p.dia && p.dia[variety()];
+      var stem = d ? d[0] : p.stem, stemS = d ? d[1] : p.stemS;
+      var ar = stem + " " + v.ar;
       if (ar === p.key || alreadyTaught(ar)) return;
-      out.push({ key: p.key, ar: ar, s: p.stemS + " " + v.s, en: p.en + v.en, field: p.field });
+      out.push({ key: p.key, ar: ar, s: stemS + " " + v.s, en: p.en + v.en, field: p.field });
     });
     return out;
   }
@@ -7783,10 +7888,13 @@
 
   function youKey() {
     var y = you();
-    return [y.name || "", y.from || "", y.job || "", y.age || "", y.gender || ""].join("|");
+    return [y.name || "", y.from || "", y.job || "", y.age || "", y.gender || "", variety()].join("|");
   }
 
   function personalOf(ar) {
+    // The data check runs before this half of the file has been read,
+    // and it reaches disp(). Nothing is personal yet at that point.
+    if (!PERSONAL) return null;
     if (YOU_KEY !== youKey()) applyPersonal();
     return YOU_MAP[ar] || null;
   }
@@ -8352,20 +8460,31 @@
      you.
      ============================================================ */
 
+  // The giveaway word is not the same word in every Arabic, and naming
+  // the fus-ha one after a question you heard in Levantine would be a
+  // lie about what you just listened to.
   var ASK_KINDS = [
-    { key: "where", en: "Where something is", word: "àina" },
-    { key: "wherefrom", en: "Where you are from", word: "min àina" },
-    { key: "whereto", en: "Where you are going", word: "ilà àina" },
-    { key: "when", en: "When", word: "matà" },
-    { key: "howmuch", en: "How much, or how many", word: "kam" },
-    { key: "what", en: "What", word: "mà, màdha" },
-    { key: "who", en: "Who", word: "man" },
-    { key: "how", en: "How", word: "kèifa" },
-    { key: "yesno", en: "Something you can answer yes or no", word: "hal" },
-    { key: "which", en: "Which one of them", word: "ày" },
-    { key: "choice", en: "One or the other", word: "... am ..." },
-    { key: "backatyou", en: "The same question, back at you", word: "wa ànta, wa ànti" }
+    { key: "where", en: "Where something is", word: "àina", lev: "wèin" },
+    { key: "wherefrom", en: "Where you are from", word: "min àina", lev: "min wèin" },
+    { key: "whereto", en: "Where you are going", word: "ilà àina", lev: "ʿa wèin" },
+    { key: "when", en: "When", word: "matà", lev: "èmta" },
+    { key: "howmuch", en: "How much, or how many", word: "kam", lev: "addèsh" },
+    { key: "what", en: "What", word: "mà, màdha", lev: "shu" },
+    { key: "who", en: "Who", word: "man", lev: "mìn" },
+    { key: "how", en: "How", word: "kèifa", lev: "kìf" },
+    { key: "yesno", en: "Something you can answer yes or no", word: "hal",
+      lev: "no word at all, only the tone of your voice" },
+    { key: "which", en: "Which one of them", word: "ày", lev: "ày, ànu" },
+    { key: "choice", en: "One or the other", word: "... am ...", lev: "... willa ..." },
+    { key: "backatyou", en: "The same question, back at you", word: "wa ànta, wa ànti", lev: "w ìnta" }
   ];
+
+  function askWord(kind) {
+    var k = askKindByKey(kind);
+    if (!k) return "";
+    var v = variety();
+    return (v !== "msa" && k[v]) || k.word;
+  }
 
   function askKindByKey(k) {
     for (var i = 0; i < ASK_KINDS.length; i++) if (ASK_KINDS[i].key === k) return ASK_KINDS[i];
@@ -8373,9 +8492,28 @@
   }
 
   // Off the first word alone, which is the whole point of the drill.
-  function askKind(ar) {
+  // Both Arabics are recognised, because what you are listening to is
+  // whichever one you chose.
+  function askKind(ar, spoken) {
     if (String(ar).indexOf("?") === -1) return null;
     var w = normalise(ar).split(" ");
+    if (w[0] === "lau" && (w[1] === "samaht" || w[1] === "samahti")) w = w.slice(2);
+
+    if (w[0] === "shu") return "what";
+    if (w[0] === "min" && (w[1] === "wein" || w[1] === "aina")) return "wherefrom";
+    if ((w[0] === "ʿa" || w[0] === "la") && w[1] === "wein") return "whereto";
+    if (w[0] === "wein") return "where";
+    if (w[0] === "emta") return "when";
+    if (w[0] === "addesh" || w[0] === "kam") return "howmuch";
+    // In Levantine "mìn" is who and "min" is from; only "min wèin" is
+    // the second one, and that is caught above.
+    if (w[0] === "min") return "who";
+    if (w[0] === "kif" || w[0] === "kifak" || w[0] === "kifik") return "how";
+    if (w[0] === "anu") return "which";
+    if (w.indexOf("willa") > 0) return "choice";
+    for (var j = 0; j < w.length - 1; j++) {
+      if (w[j] === "w" && (w[j + 1] === "inta" || w[j + 1] === "inti")) return "backatyou";
+    }
     // People put the polite opener in front of the question all the
     // time, and the ear has to look past it.
     if (w[0] === "lau" && (w[1] === "samaht" || w[1] === "samahti")) w = w.slice(2);
@@ -8397,16 +8535,30 @@
     // Neither word is a question word: the "or" in the middle is what
     // makes it one.
     if (w.indexOf("am") > 0) return "choice";
+    // A dialect drops hal altogether and lets the tone do the asking, so
+    // a question with no marker left in it is a yes or no question.
+    if (spoken) return "yesno";
     return null;
   }
 
   // Every question the course has actually taught you, from wherever it
   // taught it: a phrase, a line of dialogue or a conversation.
+  var ASKS = null, ASKS_TICK = "";
+
   function askPool() {
+    var key = cacheKey();
+    if (ASKS && ASKS_TICK === key) return ASKS;
+    ASKS_TICK = key;
+    ASKS = askPoolNow();
+    return ASKS;
+  }
+
+  function askPoolNow() {
     var out = [], seen = {};
     function add(ar, en, done) {
       if (!done || !ar || seen[ar]) return;
-      var kind = askKind(ar);
+      var heard = disp(ar);
+      var kind = askKind(heard, heard !== ar);
       if (!kind || !spk(ar)) return;
       seen[ar] = true;
       out.push({ ar: ar, en: en, kind: kind });
@@ -8510,9 +8662,9 @@
       (a.checked
         ? '<div class="verdict">' +
           (a.right
-            ? '<div class="verdict-msg ok"><b>Yes.</b>&nbsp;<span>' + esc(kind ? kind.word : "") + "</span></div>"
+            ? '<div class="verdict-msg ok"><b>Yes.</b>&nbsp;<span>' + esc(askWord(a.q.kind)) + "</span></div>"
             : '<div class="verdict-msg no"><b>It was ' + esc(kind ? kind.en.toLowerCase() : "") +
-              '.</b>&nbsp;<span>' + esc(kind ? kind.word : "") + "</span></div>") +
+              '.</b>&nbsp;<span>' + esc(askWord(a.q.kind)) + "</span></div>") +
           '<div class="why"><div class="pb-row">' + sayBtn(a.q.ar, true) +
           '<span class="pb-text"><span class="ar">' + esc(disp(a.q.ar)) + "</span>" +
           '<span class="pb-en">' + esc(a.q.en || "") + "</span></span></div>" +
@@ -8928,9 +9080,12 @@
     } else {
       var answer = t.type === "build" ? t.target.join(" ") : (arabicAnswerFor(t) ? disp(t.answer) : t.answer);
       var arabicAnswer = arabicAnswerFor(t);
+      // sayBtn wants the phrase, not the words on screen: in a dialect,
+      // and on anything with a question mark, they are not the same.
+      var heard = t.phrase ? t.phrase.ar : (t.exchange ? t.exchange.reply : t.answer);
       msg = '<div class="verdict-msg no"><b>Not quite.</b>&nbsp;<span' +
         (arabicAnswer ? ' class="ar"' : "") + ">" + esc(answer) + "</span>" +
-        (arabicAnswer ? sayBtn(answer, true) : "") + "</div>";
+        (arabicAnswer ? sayBtn(heard, true) : "") + "</div>";
     }
     var ending = last && (session.retried || session.missed.length === 0);
     return '<div class="verdict">' + msg +
@@ -8944,7 +9099,7 @@
      ============================================================ */
 
   function resultHTML() {
-    var score = Math.round(session.earned / session.max * 100);
+    var score = session.max ? Math.round(session.earned / session.max * 100) : 0;
     var passed = score >= PASS;
     var lesson = session.lesson;
     var next = lesson ? LESSONS[LESSONS.indexOf(lesson) + 1] : null;
@@ -9102,7 +9257,14 @@
       if (!t.missedOnce[i]) session.earned += 1;
       scorePhrase(t, !t.missedOnce[i], t.pairs[i]);
       t.picked = null;
-      if (t.done.length === t.pairs.length) { session.state = "checked"; session.lastRight = true; }
+      if (t.done.length === t.pairs.length) {
+        session.state = "checked";
+        session.lastRight = true;
+        // Match never goes through settle(), so it has to say for itself
+        // that it is finished, or walking back to it is a dead end.
+        t.settled = true;
+        t.wasRight = true;
+      }
       render();
       return;
     }
@@ -9127,7 +9289,7 @@
     // the session twice.
     if (session.finished) { go({ name: "result" }, { replace: true }); return; }
     session.finished = true;
-    var score = Math.round(session.earned / session.max * 100);
+    var score = session.max ? Math.round(session.earned / session.max * 100) : 0;
     // Sessions are the clock the spot checks run on.
     store.runs = runCount() + 1;
     store.lastDay = today();
@@ -9195,9 +9357,35 @@
     return "";
   }
 
+  // Every render replaces the whole screen, which used to slam shut any
+  // fold you had opened - including the one holding the chips you had
+  // just tapped.
+  function foldState() {
+    var out = {};
+    if (!app.querySelectorAll) return out;
+    var was = app.querySelectorAll("details[data-fold]");
+    for (var i = 0; i < was.length; i++) {
+      var k = was[i].getAttribute("data-fold");
+      if (k) out[k] = !!was[i].open;
+    }
+    return out;
+  }
+
+  function restoreFolds(open) {
+    if (!app.querySelectorAll) return;
+    var now = app.querySelectorAll("details[data-fold]");
+    for (var i = 0; i < now.length; i++) {
+      var k = now[i].getAttribute("data-fold");
+      if (k && open[k] !== undefined) now[i].open = open[k];
+    }
+  }
+
   function render() {
+    bumpTick();
     if (YOU_KEY !== youKey()) applyPersonal();
+    var folds = foldState();
     app.innerHTML = navHTML() + screenHTML();
+    restoreFolds(folds);
     markPlaying();
     afterRender();
   }
@@ -9441,12 +9629,15 @@
     }
     if (act === "variety") {
       var vk = el.getAttribute("data-id");
-      if (vk !== variety()) {
-        stopSpeech();
-        session = null;
-        setVariety(vk);
-      }
+      if (vk === variety()) { navOpen = false; render(); return; }
+      stopSpeech();
+      setVariety(vk);
       navOpen = false;
+      // The round on screen was built in the Arabic you have just left,
+      // so it goes, and the screen has to go with it.
+      var inPlay = view.name === "play" || view.name === "result";
+      session = null;
+      if (inPlay) { go({ name: "home" }); return; }
       render();
       return;
     }
