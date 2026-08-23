@@ -3013,6 +3013,95 @@ section("knowing where you stand");
   click({ "data-go": "home" });
 }
 
+section("words you brought, and the screen for right now");
+{
+  const D = global.__data;
+  const { today } = D;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.mine = undefined;
+
+  // your own words
+  click({ "data-go": "mine" });
+  check("there is a place for your own words", peek().view.name === "mine");
+  check("empty, it says what it is for", /Nothing yet/.test(screenOnly()));
+
+  promptAnswer = "";
+  const before = D.mineWords().length;
+  click({ "data-act": "mine-add" });
+  check("an empty answer adds nothing", D.mineWords().length === before);
+
+  let asked = 0;
+  const answers = ["yalla", "come on, let us go"];
+  global.window.prompt = () => answers[asked++];
+  click({ "data-act": "mine-add" });
+  check("a word and its meaning is enough", D.mineWords().length === 1);
+  check("it is kept as you wrote it", D.mineWords()[0].ar === "yalla");
+  check("with what it means", D.mineWords()[0].en === "come on, let us go");
+  check("and the day you heard it", D.mineWords()[0].day === today());
+  check("the screen shows it", /yalla/.test(h));
+  check("and says it has not been asked yet", /not asked yet/.test(h));
+
+  check("it becomes a lesson of its own", !!D.mineLesson());
+  check("with the word in it", D.mineLesson().phrases[0].ar === "yalla");
+  check("and no audio, because there is no spelling for it", !D.spk("yalla"));
+
+  // it is drawn, weighted and faded like anything else
+  st.str[D.MINE_ID + "|yalla"] = { s: 4, n: 5, day: today() };
+  click({ "data-go": "mine" });
+  check("once it is known it says so", /solid/.test(h));
+
+  asked = 0;
+  global.window.prompt = () => ["Yalla", "the same word again"][asked++];
+  click({ "data-act": "mine-add" });
+  check("the same word twice is one word", D.mineWords().length === 1);
+  check("and the second meaning wins", D.mineWords()[0].en === "the same word again");
+
+  click({ "data-act": "mine-drop", "data-id": "Yalla" });
+  check("forgetting one removes it", D.mineWords().length === 0);
+  check("and takes its strength with it", !st.str[D.MINE_ID + "|Yalla"]);
+  global.window.prompt = () => promptAnswer;
+
+  // the screen for right now
+  click({ "data-go": "home" });
+  check("right now is one tap from the top", /class="pill pill--md pb-link now-link" data-go="now"/.test(h));
+  click({ "data-go": "now" });
+  check("it has its own screen", peek().view.name === "now");
+  const now = screenOnly();
+  check("every line is on it",
+    D.NOW.every(g => g.lines.every(l => now.includes(D.disp(l)))));
+  check("with the English under each", /class="now-en"/.test(now));
+  check("and a way to hear it", /class="say"/.test(now));
+  check("no searching", !/data-act="search"/.test(now));
+  check("and it points at the phrasebook for the rest", /data-go="phrasebook"/.test(now));
+
+  // a picture of where you are
+  click({ "data-go": "home" });
+  check("each lesson carries a strength strip", (h.match(/class="strip"/g) || []).length >= 20);
+  check("with a key so the colours mean something", /class="fold-lead strip-key"/.test(h));
+
+  // revision aimed at a situation
+  click({ "data-go": "can" });
+  check("each capability offers to get you ready", /data-go="ready"/.test(h));
+  click({ "data-go": "ready", "data-id": "order" });
+  const aim = peek().session;
+  check("which builds a session", !!aim && !!aim.aimed);
+  check("aimed at that one thing", aim.aimed.id === "order");
+  check("and says so at the top", /Ready for: order a coffee/.test(h));
+  const inIt = aim.tasks.map(t => (t.phrase || {}).ar);
+  check("the phrases it needs are all in it",
+    D.canById("order").needs.every(ar => inIt.indexOf(ar) !== -1));
+  check("with the material around them", aim.tasks.length > D.canById("order").needs.length);
+
+  let g6 = 0;
+  while (g6++ < 40 && peek().view.name !== "result") playRound(true);
+  check("it finishes like any session", peek().view.name === "result");
+  check("and the score screen says what it was for", /what it takes to order a coffee/.test(h));
+
+  st.str = {}; st.mine = undefined;
+  click({ "data-go": "home" });
+}
+
 section("the games got harder in the right places");
 {
   const D = global.__data;
@@ -3385,6 +3474,50 @@ section("the audit's five");
 
   st.variety = "msa";
   st.games = undefined;
+  click({ "data-go": "home" });
+}
+
+section("backup to a file");
+{
+  unlockAll();
+  const st = peek().store;
+  click({ "data-go": "home" });
+  check("the backup offers a file, not only a code", /data-act="save-file"/.test(h));
+  check("and a way to read one back", /data-act="restore-file"/.test(h));
+
+  // no createElement in this harness, so it must say so rather than throw
+  click({ "data-act": "save-file" });
+  check("where the browser will not do it, it says so, and changes nothing",
+    /will not let the page hand you a file|download was refused/.test(h));
+
+  // reading a file back goes through the same door as the code
+  const code = peek().store && h.match(/data-act="backup"[^>]*>([\s\S]*?)<\/textarea>/);
+  global.window.FileReader = function () {
+    const self = this;
+    this.readAsText = f => { self.result = f.text; self.onload(); };
+  };
+  const passed = Object.keys(st.lessons).length;
+  confirmAnswer = true;
+  inputH({
+    target: {
+      getAttribute: () => "restore-file",
+      files: [{ text: "fusha1:" + global.window.btoa(JSON.stringify({ lessons: { 1: { best: 100, done: true } } })) }]
+    }
+  });
+  check("a good file is restored", Object.keys(peek().store.lessons).length === 1);
+  check("and it says how much came back", /1 lesson marked as passed/.test(h));
+
+  inputH({
+    target: { getAttribute: () => "restore-file", files: [{ text: "not a backup at all" }] }
+  });
+  check("a file that is not a backup changes nothing",
+    /does not look like a backup code/.test(h) && Object.keys(peek().store.lessons).length === 1);
+  delete global.window.FileReader;
+  unlockAll();
+  // the backup code is cached against the write counter, and unlockAll
+  // reaches past save(); nudge one setting so the next code is current
+  click({ "data-act": "pace", "data-id": "normal" });
+  peek().store.pace = undefined;
   click({ "data-go": "home" });
 }
 
@@ -3846,8 +3979,28 @@ section("free talk");
     click({ "data-act": "talk-send" });
     const last = peek().talk.turns[peek().talk.turns.length - 1];
     check("an unanswerable line still leaves the door open", last.who === "them");
-    check("saying it does not understand, in Arabic",
+    check("the first thing it does is ask for it again",
+      last.ar === "Marra ùkhra, min fàdlik");
+    check("in words, under the bubble", /class="talk-repair"/.test(h));
+    check("and the way out is already open, not folded away",
+      /class="guide suggest" open/.test(h));
+    check("the topic is held, not dropped", !!peek().talk.topic);
+
+    // say the same unanswerable thing twice more
+    fields.talk = dead.ar;
+    inputH({ target: { getAttribute: () => "talk-typing", value: dead.ar } });
+    click({ "data-act": "talk-send" });
+    check("a second time it asks what you meant",
+      peek().talk.turns[peek().talk.turns.length - 1].ar === "Màdha yaʿni?");
+
+    fields.talk = dead.ar;
+    inputH({ target: { getAttribute: () => "talk-typing", value: dead.ar } });
+    click({ "data-act": "talk-send" });
+    check("only the third time does it give up, in Arabic",
       peek().talk.turns.some(t => t.ar === "Là àfham"));
+    check("and start something else",
+      peek().talk.turns[peek().talk.turns.length - 1].ar !== "Là àfham");
+    check("with the repair count back to nothing", peek().talk.stuck === 0);
   }
   fields.talk = "";
 }

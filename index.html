@@ -524,6 +524,33 @@
   .side:hover { border-color: var(--line-strong); }
   .side-t { font-size: var(--t-4); letter-spacing: -.01em; }
   .side-m { color: var(--ink-3); font-size: var(--t-1); line-height: 1.4; }
+  .file-row { margin-top: 10px; }
+  .file-pick { display: inline-flex; align-items: center; gap: var(--s-3);
+    font-size: var(--t-2); color: var(--ink-2); cursor: pointer; }
+  .file-pick input { font: inherit; font-size: var(--t-1); max-width: 190px; }
+  .strip { display: flex; gap: 2px; height: 4px; margin-top: 7px; border-radius: 2px; overflow: hidden; }
+  .strip > i { display: block; height: 100%; border-radius: 1px; }
+  .strip .is-solid { background: var(--good); }
+  .strip .is-warm { background: var(--accent); }
+  .strip .is-cold { background: var(--amber); }
+  .strip .is-unmet { background: var(--line-strong); }
+  .strip-key b { font-weight: 600; }
+  .key-solid { color: var(--good); }
+  .key-warm { color: var(--accent); }
+  .key-cold { color: var(--amber); }
+  .key-unmet { color: var(--ink-3); }
+  .talk-repair { margin: 2px 0 10px 6px; color: var(--ink-3); font-size: var(--t-1); }
+  .now-group { margin: 0 0 var(--s-6); }
+  .now-row { display: flex; align-items: center; gap: var(--s-4); padding: 14px 0;
+    border-bottom: 1px solid var(--line); }
+  .now-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .now-ar { font-size: var(--t-8); line-height: 1.25; }
+  .now-en { color: var(--ink-2); font-size: var(--t-4); }
+  .mine-row { display: flex; align-items: center; gap: var(--s-4); padding: 12px 0;
+    border-bottom: 1px solid var(--line); }
+  .mine-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .mine-en { font-size: var(--t-3); }
+  .mine-meta { color: var(--ink-3); font-size: var(--t-1); }
   .tape { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2);
     margin: var(--s-5) 0 0; }
   .tape-btn.is-live { border-color: var(--bad); color: var(--bad); }
@@ -550,6 +577,7 @@
   .can-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .can-what { font-size: var(--t-4); }
   .can-meta { color: var(--ink-3); font-size: var(--t-1); }
+  .can-go { flex: 0 0 auto; }
   .can-bits { display: flex; gap: 3px; }
   .can-bit { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
   .can-bit.is-warm { background: var(--ink-3); }
@@ -2942,6 +2970,34 @@
      and never locked. Every line is drawn from a lesson.
      ============================================================ */
 
+  // The phrasebook is complete, ordered by lesson and searchable, which
+  // is three things you do not want while somebody is waiting for you to
+  // answer. This is the other screen: twenty-two lines, big, fixed, in
+  // the order you would need them, and no gate in front of it.
+  var NOW = [
+    {
+      title: "You did not catch it",
+      lines: ["Là àfham", "Takàllam bibut'", "Marra ùkhra, min fàdlik", "Màdha yaʿni?", "Là àʿrif"]
+    },
+    {
+      title: "You need something",
+      lines: ["Sàʿidni, min fàdlik", "Àina al-hammàm?", "Ahtàj tabìb", "Àina as-saydalìyya?",
+        "Àina ash-shùrta?", "Fàqadtu haqìbati"]
+    },
+    {
+      title: "Paying and eating",
+      lines: ["Kam as-sìʿr?", "Al-hisàb, min fàdlik", "Urìd mà', min fàdlik"]
+    },
+    {
+      title: "Getting somewhere",
+      lines: ["Urìd tàksi", "Khudhni ilà al-matàr", "Qif hùna, min fàdlik"]
+    },
+    {
+      title: "The five that always work",
+      lines: ["Naʿam", "Là", "Min fàdlik", "Shùkran jazìlan", "Àsif"]
+    }
+  ];
+
   var PHRASEBOOK = [
     {
       title: "When you are stuck",
@@ -5256,6 +5312,17 @@
       });
     });
 
+    var nowSeen = {};
+    NOW.forEach(function (group) {
+      if (!group.lines || !group.lines.length) problems.push('Right now group "' + group.title + '" is empty');
+      (group.lines || []).forEach(function (line) {
+        var at = 'Right now "' + group.title + '"';
+        if (nowSeen[line]) problems.push(at + ' repeats "' + line + '"');
+        nowSeen[line] = true;
+        if (!taught[line]) problems.push(at + ' uses "' + line + '", which no lesson teaches');
+      });
+    });
+
     var canIds = {};
     CAN.forEach(function (c) {
       var where = 'Capability "' + c.id + '"';
@@ -6294,11 +6361,34 @@
     return out;
   }
 
+  // A word you heard in the street belongs in the same machinery as
+  // everything the course taught you, which means it has to arrive as a
+  // lesson. This is that lesson: no script, so nothing that needs audio
+  // will offer it, and no core, because you decide what yours are for.
+  var MINE_ID = 900;
+
+  function mineWords() { return store.mine || []; }
+
+  function mineLesson() {
+    var words = mineWords();
+    if (!words.length) return null;
+    return {
+      id: MINE_ID,
+      title: "Words you brought",
+      intro: "Words you heard somewhere and wrote down yourself.",
+      isMine: true,
+      phrases: words.map(function (w) { return { ar: w.ar, en: w.en }; })
+    };
+  }
+
   function finishedLessons() {
-    return LESSONS.filter(function (l) {
+    var out = LESSONS.filter(function (l) {
       var r = recordOf(l.id);
       return !!(r && r.done);
     });
+    var mine = mineLesson();
+    if (mine) out.push(mine);
+    return out;
   }
 
   // Everything in the lessons you have passed, with how well you know it.
@@ -6807,6 +6897,7 @@
       isBack: !!fields.isBack,
       isOne: !!fields.isOne,
       isTest: !!fields.isTest,
+      aimed: fields.aimed || null,
       extended: false,
       grew: false,
       convo: fields.convo || null,
@@ -7086,7 +7177,8 @@
 
   function reachableNow() {
     var out = [];
-    LESSONS.filter(unlocked).forEach(function (l) {
+    var mine = mineLesson();
+    LESSONS.filter(unlocked).concat(mine ? [mine] : []).forEach(function (l) {
       phrasesOf(l).forEach(function (item) {
         if (isHidden(l.id, item.ar)) return;
         item.s = strengthOf(l.id, item.ar);
@@ -7229,6 +7321,82 @@
   function lastExam() {
     var h = examHistory();
     return h.length ? h[h.length - 1] : null;
+  }
+
+  // "Get me ready for the taxi." The mixed review is weighted across
+  // everything; this is the opposite instrument: only what one thing
+  // needs, and the phrases around it from the same lessons.
+  function itemFor(ar) {
+    var lid = lessonTeaching(ar);
+    var l = lid ? lessonById(lid) : null;
+    if (!l) return null;
+    var found = null;
+    phrasesOf(l).forEach(function (it) {
+      if (!found && it.ar === ar) found = it;
+    });
+    if (found) {
+      found.s = strengthOf(l.id, ar);
+      found.known = !!knownRec(l.id, ar);
+    }
+    return found;
+  }
+
+  function canOpen(entry) {
+    return entry.needs.every(function (ar) {
+      var lid = lessonTeaching(ar);
+      var l = lid ? lessonById(lid) : null;
+      return !!l && unlocked(l);
+    });
+  }
+
+  function canById(id) {
+    for (var i = 0; i < CAN.length; i++) if (CAN[i].id === id) return CAN[i];
+    return null;
+  }
+
+  function buildAimed(entry) {
+    if (!entry || !canOpen(entry)) return null;
+    var asking = askingGames();
+    var types = asking.length ? asking : ["quiz"];
+
+    function roundFrom(item) {
+      var options = typeFor(item, types);
+      for (var i = 0; i < options.length; i++) {
+        var r = makeRound(item.lesson, item, options[i]);
+        if (r) return r;
+      }
+      return null;
+    }
+
+    var tasks = [], used = {}, lessons = {};
+    entry.needs.forEach(function (ar) {
+      var it = itemFor(ar);
+      if (!it) return;
+      lessons[it.lesson.id] = it.lesson;
+      var r = roundFrom(it);
+      if (r) { tasks.push(r); used[ar] = true; }
+    });
+    if (!tasks.length) return null;
+
+    // The phrases it needs are the point; the rest of the session is the
+    // material around them, because nobody orders a coffee in isolation.
+    var want = Math.max(tasks.length, Math.min(reviewRounds(), 10));
+    var extra = [];
+    Object.keys(lessons).forEach(function (id) {
+      var l = lessons[id];
+      phrasesOf(l).forEach(function (it) {
+        if (used[it.ar] || isHidden(l.id, it.ar) || knownRec(l.id, it.ar)) return;
+        it.s = strengthOf(l.id, it.ar);
+        extra.push(it);
+      });
+    });
+    drawWeighted(extra, Math.max(0, want - tasks.length)).forEach(function (it) {
+      if (tasks.length >= want || used[it.ar]) return;
+      var r = roundFrom(it);
+      if (r) { tasks.push(r); used[it.ar] = true; }
+    });
+
+    return newSession({ isReview: true, aimed: entry, tasks: tasks });
   }
 
   // Straight from the score screen, on exactly what you just got wrong,
@@ -7519,6 +7687,18 @@
     return null;
   }
 
+  // In order: say it again, what do you mean, and only then I do not
+  // understand, which is the one that ends the thread. All three are in
+  // lesson 27, so being repaired at is itself practice.
+  var REPAIRS = [
+    { ar: "Marra ùkhra, min fàdlik", en: "Once more, please",
+      note: "It did not catch that. Say it again, or pick one below." },
+    { ar: "Màdha yaʿni?", en: "What does that mean?",
+      note: "Still lost. Try one of the lines below: those it will understand." },
+    { ar: "Là àfham", en: "I do not understand",
+      note: "That one is beyond it. It is starting something else." }
+  ];
+
   var talk = null;
 
   // What answers the line now on the table, drawn from the lessons in
@@ -7567,18 +7747,32 @@
     var r = replyFor(ar);
     if (r) {
       talk.stuck = 0;
+      talk.topic = null;
       talk.turns.push({ who: "them", ar: r.line.ar, en: r.line.en, why: r.why });
     } else {
-      // It genuinely has no follow-up. It says so, in Arabic, and then
-      // opens a fresh thread rather than dying.
+      // Not understanding is a real moment in a real conversation, and
+      // the course now teaches its way out of it. So the partner does
+      // what a person does: asks for it again, then asks what you meant,
+      // and only then gives up and changes the subject.
       talk.stuck++;
-      talk.turns.push({ who: "them", ar: "Là àfham", en: "I do not understand" });
-      var open = shuffle(talkIndex().openers)[0];
-      if (open) talk.turns.push({ who: "them", ar: open.ar, en: open.en });
+      // whatever was on the table before you spoke stays on the table
+      if (!talk.topic) {
+        for (var b = talk.turns.length - 2; b >= 0; b--) {
+          if (talk.turns[b].who === "them") { talk.topic = talk.turns[b].ar; break; }
+        }
+      }
+      var fix = REPAIRS[Math.min(talk.stuck, REPAIRS.length) - 1];
+      talk.turns.push({ who: "them", ar: fix.ar, en: fix.en, repair: fix.note });
+      if (talk.stuck >= REPAIRS.length) {
+        var open = shuffle(talkIndex().openers)[0];
+        if (open) talk.turns.push({ who: "them", ar: open.ar, en: open.en });
+        talk.topic = null;
+        talk.stuck = 0;
+      }
     }
     // Whatever happened, show what you could have said here. A wall you
     // are shown a way over teaches something; a wall alone does not.
-    talk.suggest = suggestionsAfter(talk.turns[talk.turns.length - 1].ar);
+    talk.suggest = suggestionsAfter(talk.topic || talk.turns[talk.turns.length - 1].ar);
     talk.draft = "";
     talk.heard = null;
     talk.options = [];
@@ -7883,6 +8077,7 @@
   }
 
   function lessonById(id) {
+    if (Number(id) === MINE_ID) return mineLesson();
     for (var i = 0; i < LESSONS.length; i++) if (LESSONS[i].id === Number(id)) return LESSONS[i];
     return null;
   }
@@ -7907,7 +8102,10 @@
     if (v.name === "one") return "#/one";
     if (v.name === "test") return "#/test";
     if (v.name === "can") return "#/can";
+    if (v.name === "play" && session && session.aimed) return "#/ready/" + session.aimed.id;
     if (v.name === "diary") return "#/diary";
+    if (v.name === "mine") return "#/mine";
+    if (v.name === "now") return "#/now";
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -7991,9 +8189,31 @@
       return;
     }
 
+    if (parts[0] === "now") {
+      session = null;
+      view = { name: "now" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "mine") {
+      session = null;
+      view = { name: "mine" };
+      render();
+      return;
+    }
+
     if (parts[0] === "diary") {
       session = null;
       view = { name: "diary" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "ready") {
+      var aim = buildAimed(canById(parts[1]));
+      if (aim) { session = aim; view = { name: "play" }; }
+      else { session = null; view = { name: "can" }; }
       render();
       return;
     }
@@ -8214,9 +8434,8 @@
     } catch (e) { return null; }
   }
 
-  function restoreBackup() {
-    var box = app.querySelector('[data-act="backup"]');
-    var parsed = readBackup(box ? box.value : "");
+  function applyRestore(text) {
+    var parsed = readBackup(text);
     if (!parsed) {
       restoreNote = { tone: "bad", text: "That does not look like a backup code. Nothing was changed." };
       render();
@@ -8233,6 +8452,66 @@
     var n = Object.keys(store.lessons).filter(function (k) { return store.lessons[k].done; }).length;
     restoreNote = { tone: "ok", text: "Restored. " + n + " lesson" + (n === 1 ? "" : "s") + " marked as passed." };
     render();
+  }
+
+  function restoreBackup() {
+    var box = app.querySelector('[data-act="backup"]');
+    applyRestore(box ? box.value : "");
+  }
+
+  // A code you have to select and copy by hand is a backup nobody
+  // takes. This hands you a file instead, and reads one back.
+  function canFile() {
+    return typeof document.createElement === "function" &&
+      typeof window.Blob === "function" &&
+      typeof URL !== "undefined" && !!URL.createObjectURL;
+  }
+
+  function saveToFile() {
+    if (!canFile()) {
+      restoreNote = { tone: "bad", text: "This browser will not let the page hand you a file. The code above still works." };
+      render();
+      return;
+    }
+    try {
+      var blob = new window.Blob([backupCode()], { type: "text/plain" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "fusha-" + (currentPerson() ? currentPerson().name.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase() : "progress") + ".txt";
+      if (document.body && document.body.appendChild) document.body.appendChild(a);
+      a.click();
+      if (document.body && document.body.removeChild) document.body.removeChild(a);
+      if (typeof window.setTimeout === "function") {
+        window.setTimeout(function () {
+          try { URL.revokeObjectURL(url); } catch (e) { /* already gone */ }
+        }, 2000);
+      }
+      restoreNote = { tone: "ok", text: "Saved. Keep the file somewhere that is not this browser." };
+    } catch (e) {
+      restoreNote = { tone: "bad", text: "The download was refused here. Some viewers block it; the code above still works." };
+    }
+    render();
+  }
+
+  function readFile(file) {
+    if (!file) return;
+    if (typeof window.FileReader !== "function") {
+      restoreNote = { tone: "bad", text: "This browser cannot read a file. Paste the code above instead." };
+      render();
+      return;
+    }
+    var fr = new window.FileReader();
+    fr.onload = function () { applyRestore(String(fr.result || "")); };
+    fr.onerror = function () {
+      restoreNote = { tone: "bad", text: "That file would not open. Nothing was changed." };
+      render();
+    };
+    try { fr.readAsText(file); }
+    catch (e) {
+      restoreNote = { tone: "bad", text: "That file would not open. Nothing was changed." };
+      render();
+    }
   }
 
   /* ============================================================
@@ -8460,6 +8739,56 @@
       '<button class="btn" data-go="home">Back</button></div>';
   }
 
+  // Big enough to read at arm's length, with the English under it and
+  // the speaker on the right. No search, no lessons, no scores.
+  function nowHTML() {
+    return topbarHTML("Right now") +
+      '<p class="pb-lead">The lines you need while someone is standing in front of you. ' +
+      "Nothing to search and nothing to unlock: tap one to hear it.</p>" +
+      NOW.map(function (group) {
+        return '<div class="now-group"><h2 class="can-head">' + esc(group.title) + "</h2>" +
+          group.lines.map(function (ar) {
+            return '<div class="now-row">' +
+              '<span class="now-body"><span class="ar now-ar">' + esc(disp(ar)) + "</span>" +
+              '<span class="now-en">' + esc(englishFor(ar) || "") + "</span></span>" +
+              sayBtn(ar) + "</div>";
+          }).join("") + "</div>";
+      }).join("") +
+      '<div class="btn-row"><button class="btn btn-ghost" data-go="phrasebook">The whole phrasebook</button>' +
+      '<button class="btn" data-go="home">Back</button></div>';
+  }
+
+  function mineHTML() {
+    var words = mineWords();
+    var rows = words.map(function (w) {
+      var st = strengthOf(MINE_ID, w.ar);
+      var when = daysSince(w.day);
+      return '<div class="mine-row">' +
+        '<span class="mine-body"><span class="ar">' + esc(w.ar) + "</span>" +
+        '<span class="mine-en">' + esc(w.en) + "</span>" +
+        '<span class="mine-meta">' +
+        esc(st === null ? "not asked yet" : st >= 4 ? "solid" : st >= 2 ? "getting there" : "still new") +
+        " &#183; added " +
+        esc(when === 0 ? "today" : when === 1 ? "yesterday" : when + " days ago") +
+        "</span></span>" +
+        '<button class="pill pill--md" data-act="mine-drop" data-id="' + esc(w.ar) + '">Forget it</button>' +
+        "</div>";
+    }).join("");
+
+    return topbarHTML("Words you brought") +
+      '<p class="pb-lead">A word you heard in the street and want to keep. Write it the way it sounded to you; ' +
+      "from then on it is drawn, weighted and faded exactly like everything the course taught you.</p>" +
+      '<div class="btn-row"><button class="btn btn-wide" data-act="mine-add">Add a word</button></div>' +
+      (words.length
+        ? '<div class="can-group"><h2 class="can-head">Yours<span class="fold-count">' +
+          words.length + "</span></h2>" + rows + "</div>"
+        : '<p class="pb-empty">Nothing yet. The next time someone says something you half-caught, put it here.</p>') +
+      '<p class="can-lead">There is no audio for these: the app has no Arabic spelling for a word you heard, ' +
+      "and it will not invent one rather than mispronounce it. They come up in the quiz, in typing and in " +
+      "matching, which is where a word you actually met is worth most.</p>" +
+      '<div class="btn-row"><button class="btn" data-go="home">Back</button></div>';
+  }
+
   function canRow(c) {
     var tick = c.level === "yes" ? "&#10003;" : c.level === "nearly" ? "&#8226;" : "&#9675;";
     var meta = c.level === "yes"
@@ -8473,6 +8802,10 @@
       '<span class="can-tick" aria-hidden="true">' + tick + "</span>" +
       '<span class="can-body"><span class="can-what">' + esc(c.entry.can) + "</span>" +
       '<span class="can-meta">' + esc(meta) + "</span></span>" +
+      (canOpen(c.entry)
+        ? '<button class="pill pill--md can-go" data-go="ready" data-id="' + esc(c.entry.id) +
+          '">Get me ready</button>'
+        : "") +
       '<span class="can-bits">' + c.entry.needs.map(function (ar) {
         var lid = lessonTeaching(ar);
         var st = lid ? strengthOf(lid, ar) : null;
@@ -8629,6 +8962,9 @@
           (on ? '<span class="who-tick" aria-hidden="true"></span>' : "") + "</button>";
       }).join("") +
 
+      '<button class="nav-item" data-go="now"><span class="nav-label">Right now</span>' +
+      '<span class="nav-note">The twenty-two lines you need in the street, big</span></button>' +
+
       '<div class="nav-group">Practise</div>' +
       '<button class="nav-item" data-act="nav-today"><span class="nav-label">Today</span>' +
       '<span class="nav-note">' + esc(todayCopy(todayPlan()).line) + "</span></button>" +
@@ -8651,6 +8987,10 @@
       '<span class="nav-note">' + (canExam()
         ? "No hints, no second chances, nothing counted"
         : "Pass a few more lessons to open this") + "</span></button>" +
+      '<button class="nav-item" data-go="mine"><span class="nav-label">Words you brought</span>' +
+      '<span class="nav-note">' + esc(mineWords().length
+        ? mineWords().length + " of your own, in the rotation like everything else"
+        : "Heard something in the street? Put it in the rotation") + "</span></button>" +
       '<button class="nav-item" data-go="diary"><span class="nav-label">What changed</span>' +
       '<span class="nav-note">' + esc(diary().length
         ? "A line for each of your last " + diary().length + " sessions"
@@ -8715,6 +9055,29 @@
       "</nav>";
   }
 
+  // "52 of 80" is one number for thirty lessons. This is the same
+  // information with the shape left in: one strip per lesson, four
+  // bands, so a glance says which lesson has gone soft.
+  function strengthStrip(l) {
+    var solid = 0, warm = 0, cold = 0, unmet = 0;
+    var list = visiblePhrases(l);
+    list.forEach(function (p) {
+      if (knownRec(l.id, p.ar)) { solid++; return; }
+      var st = strengthOf(l.id, p.ar);
+      if (st === null) unmet++;
+      else if (st >= MASTERED) solid++;
+      else if (st >= 2) warm++;
+      else cold++;
+    });
+    if (!list.length) return "";
+    function seg(n, cls) {
+      return n ? '<i class="' + cls + '" style="flex:' + n + '"></i>' : "";
+    }
+    return '<span class="strip" aria-hidden="true">' +
+      seg(solid, "is-solid") + seg(warm, "is-warm") + seg(cold, "is-cold") + seg(unmet, "is-unmet") +
+      "</span>";
+  }
+
   function homeHTML() {
     var doneCount = 0;
     LESSONS.forEach(function (l) {
@@ -8739,11 +9102,13 @@
         '<span class="lesson-body">' +
         '<span class="lesson-title">' + esc(l.title) + "</span>" +
         '<span class="lesson-meta">' + esc(meta) + "</span>" +
+        (open ? strengthStrip(l) : "") +
         "</span>" + right + "</button>";
     }).join("");
 
     return '<header class="masthead">' +
       '<button class="pill pill--md pb-link" data-act="nav-open" aria-label="Open the menu">&#9776; Menu</button>' +
+      '<button class="pill pill--md pb-link now-link" data-go="now">Right now</button>' +
       '<div class="eyebrow">Modern Standard Arabic</div>' +
       '<h1 class="wordmark">Fus<em>&#183;</em>ha</h1>' +
       '<p class="tagline">The Arabic every Arab country understands, in ' + LESSONS.length +
@@ -8792,7 +9157,11 @@
       // Today stopped being the obvious thing to press.
       '<details class="guide fold" data-fold="course"' + foldAttr("course", !doneCount) + '>' +
       '<summary>The course<span class="fold-count">' + doneCount + " / " + LESSONS.length + "</span></summary>" +
-      '<div class="fold-body"><div class="track">' + rows + "</div></div></details>" +
+      '<div class="fold-body">' +
+      '<p class="fold-lead strip-key">Each strip is that lesson\'s phrases by strength: ' +
+      '<b class="key-solid">solid</b>, <b class="key-warm">holding</b>, ' +
+      '<b class="key-cold">weak</b>, <b class="key-unmet">not met yet</b>.</p>' +
+      '<div class="track">' + rows + "</div></div></details>" +
 
       '<details class="guide fold" data-fold="convos"' + foldAttr("convos") + '><summary>Conversations' +
       '<span class="fold-count">' + CONVOS.length + "</span></summary>" +
@@ -8833,7 +9202,11 @@
       '<textarea class="backup" data-act="backup" rows="3" spellcheck="false" aria-label="Backup code">' +
       esc(backupCode()) + "</textarea>" +
       '<div class="btn-row" style="margin-top:12px">' +
-      '<button class="btn btn-ghost" data-act="restore">Restore from this code</button></div>' +
+      '<button class="btn btn-ghost" data-act="restore">Restore from this code</button>' +
+      '<button class="btn" data-act="save-file">Save it to a file</button></div>' +
+      '<div class="file-row"><label class="file-pick">' +
+      '<input type="file" accept=".txt,text/plain" data-act="restore-file">' +
+      "<span>Restore from a file</span></label></div>" +
       (restoreNote ? '<p class="restore-note ' + restoreNote.tone + '">' + esc(restoreNote.text) + "</p>" : "") +
       "<p>To restore, paste a code you saved earlier over the text above and press the button.</p>" +
       "</div></details>" +
@@ -8867,7 +9240,8 @@
 
   function talkHTML() {
     var lines = talk.turns.map(function (t) {
-      return bubble(t.who === "you" ? "you" : "them", t.ar, t.en);
+      return bubble(t.who === "you" ? "you" : "them", t.ar, t.en) +
+        (t.repair ? '<p class="talk-repair">' + esc(t.repair) + "</p>" : "");
     }).join("");
 
     var understood = "";
@@ -8914,8 +9288,12 @@
       "</div></details>";
 
     var hint = "";
+    var lastTurn = talk.turns[talk.turns.length - 1];
     if (talk.suggest && talk.suggest.length && !talk.options.length) {
-      hint = '<details class="guide suggest"' + (talk.hintOpen ? " open" : "") + '>' +
+      // Being repaired at is the one moment the way out should already
+      // be open rather than folded away behind a summary.
+      hint = '<details class="guide suggest"' +
+        ((talk.hintOpen || (lastTurn && lastTurn.repair)) ? " open" : "") + '>' +
         '<summary>Stuck? Things you could say<span class="fold-count">' + talk.suggest.length + "</span></summary>" +
         '<div class="fold-body">' + talk.suggest.map(function (o2) {
           return '<button class="understood-opt" data-act="talk-pick" data-id="' + esc(o2.ar) + '">' +
@@ -11006,7 +11384,8 @@
     var t = session.tasks[session.i];
     var pct = Math.round(session.i / session.tasks.length * 100);
     var body = roundBodyHTML(t);
-    var title = session.isTest ? "The test"
+    var title = session.aimed ? "Ready for: " + session.aimed.can
+      : session.isTest ? "The test"
       : session.isToday ? "Today"
       : session.isFixup ? "Fixing what you missed"
       : session.isFollow ? session.convo.title + " \u00b7 listening"
@@ -11483,6 +11862,8 @@
     } else if (session.isDrill) {
       line = ((gameByKey(session.isDrill) || {}).label || "That game") +
         ", drawn from everything you have passed.";
+    } else if (session.aimed) {
+      line = "Built from what it takes to " + session.aimed.can + ", and the phrases around it.";
     } else if (session.isReview) {
       line = "Drawn from your " + session.reviewPool + " finished lesson" +
         (session.reviewPool === 1 ? "" : "s") +
@@ -11545,7 +11926,8 @@
         ? '<button class="btn" data-go="lesson" data-id="' + next.id + '">Next lesson</button>'
         : '<button class="btn" data-go="home">Back to lessons</button>';
 
-    return topbarHTML(session.isTest ? "The test"
+    return topbarHTML(session.aimed ? "Ready for: " + session.aimed.can
+      : session.isTest ? "The test"
       : session.isToday ? "Today"
       : session.isFixup ? "Fixing what you missed"
       : session.isConvo ? session.convo.title
@@ -11823,6 +12205,8 @@
     if (view.name === "one") return oneHTML();
     if (view.name === "can") return canHTML();
     if (view.name === "diary") return diaryHTML();
+    if (view.name === "mine") return mineHTML();
+    if (view.name === "now") return nowHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -12046,7 +12430,14 @@
         return;
       }
       if (dest === "can") { session = null; go({ name: "can" }); return; }
+      if (dest === "ready") {
+        var aimed = buildAimed(canById(el.getAttribute("data-id")));
+        if (aimed) { session = aimed; go({ name: "play" }); }
+        return;
+      }
       if (dest === "diary") { session = null; go({ name: "diary" }); return; }
+      if (dest === "mine") { session = null; go({ name: "mine" }); return; }
+      if (dest === "now") { session = null; go({ name: "now" }); return; }
       if (dest === "test") {
         var ex = buildExam();
         if (ex) { session = ex; go({ name: "play" }); }
@@ -12220,6 +12611,7 @@
     }
     if (act === "today") { stopSpeech(); startToday(); return; }
     if (act === "restore") { restoreBackup(); return; }
+    if (act === "save-file") { saveToFile(); return; }
     if (act === "backup" || act === "search" || act === "typing") return;
     if (act === "game") {
       var key = el.getAttribute("data-key");
@@ -12304,6 +12696,31 @@
       return;
     }
     if (act === "tape-play") { playTape(); return; }
+    if (act === "mine-add") {
+      var heard = window.prompt("How did it sound? Write it in these letters, the way you heard it.", "");
+      if (heard === null) return;
+      heard = String(heard).trim().slice(0, 60);
+      if (!heard) return;
+      var means = window.prompt('And what does "' + heard + '" mean?', "");
+      if (means === null) return;
+      means = String(means).trim().slice(0, 80);
+      if (!means) return;
+      var list = mineWords().filter(function (w) { return normalise(w.ar) !== normalise(heard); });
+      list.push({ ar: heard, en: means, day: today() });
+      store.mine = list;
+      save();
+      render();
+      return;
+    }
+    if (act === "mine-drop") {
+      var gone = el.getAttribute("data-id");
+      store.mine = mineWords().filter(function (w) { return w.ar !== gone; });
+      if (store.str) delete store.str[phraseKey(MINE_ID, gone)];
+      if (store.known) delete store.known[phraseKey(MINE_ID, gone)];
+      save();
+      render();
+      return;
+    }
     if (act === "mic-again") {
       ears.blocked = null;
       ears.reason = null;
@@ -12563,6 +12980,10 @@
       talk.draft = el.value;
       var send = app.querySelector('[data-act="talk-send"]');
       if (send) send.disabled = !el.value.trim();
+      return;
+    }
+    if (what === "restore-file") {
+      readFile(el.files && el.files[0]);
       return;
     }
     if (what === "moment-typing") { if (moment && !moment.checked) moment.typed = el.value; return; }

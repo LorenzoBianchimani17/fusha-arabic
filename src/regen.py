@@ -28,6 +28,8 @@ HOOKS = (
     ' buildExam: buildExam, EXAM_LENGTH: EXAM_LENGTH, examHistory: examHistory,'
     ' dailyConvo: dailyConvo, PACES: PACES, reviewRounds: reviewRounds,'
     ' diary: diary, weekSummary: weekSummary, unseen: unseen, deltaLine: deltaLine,'
+    ' NOW: NOW, mineWords: mineWords, mineLesson: mineLesson, MINE_ID: MINE_ID,'
+    ' buildAimed: buildAimed, canById: canById, canOpen: canOpen, REPAIRS: REPAIRS,'
     ' englishFor: englishFor, courseIndex: courseIndex, normalise: normalise,'
     ' sameSaid: sameSaid, tokens: tokens, canMake: canMake, coreCounts: coreCounts,'
     ' lessonNo: lessonNo, RECHECK_AFTER: RECHECK_AFTER, HOLDS: HOLDS, today: today,'
