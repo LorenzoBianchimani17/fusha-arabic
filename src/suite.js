@@ -87,6 +87,30 @@ if (withVoice) {
   global.window.SpeechSynthesisUtterance = function (t) { this.text = t; };
 }
 
+// A recorder that records nothing, synchronously, so the wiring around
+// it can be exercised without a microphone.
+let tapedChunks = 0, played = [];
+if (withMic) {
+  global.navigator = {
+    mediaDevices: {
+      getUserMedia: () => ({
+        then(f) { f({ getTracks: () => [{ stop() {} }] }); return { catch() {} }; }
+      })
+    }
+  };
+  global.window.MediaRecorder = function () {
+    const self = this;
+    this.start = function () { tapedChunks = 0; };
+    this.stop = function () {
+      tapedChunks = 1;
+      self.ondataavailable && self.ondataavailable({ data: { size: 3, type: "audio/webm" } });
+      self.onstop && self.onstop();
+    };
+  };
+  global.window.Audio = function (src) { this.play = () => played.push(src); };
+  global.window.clearTimeout = () => {};
+}
+
 if (withMic) {
   global.window.SpeechRecognition = function () {
     const self = this;
@@ -2781,7 +2805,7 @@ section("the rhythm of using it");
   check("and none of that shows on a normal day", !/You have been away/.test(h));
 
   // one phrase, for the thirty seconds it usually gets
-  check("the home screen offers a single question", /class="review one-card" data-go="one"/.test(h));
+  check("the home screen offers a single question", /class="side" data-go="one"/.test(h));
   check("so does the menu", /data-go="one"/.test(h.split("</nav>")[0]));
 
   const runsBefore = (peek().store.runs || 0) + ((peek().store.review || {}).runs || 0);
@@ -2816,7 +2840,8 @@ section("the rhythm of using it");
   st.str = {};
 
   // a conversation a day, stitched rather than written
-  check("the home screen offers today's conversation", /class="review daily-card"/.test(h));
+  check("the home screen offers today's conversation",
+    /class="side" data-go="convo" data-id="daily"/.test(h));
   click({ "data-go": "convo", "data-id": "daily" });
   const day1 = peek().session.convo.turns.map(t => t.reply).join("|");
   check("it is a conversation like any other", peek().session.isConvo === true);
@@ -2845,9 +2870,146 @@ section("the rhythm of using it");
   check("finishing it works", peek().view.name === "result");
   check("and the day is marked", peek().store.daily === today());
   click({ "data-go": "home" });
-  check("so the card says so", /Today's is done/.test(h));
+  check("so the card says so", /Done. Tomorrow, four others/.test(h));
   peek().store.daily = undefined;
   st.str = {};
+  click({ "data-go": "home" });
+}
+
+section("knowing where you stand");
+{
+  const D = global.__data;
+  const { today } = D;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.known = {}; st.hidden = {}; st.exams = undefined;
+
+  // a test with no help
+  click({ "data-go": "home" });
+  check("the home screen offers a test", /class="side" data-go="test"/.test(h));
+  click({ "data-go": "test" });
+  const ex = peek().session;
+  check("it is its own kind of session", ex.isTest === true);
+  check("fifteen questions", ex.tasks.length === D.EXAM_LENGTH);
+  check("all of them marked as a test", ex.tasks.every(t => t.isTest));
+  check("typed wherever it can be typed",
+    ex.tasks.filter(t => t.type === "write").length >= ex.tasks.length / 2);
+  check("and four options wherever it cannot",
+    ex.tasks.filter(t => t.type === "quiz").every(t => t.options.length === 4));
+  check("nothing is a leech round", ex.tasks.every(t => !t.isLeech));
+
+  const before = JSON.stringify(st.str);
+  // get one wrong on purpose: no second go, no explanation
+  const first = peek().session.tasks[0];
+  if (first.type === "quiz") {
+    const wrong = first.options.find(o => o !== first.answer);
+    click({ "data-act": "answer", "data-value": wrong });
+  } else {
+    first.typed = "zzzqqq";
+    click({ "data-act": "check-write" });
+  }
+  check("a wrong answer settles it on the spot", peek().session.state === "checked");
+  check("no second attempt", !peek().session.tasks[0].tried);
+  check("no explanation of the rule", !/class="why"/.test(h));
+  check("no aside about the phrase", !/class="round-controls"/.test(h));
+  check("and nothing moved in memory", JSON.stringify(st.str) === before);
+  check("the counter is honest about the length", /1 \/ 15/.test(h));
+
+  let g3 = 0;
+  while (g3++ < 60 && peek().view.name !== "result") playRound(true);
+  check("it finishes", peek().view.name === "result");
+  check("with a score", /result-score/.test(h));
+  check("nothing counted toward memory in the whole test", JSON.stringify(st.str) === before);
+  check("the result says it was your first", /first/.test(h));
+  check("and it is kept", (st.exams || []).length === 1);
+  const runsAfter = (st.review || {}).runs || 0;
+
+  // a second one compares itself with the first
+  st.exams = [{ day: today() - 10, score: 40, n: 15 }];
+  click({ "data-go": "test" });
+  let g4 = 0;
+  while (g4++ < 60 && peek().view.name !== "result") playRound(true);
+  check("a later test is measured against the last", /Up from 40%/.test(h));
+  check("and says how long ago that was", /10 days ago/.test(h));
+  check("both are kept", st.exams.length === 2);
+  check("and no test counted as a review run", ((st.review || {}).runs || 0) === runsAfter);
+
+  // what you can do
+  st.str = {}; st.exams = undefined;
+  click({ "data-go": "home" });
+  check("with nothing solid it says so", /0 of 24 things, not phrases/.test(h));
+
+  const coffee = D.CAN.find(c => c.id === "order");
+  coffee.needs.forEach(ar => {
+    const lid = LESSONS.find(l => l.phrases.some(p => p.ar === ar) ||
+      (l.dialogue || []).some(d => d.ask === ar || d.reply === ar)).id;
+    st.str[lid + "|" + ar] = { s: 5, n: 9, day: today() };
+  });
+  click({ "data-go": "home" });
+  check("solid phrases turn into something you can do",
+    D.canAt("yes").some(c => c.entry.id === "order"));
+  check("and the row keeps count", /1 of 24 things, not phrases/.test(h));
+
+  // and one that is one phrase short of being yours
+  const taxi = D.CAN.find(c => c.id === "taxi");
+  taxi.needs.slice(0, taxi.needs.length - 1).forEach(ar => {
+    const lid = LESSONS.find(l => l.phrases.some(p => p.ar === ar) ||
+      (l.dialogue || []).some(d => d.ask === ar || d.reply === ar)).id;
+    st.str[lid + "|" + ar] = { s: 5, n: 9, day: today() };
+  });
+  check("one phrase short counts as nearly, not as no",
+    D.canAt("nearly").some(c => c.entry.id === "taxi"));
+
+  click({ "data-go": "can" });
+  check("the list has a screen", peek().view.name === "can");
+  check("every capability is on it",
+    D.CAN.every(c => h.includes(c.can.replace(/&/g, "&amp;"))));
+  check("it opens with the sentence, not a number", /You can order a coffee/.test(screenOnly()));
+  check("and says what it cannot do yet", /You cannot yet/.test(screenOnly()));
+  check("each one shows how far off it is", /class="can-bit/.test(h));
+  check("the three groups are there",
+    /class="can-head">You can/.test(h) && /class="can-head">Nearly/.test(h) &&
+    /class="can-head">Not yet/.test(h));
+
+  st.str = {};
+
+  // a diary of what changed
+  st.diary = undefined;
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-go": "review" });
+  const keys = Object.keys(peek().session.before || {});
+  check("a session takes a reading before it starts", keys.length > 0);
+  check("and the reading is of the phrases it is about to ask",
+    keys.every(k => k.includes("|")));
+  let g5 = 0;
+  while (g5++ < 80 && peek().view.name !== "result") playRound(true);
+  check("the result says what moved", /class="result-delta"/.test(h));
+  check("in words, not numbers alone", /met for the first time|went solid|climbed a step/.test(h));
+  check("and it is written down", D.diary().length === 1);
+  const entry = D.diary()[0];
+  check("with what kind of session it was", entry.kind === "review");
+  check("what it did", entry.fresh > 0 || entry.up > 0);
+  check("and when", entry.day === today());
+
+  click({ "data-go": "home" });
+  check("the home row shows the week", /data-go="diary"/.test(h));
+  click({ "data-go": "diary" });
+  check("the diary has a screen", peek().view.name === "diary");
+  check("it opens with the week, not the day", /1 session on 1 day this week/.test(screenOnly()));
+  check("then the sessions one by one", /class="diary-row"/.test(h));
+  check("and what you have not seen at all", /Not seen in a while/.test(h));
+
+  // a phrase that was solid and has decayed reads as slipped
+  st.diary = [];
+  const lz = LESSONS[0], pz = lz.phrases[0];
+  st.str[lz.id + "|" + pz.ar] = { s: 5, n: 9, day: today() - 400 };
+  check("a long-forgotten phrase reads as faded now",
+    D.strengthOf(lz.id, pz.ar) < 5);
+  check("and shows up as not seen in a while",
+    D.unseen().some(u => u.ar === pz.ar));
+
+  st.diary = undefined; st.str = {};
   click({ "data-go": "home" });
 }
 
@@ -3745,6 +3907,60 @@ section("choosing what the partner knows");
 }
 
 if (withMic) {
+  section("recording yourself in Say it");
+  {
+    const st = peek().store;
+    st.str = {}; st.games = { say: true };
+    // the harness fires every timer at once, which would auto-stop the
+    // recording before the button had finished being pressed
+    const realTimeout = global.window.setTimeout;
+    let pending = null;
+    global.window.setTimeout = f => { pending = f; return 1; };
+    unlockAll();
+    click({ "data-go": "review" });
+    let guard = 0;
+    while (guard++ < 20 && peek().session.tasks[peek().session.i].type !== "say") {
+      playRound(true); playRound(true);
+    }
+    const t = peek().session.tasks[peek().session.i];
+    if (t.type !== "say") {
+      check("a Say it round could be reached", false);
+    } else {
+      check("nothing to record before the answer is shown", !/data-act="tape"/.test(h));
+      click({ "data-act": "say-reveal" });
+      check("once it is shown, you can record yourself", /data-act="tape"/.test(h));
+      check("but there is nothing to play back yet", !/data-act="tape-play"/.test(h));
+
+      click({ "data-act": "tape", "data-id": t.phrase.ar });
+      check("recording says it is recording", /data-act="tape"[^>]*>Stop</.test(h));
+      check("and says it stops on its own", /stops on its own after 6 seconds/.test(h));
+
+      pending();
+      check("and it does stop on its own", !/data-act="tape"[^>]*>Stop</.test(h));
+      check("keeping what it got", /data-act="tape-play"/.test(h));
+
+      click({ "data-act": "tape", "data-id": t.phrase.ar });
+      click({ "data-act": "tape", "data-id": t.phrase.ar });
+      check("stopping by hand keeps it too", /data-act="tape-play"/.test(h));
+      check("with the synthesizer next to it, which is the point",
+        /data-act="say" data-say=/.test(h.split('class="tape"')[1] || ""));
+      check("and says what to listen for", /listen for what is different/.test(h));
+
+      played.length = 0;
+      click({ "data-act": "tape-play" });
+      check("playing yours plays yours", played.length === 1);
+
+      playRound(true);
+      playRound(true);
+      check("and the recording does not follow you into the next round",
+        !/data-act="tape-play"/.test(h));
+    }
+    global.window.setTimeout = realTimeout;
+    st.games = undefined;
+    st.str = {};
+    click({ "data-go": "home" });
+  }
+
   section("saying it, not typing it");
   {
     const D = global.__data;

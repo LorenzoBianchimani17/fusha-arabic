@@ -517,6 +517,43 @@
     box-shadow: var(--shadow);
   }
 
+  .sides { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); margin: 0 0 var(--s-5); }
+  .side { display: flex; flex-direction: column; gap: 2px; text-align: left;
+    padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-md);
+    background: var(--surface); color: inherit; font: inherit; cursor: pointer; }
+  .side:hover { border-color: var(--line-strong); }
+  .side-t { font-size: var(--t-4); letter-spacing: -.01em; }
+  .side-m { color: var(--ink-3); font-size: var(--t-1); line-height: 1.4; }
+  .tape { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2);
+    margin: var(--s-5) 0 0; }
+  .tape-btn.is-live { border-color: var(--bad); color: var(--bad); }
+  .tape-note { flex: 1 0 100%; color: var(--ink-3); font-size: var(--t-1); line-height: 1.45; }
+  .diary-row { display: flex; align-items: baseline; gap: var(--s-4); padding: 10px 0;
+    border-bottom: 1px solid var(--line); }
+  .diary-when { flex: 0 0 84px; color: var(--ink-3); font-size: var(--t-1); }
+  .diary-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .diary-what { font-size: var(--t-3); }
+  .diary-delta { color: var(--ink-3); font-size: var(--t-2); line-height: 1.45; }
+  .result-delta { margin: 6px 0 0; color: var(--ink-2); font-size: var(--t-3); }
+  .can-lead { margin: 0 0 18px; color: var(--ink-3); font-size: var(--t-2); line-height: 1.55; }
+  .can-group { margin: 0 0 22px; }
+  .can-head { display: flex; align-items: center; gap: var(--s-2); margin: 0 0 8px;
+    font-size: var(--t-6); letter-spacing: -.01em; }
+  .can-note { margin: 0 0 10px; color: var(--ink-3); font-size: var(--t-2); }
+  .can-row { display: flex; align-items: center; gap: var(--s-4); padding: 12px 14px;
+    border: 1px solid var(--line); border-radius: var(--r-md); margin-bottom: 8px;
+    background: var(--surface); }
+  .can-row.is-yes { border-color: var(--good); }
+  .can-row.is-no { opacity: .72; }
+  .can-tick { width: 20px; text-align: center; color: var(--ink-3); font-size: var(--t-5); }
+  .can-row.is-yes .can-tick { color: var(--good); }
+  .can-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .can-what { font-size: var(--t-4); }
+  .can-meta { color: var(--ink-3); font-size: var(--t-1); }
+  .can-bits { display: flex; gap: 3px; }
+  .can-bit { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+  .can-bit.is-warm { background: var(--ink-3); }
+  .can-bit.is-solid { background: var(--good); }
   .one-note { margin: 22px 0 0; color: var(--ink-3); font-size: var(--t-1); text-align: center; }
   .today-pace { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-3); }
   .today-pace .pchip { font-size: var(--t-1); }
@@ -2599,6 +2636,61 @@
      lessons already teach. `needs` lists the lessons that must be
      finished first, so nothing appears before you have met the words.
      ============================================================ */
+
+  // "52 of 80" is a number about the app. This is the list the number
+  // was standing in for: things you can do with your mouth in a street.
+  // A capability is yours when every phrase under it is solid, which is
+  // a harder test than the meter and a more honest one.
+  var CAN = [
+    { id: "greet", can: "greet someone, and answer when they greet you",
+      needs: ["Marhàban", "As-salàmu ʿaláikum", "Sabàh al-khèir"] },
+    { id: "howare", can: "ask how someone is, and say how you are",
+      needs: ["Kèifa hàluk?", "Anà bikhèir", "Shùkran"] },
+    { id: "name", can: "give your name and ask for theirs",
+      needs: ["Mà ìsmuk?", "Ismì Marco", "Tashàrraft"] },
+    { id: "from", can: "say where you are from and where you live",
+      needs: ["Min àina ànta?", "Anà min Itàlya", "Àskun fi Milàno"] },
+    { id: "polite", can: "be polite: please, thank you, sorry",
+      needs: ["Min fàdlik", "Shùkran jazìlan", "Àsif"] },
+    { id: "repeat", can: "say you have not understood and ask for it again",
+      needs: ["Là àfham", "Marra ùkhra, min fàdlik", "Takàllam bibut'"] },
+    { id: "word", can: "ask what something means and what it is called",
+      needs: ["Màdha yaʿni?", "Kèifa taqùl hàdha?", "Mà hàdha?"] },
+    { id: "reply", can: "answer a question, not only ask one",
+      needs: ["Naʿam, ʿìndi", "Là, làisa ʿìndi", "Là àʿrif", "Kamà turìd"] },
+    { id: "order", can: "order a coffee and ask for the bill",
+      needs: ["Qàhwa", "Urìd mà', min fàdlik", "Al-hisàb, min fàdlik"] },
+    { id: "hungry", can: "say you are hungry or thirsty",
+      needs: ["Anà jà'iʿ", "Anà ʿatshàn"] },
+    { id: "way", can: "ask where something is and follow the answer",
+      needs: ["Àina al-hammàm?", "Ilà al-yamìn", "Ilà al-yasàr", "ʿAlà tùl"] },
+    { id: "price", can: "ask a price and understand what you are told",
+      needs: ["Kam as-sìʿr?", "ʿIshrùn", "Mi'a"] },
+    { id: "haggle", can: "say it is too expensive and walk away",
+      needs: ["Ghàli jìddan", "Hàdha kathìr", "Sa'ufàkkir"] },
+    { id: "buy", can: "say you will take it",
+      needs: ["Kam hàdha?", "Sa'àkhudh hàdha", "Urìd hàdha"] },
+    { id: "taxi", can: "take a taxi and say where you are going",
+      needs: ["Urìd tàksi", "Khudhni ilà al-matàr", "Qif hùna, min fàdlik"] },
+    { id: "hotel", can: "ask for a room and for the wifi",
+      needs: ["Al-fùnduq", "Ghùrfa", "Hal ʿìndakum wàifài?"] },
+    { id: "time", can: "ask the time and understand the answer",
+      needs: ["Kam as-sàʿa?", "Fi ày sàʿa?", "Fi as-sàʿa thamàniya"] },
+    { id: "meet", can: "arrange to meet someone",
+      needs: ["Ghàdan sabàhan", "Al-àn munàsib", "Sa'akùn hunàk"] },
+    { id: "ill", can: "say you are ill and where it hurts",
+      needs: ["Anà marìd", "ʿÌndi àlam hùna", "Ahtàj tabìb"] },
+    { id: "may", can: "ask whether you are allowed to",
+      needs: ["Hal yùmkin?", "Hal yùmkin at-taswìr?", "Làhza min fàdlik"] },
+    { id: "past", can: "say what you did yesterday",
+      needs: ["Ams", "Kùntu", "Dhahàbtu"] },
+    { id: "want", can: "say what you want, need and like",
+      needs: ["Urìd", "Ahtàj", "Ùhib"] },
+    { id: "lost", can: "say you have lost something and ask for help",
+      needs: ["Fàqadtu haqìbati", "Sàʿidni, min fàdlik", "Àina ash-shùrta?"] },
+    { id: "bye", can: "end a conversation properly",
+      needs: ["Maʿa salàma", "Ilà al-liqà", "Tùsbih ʿalà khèir"] }
+  ];
 
   var CONVOS = [
     {
@@ -5164,6 +5256,17 @@
       });
     });
 
+    var canIds = {};
+    CAN.forEach(function (c) {
+      var where = 'Capability "' + c.id + '"';
+      if (canIds[c.id]) problems.push("Duplicate capability id " + c.id);
+      canIds[c.id] = true;
+      if (!c.can || !c.needs || c.needs.length < 2) problems.push(where + " has fewer than 2 phrases");
+      (c.needs || []).forEach(function (ar) {
+        if (!taught[ar]) problems.push(where + ' needs "' + ar + '", which no lesson teaches');
+      });
+    });
+
     var convoIds = {};
     CONVOS.forEach(function (c) {
       var where = 'Conversation "' + c.id + '"';
@@ -5418,6 +5521,126 @@
   }
 
   function canHear() { return ears.supported && !ears.blocked; }
+
+  /* ---------- recording yourself ---------- */
+
+  // The synthesizer says the phrase and you say the phrase, and until
+  // now the only judge of the difference was the ear that had just made
+  // the mistake. Recording is different from recognition: the recogniser
+  // tells you what it thinks you said, which is not the same question.
+  var TAPE_MAX_MS = 6000;
+  var tape = { on: false, url: null, ar: null, rec: null, stream: null, chunks: [], timer: null, why: null };
+
+  function canRecord() {
+    if (typeof window === "undefined" || !window.MediaRecorder) return false;
+    var md = (typeof navigator !== "undefined") && navigator.mediaDevices;
+    if (!md || !md.getUserMedia) return false;
+    return typeof URL !== "undefined" && !!URL.createObjectURL;
+  }
+
+  function dropTape() {
+    if (tape.url) {
+      try { URL.revokeObjectURL(tape.url); } catch (e) { /* nothing to revoke */ }
+    }
+    tape.url = null;
+    tape.ar = null;
+  }
+
+  function stopTape() {
+    if (tape.timer && typeof window.clearTimeout === "function") window.clearTimeout(tape.timer);
+    tape.timer = null;
+    if (tape.rec) {
+      try { tape.rec.stop(); } catch (e) { tape.on = false; }
+    }
+  }
+
+  function endStream() {
+    if (tape.stream && tape.stream.getTracks) {
+      tape.stream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) { /* gone */ } });
+    }
+    tape.stream = null;
+  }
+
+  function startTape(ar) {
+    if (!canRecord() || tape.on) return;
+    dropTape();
+    tape.why = null;
+    var p;
+    try { p = navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (e) { tape.why = "refused"; render(); return; }
+    if (!p || !p.then) { tape.why = "refused"; render(); return; }
+    p.then(function (stream) {
+      var rec;
+      try { rec = new window.MediaRecorder(stream); }
+      catch (e) {
+        tape.why = "unsupported";
+        tape.stream = stream;
+        endStream();
+        render();
+        return;
+      }
+      tape.stream = stream;
+      tape.rec = rec;
+      tape.chunks = [];
+      rec.ondataavailable = function (ev) {
+        if (ev && ev.data && ev.data.size !== 0) tape.chunks.push(ev.data);
+      };
+      rec.onstop = function () {
+        tape.on = false;
+        tape.rec = null;
+        endStream();
+        try {
+          var blob = new Blob(tape.chunks, { type: (tape.chunks[0] && tape.chunks[0].type) || "audio/webm" });
+          tape.url = URL.createObjectURL(blob);
+          tape.ar = ar;
+        } catch (e) { tape.why = "failed"; }
+        render();
+      };
+      try { rec.start(); }
+      catch (e) { tape.why = "refused"; endStream(); render(); return; }
+      tape.on = true;
+      // Nobody wants a five-minute recording of their kitchen.
+      tape.timer = typeof window.setTimeout === "function"
+        ? window.setTimeout(stopTape, TAPE_MAX_MS)
+        : null;
+      render();
+    }).catch(function () {
+      tape.why = "refused";
+      render();
+    });
+  }
+
+  function playTape() {
+    if (!tape.url) return;
+    try {
+      var a = new window.Audio(tape.url);
+      a.play();
+    } catch (e) { tape.why = "playback"; render(); }
+  }
+
+  function tapeHTML(ar) {
+    if (!canRecord()) return "";
+    var mine = tape.url && tape.ar === ar;
+    return '<div class="tape">' +
+      '<button class="pill pill--md tape-btn' + (tape.on ? " is-live" : "") +
+      '" data-act="tape" data-id="' + esc(ar) + '">' +
+      (tape.on ? "Stop" : mine ? "Record again" : "Record yourself") + "</button>" +
+      (mine
+        ? '<button class="pill pill--md tape-btn" data-act="tape-play">Hear yourself</button>' +
+          '<button class="pill pill--md tape-btn" data-act="say" data-say="' + esc(ar) + '">Hear it said</button>'
+        : "") +
+      '<span class="tape-note">' + esc(tape.why
+        ? (tape.why === "refused"
+            ? "The microphone was refused, so there is nothing to record with."
+            : tape.why === "playback"
+              ? "This browser would not play it back."
+              : "This browser cannot record.")
+        : tape.on
+          ? "Recording. It stops on its own after " + Math.round(TAPE_MAX_MS / 1000) + " seconds."
+          : mine
+            ? "Play yours, then play the synthesizer, and listen for what is different."
+            : "Kept on this device only, and only until you leave the round.") + "</span></div>";
+  }
 
   // Stopping asks for whatever it has; aborting throws it away. Stop is
   // the kinder one: you may well have finished speaking.
@@ -6543,9 +6766,37 @@
     return out;
   }
 
+  // What a session did to you, measured rather than asserted: the
+  // strength of everything it is about to ask, taken before it asks.
+  function taskKeys(t, lesson) {
+    var out = [];
+    function add(l, ar) { if (l && ar) out.push(phraseKey(l.id, ar)); }
+    if (t.type === "match") {
+      (t.pairs || []).forEach(function (p) { add(p._lesson || t.srcLesson || lesson, p.ar); });
+      return out;
+    }
+    var ph = t.phrase || (t.exchange ? { ar: t.exchange.reply } : t.turn ? { ar: t.turn.reply } : null);
+    if (!ph) return out;
+    add((t.phrase && t.phrase._lesson) || t.srcLesson || lesson, ph.ar);
+    return out;
+  }
+
+  function snapshotOf(tasks, lesson) {
+    var before = {};
+    tasks.forEach(function (t) {
+      taskKeys(t, lesson).forEach(function (k) {
+        if (k in before) return;
+        var cut = k.indexOf("|");
+        before[k] = strengthOf(k.slice(0, cut), k.slice(cut + 1));
+      });
+    });
+    return before;
+  }
+
   function newSession(fields) {
     var all = fields.tasks;
     return {
+      before: snapshotOf(all, fields.lesson || null),
       lesson: fields.lesson || null,
       isReview: !!fields.isReview,
       isDrill: fields.isDrill || null,
@@ -6555,6 +6806,7 @@
       isToday: !!fields.isToday,
       isBack: !!fields.isBack,
       isOne: !!fields.isOne,
+      isTest: !!fields.isTest,
       extended: false,
       grew: false,
       convo: fields.convo || null,
@@ -6923,6 +7175,60 @@
       }
     }
     return null;
+  }
+
+  // Every number in this app measures the process: how many rounds, how
+  // weighted, how long ago. None of them measures the result. This one
+  // does, and to be worth anything it has to be unhelpful: no options
+  // where you could be typing, no second go, no explanation until it is
+  // over, and nothing it does counts toward memory either way.
+  var EXAM_LENGTH = 15;
+  var EXAM_MIN = 20;
+
+  function examPool() {
+    return studied().filter(function (it) { return !it.known; });
+  }
+
+  function canExam() { return examPool().length >= EXAM_MIN; }
+
+  function buildExam() {
+    var pool = examPool();
+    if (pool.length < EXAM_MIN) return null;
+    // A fair sample, deliberately not weighted toward what you get
+    // wrong: that weighting is what makes every other number here a
+    // measure of the drilling rather than of you.
+    var picked = shuffle(pool).slice(0, EXAM_LENGTH);
+    var tasks = [];
+    picked.forEach(function (item) {
+      var p = item.phrase || item;
+      var r = canMake(item, "write")
+        ? writeRound(item.lesson, p)
+        : quizRound(item.lesson, p);
+      if (!r) return;
+      // Support fades as a phrase gets stronger, which is right in a
+      // lesson and wrong here: the same instrument has to be the same
+      // width every time or the number means nothing. Four options,
+      // always, for anything that cannot be typed.
+      if (r.type === "quiz") {
+        var field = r.toEnglish ? "en" : "ar";
+        var wrong = distractors(visiblePhrases(item.lesson), p[field], field, 3);
+        if (wrong.length) {
+          r.options = shuffle(wrong.concat([p]).map(function (x) { return x[field]; }));
+        }
+      }
+      r.isTest = true;
+      r.isLeech = false;
+      tasks.push(r);
+    });
+    if (tasks.length < 5) return null;
+    return newSession({ isTest: true, tasks: tasks });
+  }
+
+  function examHistory() { return store.exams || []; }
+
+  function lastExam() {
+    var h = examHistory();
+    return h.length ? h[h.length - 1] : null;
   }
 
   // Straight from the score screen, on exactly what you just got wrong,
@@ -7358,6 +7664,141 @@
 
   function dailyDone() { return store.daily === today(); }
 
+  /* ---------- the diary ---------- */
+
+  var DIARY_KEEP = 60;
+  var UNSEEN_AFTER = 21;
+
+  function sessionKind() {
+    return session.isTest ? "test"
+      : session.isFixup ? "fixup"
+      : session.isOne ? "one"
+      : session.isBack ? "back"
+      : session.isToday ? "today"
+      : session.isDrill ? "drill"
+      : session.isConvo ? (session.convo && session.convo.isDaily ? "daily" : "convo")
+      : session.isReview ? "review"
+      : "lesson";
+  }
+
+  function sessionDelta() {
+    var before = session.before || {};
+    var d = { up: 0, down: 0, fresh: 0, solid: 0 };
+    Object.keys(before).forEach(function (k) {
+      var cut = k.indexOf("|");
+      var lid = k.slice(0, cut), ar = k.slice(cut + 1);
+      var was = before[k];
+      var now = strengthOf(lid, ar);
+      if (now === null) return;
+      if (was === null) { d.fresh++; if (now >= 4) d.solid++; return; }
+      if (now > was) d.up++;
+      if (now < was) d.down++;
+      if (was < 4 && now >= 4) d.solid++;
+    });
+    return d;
+  }
+
+  function diary() { return store.diary || []; }
+
+  function noteDiary(score) {
+    var d = sessionDelta();
+    d.day = today();
+    d.kind = sessionKind();
+    d.score = score;
+    d.n = session.tasks.length;
+    if (session.lesson) d.lesson = session.lesson.id;
+    store.diary = diary().concat([d]).slice(-DIARY_KEEP);
+  }
+
+  // A week of it, added up. Not a streak: a streak measures attendance,
+  // and attendance is not the thing that was in doubt.
+  function weekSummary() {
+    var since = today() - 6;
+    var week = diary().filter(function (d) { return d.day >= since; });
+    var out = { sessions: week.length, up: 0, down: 0, fresh: 0, solid: 0, days: {}, tests: [] };
+    week.forEach(function (d) {
+      out.up += d.up || 0;
+      out.down += d.down || 0;
+      out.fresh += d.fresh || 0;
+      out.solid += d.solid || 0;
+      out.days[d.day] = true;
+      if (d.kind === "test") out.tests.push(d);
+    });
+    out.onDays = Object.keys(out.days).length;
+    return out;
+  }
+
+  // The third question the diary has to answer, and the only one the
+  // app could always have answered: what have you simply not seen?
+  function unseen(limit) {
+    var out = [];
+    finishedLessons().forEach(function (l) {
+      visiblePhrases(l).forEach(function (p) {
+        if (knownRec(l.id, p.ar)) return;
+        var rec = rawStrength(l.id, p.ar);
+        var since = rec ? daysSince(rec.day) : null;
+        if (rec && (since === null || since < UNSEEN_AFTER)) return;
+        out.push({ lesson: l, ar: p.ar, en: p.en, since: rec ? since : null });
+      });
+    });
+    out.sort(function (a, b) {
+      if ((a.since === null) !== (b.since === null)) return a.since === null ? -1 : 1;
+      return (b.since || 0) - (a.since || 0);
+    });
+    return limit ? out.slice(0, limit) : out;
+  }
+
+  /* ---------- what you can do ---------- */
+
+  var CAN_SOLID = 3;
+
+  function canState(entry) {
+    var have = 0, met = 0, open = 0;
+    entry.needs.forEach(function (ar) {
+      var lid = lessonTeaching(ar);
+      var l = lid ? lessonById(lid) : null;
+      var r = l ? recordOf(l.id) : null;
+      if (r && r.done) open++;
+      var st = lid ? strengthOf(lid, ar) : null;
+      if (st !== null) {
+        met++;
+        if (st >= CAN_SOLID) have++;
+      }
+    });
+    var n = entry.needs.length;
+    return {
+      entry: entry,
+      have: have,
+      met: met,
+      open: open,
+      n: n,
+      level: have === n ? "yes" : (open === n && have >= 1) || have >= n - 1 ? "nearly" : "no"
+    };
+  }
+
+  function canStates() { return CAN.map(canState); }
+
+  function canAt(level) {
+    return canStates().filter(function (c) { return c.level === level; });
+  }
+
+  // The sentence the whole screen exists to produce.
+  function canSentence() {
+    var yes = canAt("yes");
+    if (!yes.length) return "Nothing yet that you could carry through on your own.";
+    var list = yes.slice(0, 3).map(function (c) { return c.entry.can; });
+    var rest = yes.length - list.length;
+    return "You can " + list.join(", ").replace(/,([^,]*)$/, " and$1") +
+      (rest > 0 ? ", and " + rest + " more" : "") + ".";
+  }
+
+  function cannotSentence() {
+    var no = canAt("no");
+    if (!no.length) return "";
+    var list = no.slice(0, 2).map(function (c) { return c.entry.can; });
+    return "You cannot yet " + list.join(", or ") + ".";
+  }
+
   // The whole exchange at natural speed, then questions about it. The
   // other games test one phrase at a time; following a conversation you
   // cannot pause is a different skill, and the one you actually need.
@@ -7464,6 +7905,9 @@
     if (v.name === "numbers") return "#/numbers";
     if (v.name === "loud") return "#/loud/" + (loud ? loud.mode : "shadow");
     if (v.name === "one") return "#/one";
+    if (v.name === "test") return "#/test";
+    if (v.name === "can") return "#/can";
+    if (v.name === "diary") return "#/diary";
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -7471,6 +7915,7 @@
     if (v.name === "play" || v.name === "result") {
       var scored = v.name === "result";
       var step = scored ? "/score" : "/" + (session.i + 1);
+      if (session.isTest) return "#/test" + (scored ? "/score" : "");
       if (session.isReview) return "#/review" + step;
       if (session.isFollow) return "#/listen/" + session.convo.id + step;
       if (session.isConvo) return "#/talk/" + session.convo.id + step;
@@ -7542,6 +7987,27 @@
       session = null;
       pbQuery = "";
       view = { name: "phrasebook" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "diary") {
+      session = null;
+      view = { name: "diary" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "can") {
+      session = null;
+      view = { name: "can" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "test") {
+      session = buildExam();
+      view = session ? { name: "play" } : { name: "home" };
       render();
       return;
     }
@@ -7890,32 +8356,151 @@
       "</button>";
   }
 
-  function oneCardHTML() {
-    if (!finishedLessons().length) return "";
-    return '<button class="review one-card" data-go="one">' +
-      '<span class="review-body">' +
-      '<span class="eyebrow">Thirty seconds</span>' +
-      '<span class="review-title">One phrase, then put it down</span>' +
-      '<span class="review-meta">A single question, no session and no score.' +
-      " It still counts toward the phrase.</span></span>" +
-      '<span class="lesson-lock" aria-hidden="true">&rarr;</span></button>';
+  // Four ways in that are neither the lesson nor the review. As cards
+  // they turned the home screen back into a pile; as a row of four they
+  // are one tap away and take four lines.
+  function sideHTML(dest, id, title, meta) {
+    return '<button class="side" data-go="' + dest + '"' +
+      (id ? ' data-id="' + id + '"' : "") + ">" +
+      '<span class="side-t">' + esc(title) + "</span>" +
+      '<span class="side-m">' + esc(meta) + "</span></button>";
   }
 
-  function dailyCardHTML() {
+  function sidesHTML() {
+    if (!finishedLessons().length) return "";
+    var out = "";
     var c = dailyConvo();
-    if (!c) return "";
-    var done = dailyDone();
-    return '<button class="review daily-card" data-go="convo" data-id="daily">' +
-      '<span class="review-body">' +
-      '<span class="eyebrow">A conversation a day</span>' +
-      '<span class="review-title">' + (done ? "Today's is done" : "Four replies, straight through") + "</span>" +
-      '<span class="review-meta">' + (done
-        ? "Run it again if you like. Tomorrow it will be four different ones."
-        : c.turns.length + " exchanges you have met, in a different order every day.") +
-      "</span></span>" +
-      (done
-        ? '<span class="pill pill--tag review-score">done</span>'
-        : '<span class="lesson-lock" aria-hidden="true">&rarr;</span>') + "</button>";
+    if (c) {
+      out += sideHTML("convo", "daily", "Today's conversation",
+        dailyDone() ? "Done. Tomorrow, four others" : c.turns.length + " replies you know, straight through");
+    }
+    out += sideHTML("one", null, "One phrase", "A single question, no score");
+    if (canExam()) {
+      var last = lastExam();
+      out += sideHTML("test", null, "The test",
+        last ? "Last time " + last.score + "%, and no help" : EXAM_LENGTH + " at random, with no help");
+    }
+    out += sideHTML("can", null, "What you can do",
+      canAt("yes").length + " of " + CAN.length + " things, not phrases");
+    var w = weekSummary();
+    out += sideHTML("diary", null, "What changed",
+      w.sessions
+        ? "This week: " + (w.solid ? w.solid + " solid" : "none solid") +
+          (w.down ? ", " + w.down + " slipped" : "")
+        : "A line after every session");
+    return '<div class="sides">' + out + "</div>";
+  }
+
+  // One line, in the only place it can be read honestly: right after
+  // the session that produced it.
+  function deltaLine(d) {
+    if (!d) return "";
+    var bits = [];
+    if (d.solid) bits.push(d.solid + " went solid");
+    if (d.up && d.up > d.solid) bits.push((d.up - d.solid) + " climbed a step");
+    if (d.fresh) bits.push(d.fresh + " met for the first time");
+    if (d.down) bits.push(d.down + " slipped back");
+    if (!bits.length) return "Nothing moved: everything in it was already where it was.";
+    return bits.join(", ").replace(/,([^,]*)$/, " and$1") + ".";
+  }
+
+  function diaryRow(d) {
+    var when = daysSince(d.day);
+    var label = when === 0 ? "Today" : when === 1 ? "Yesterday" : when + " days ago";
+    var what = d.kind === "test" ? "the test"
+      : d.kind === "lesson" ? "lesson " + (lessonById(d.lesson) ? lessonNo(lessonById(d.lesson)) : "?")
+      : d.kind === "daily" ? "today's conversation"
+      : d.kind === "back" ? "coming back"
+      : d.kind === "one" ? "one phrase"
+      : d.kind === "today" ? "today"
+      : d.kind === "fixup" ? "a patch-up"
+      : d.kind === "drill" ? "one game"
+      : d.kind === "convo" ? "a conversation"
+      : "mixed review";
+    return '<div class="diary-row">' +
+      '<span class="diary-when">' + esc(label) + "</span>" +
+      '<span class="diary-body"><span class="diary-what">' + esc(what) +
+      (typeof d.score === "number" ? ", " + d.score + "%" : "") + "</span>" +
+      '<span class="diary-delta">' + esc(deltaLine(d)) + "</span></span></div>";
+  }
+
+  function diaryHTML() {
+    var log = diary().slice().reverse();
+    var w = weekSummary();
+    var cold = unseen(10);
+    return topbarHTML("What changed") +
+      (log.length
+        ? '<p class="pb-lead">' + w.sessions + " session" + (w.sessions === 1 ? "" : "s") +
+          " on " + w.onDays + " day" + (w.onDays === 1 ? "" : "s") + " this week. " +
+          (w.solid ? w.solid + " went solid" : "Nothing went solid") +
+          (w.down ? ", " + w.down + " slipped" : "") +
+          (w.fresh ? ", " + w.fresh + " met for the first time" : "") + ".</p>"
+        : '<p class="pb-lead">Nothing yet. Finish a session and it will start keeping count.</p>') +
+      (w.tests.length
+        ? '<p class="can-lead">The test, this week: ' +
+          w.tests.map(function (t) { return t.score + "%"; }).join(", then ") + '.</p>'
+        : "") +
+      (log.length ? '<div class="can-group"><h2 class="can-head">Session by session' +
+        '<span class="fold-count">' + log.length + "</span></h2>" +
+        log.map(diaryRow).join("") + "</div>" : "") +
+      (cold.length
+        ? '<div class="can-group"><h2 class="can-head">Not seen in a while' +
+          '<span class="fold-count">' + unseen().length + "</span></h2>" +
+          '<p class="can-note">Either never asked, or last asked more than ' + UNSEEN_AFTER +
+          " days ago. They are in the draw like everything else; this is only so you know they exist.</p>" +
+          cold.map(function (u) {
+            return '<div class="diary-row"><span class="diary-when">' +
+              (u.since === null ? "never" : u.since + "d") + "</span>" +
+              '<span class="diary-body"><span class="ar">' + esc(disp(u.ar)) + "</span>" +
+              '<span class="diary-delta">' + esc(u.en) + "</span></span>" +
+              sayBtn(u.ar, true) + "</div>";
+          }).join("") + "</div>"
+        : "") +
+      '<div class="btn-row"><button class="btn btn-ghost" data-go="review">Mixed review</button>' +
+      '<button class="btn" data-go="home">Back</button></div>';
+  }
+
+  function canRow(c) {
+    var tick = c.level === "yes" ? "&#10003;" : c.level === "nearly" ? "&#8226;" : "&#9675;";
+    var meta = c.level === "yes"
+      ? "all " + c.n + " solid"
+      : c.level === "nearly"
+        ? c.have + " of " + c.n + " solid, " + (c.n - c.have) + " to go"
+        : c.met
+          ? "met " + c.met + " of " + c.n + ", none of it solid yet"
+          : "not taught yet";
+    return '<div class="can-row is-' + c.level + '">' +
+      '<span class="can-tick" aria-hidden="true">' + tick + "</span>" +
+      '<span class="can-body"><span class="can-what">' + esc(c.entry.can) + "</span>" +
+      '<span class="can-meta">' + esc(meta) + "</span></span>" +
+      '<span class="can-bits">' + c.entry.needs.map(function (ar) {
+        var lid = lessonTeaching(ar);
+        var st = lid ? strengthOf(lid, ar) : null;
+        var cls = st === null ? "is-cold" : st >= CAN_SOLID ? "is-solid" : "is-warm";
+        return '<span class="can-bit ' + cls + '" title="' + esc(ar) + '"></span>';
+      }).join("") + "</span></div>";
+  }
+
+  function canHTML() {
+    var yes = canAt("yes"), nearly = canAt("nearly"), no = canAt("no");
+    function group(title, list, note) {
+      if (!list.length) return "";
+      return '<div class="can-group"><h2 class="can-head">' + esc(title) +
+        '<span class="fold-count">' + list.length + "</span></h2>" +
+        (note ? '<p class="can-note">' + esc(note) + "</p>" : "") +
+        list.map(canRow).join("") + "</div>";
+    }
+    return topbarHTML("What you can do") +
+      '<p class="pb-lead">' + esc(canSentence()) +
+      (cannotSentence() ? " " + esc(cannotSentence()) : "") + "</p>" +
+      '<p class="can-lead">Something counts as yours when every phrase under it is solid' +
+      " - strength " + CAN_SOLID + " or better, after any fading. That is a harder line than the" +
+      " mastered count on the home screen, and it is the one that matters in the street.</p>" +
+      group("You can", yes) +
+      group("Nearly", nearly, "One phrase short, or one that has faded. These are the cheapest things left to fix.") +
+      group("Not yet", no, "Either the lesson is still ahead of you, or nothing in it has stuck.") +
+      '<div class="btn-row"><button class="btn btn-ghost" data-go="review">Mixed review</button>' +
+      '<button class="btn" data-go="home">Back</button></div>';
   }
 
   function twinsCardHTML() {
@@ -8061,6 +8646,19 @@
       '><span class="nav-label">One phrase</span>' +
       '<span class="nav-note">' + (done ? "A single question, no session" : "Pass a lesson to open this") + "</span></button>" +
 
+      '<button class="nav-item' + (canExam() ? "" : " is-off") + '" data-go="test"' +
+      (canExam() ? "" : " disabled") + '><span class="nav-label">The test</span>' +
+      '<span class="nav-note">' + (canExam()
+        ? "No hints, no second chances, nothing counted"
+        : "Pass a few more lessons to open this") + "</span></button>" +
+      '<button class="nav-item" data-go="diary"><span class="nav-label">What changed</span>' +
+      '<span class="nav-note">' + esc(diary().length
+        ? "A line for each of your last " + diary().length + " sessions"
+        : "A line after each session, and a week at a time") + "</span></button>" +
+      '<button class="nav-item" data-go="can"><span class="nav-label">What you can do</span>' +
+      '<span class="nav-note">' + esc(canAt("yes").length + " of " + CAN.length +
+        " things you could carry through") + "</span></button>" +
+
       '<div class="nav-group">One game at a time</div>' + drills +
 
       '<button class="nav-item' + (canSpeak() ? "" : " is-off") + '" data-act="ear-only"' +
@@ -8184,8 +8782,7 @@
       todayHTML() +
       coreHTML() +
       reviewHTML() +
-      dailyCardHTML() +
-      oneCardHTML() +
+      sidesHTML() +
       momentCardHTML() +
       makeCardHTML() +
       twinsCardHTML() +
@@ -10360,6 +10957,7 @@
   var QUICK_MS = 3500;
 
   function isQuick(t) {
+    if (session && session.isTest) return false;
     if (!t || !t.phrase || t.isLeech || t.isRetry) return false;
     if (!t.options || t.type === "match") return false;
     var l = lessonOf(t, t.phrase);
@@ -10408,7 +11006,8 @@
     var t = session.tasks[session.i];
     var pct = Math.round(session.i / session.tasks.length * 100);
     var body = roundBodyHTML(t);
-    var title = session.isToday ? "Today"
+    var title = session.isTest ? "The test"
+      : session.isToday ? "Today"
       : session.isFixup ? "Fixing what you missed"
       : session.isFollow ? session.convo.title + " \u00b7 listening"
       : session.isDrill ? (gameByKey(session.isDrill) || {}).label + " only"
@@ -10478,7 +11077,8 @@
 
   function quizHTML(t) {
     var hear = t.toEnglish ? sayBtn(t.prompt, true) : "";
-    if (t.toEnglish && earOnly() && !!spk(t.prompt) && session.state !== "checked" && !t.peeked) {
+    if (t.toEnglish && earOnly() && !session.isTest && !!spk(t.prompt) &&
+      session.state !== "checked" && !t.peeked) {
       return '<div class="prompt">' +
         '<div class="prompt-label">What does this mean?</div>' +
         '<div class="listen-stage">' +
@@ -10536,6 +11136,7 @@
       '<div class="prompt-main ar">' + esc(disp(t.phrase.ar)) + "</div>" + sayBtn(t.phrase.ar) + "</div>" +
       "</div>" +
       heardHTML(t, t.phrase.ar) +
+      tapeHTML(t.phrase.ar) +
       (checked ? "" :
         '<div class="btn-row">' +
         '<button class="btn btn-ghost" data-act="say-grade" data-value="missed">Missed it</button>' +
@@ -10820,6 +11421,11 @@
         (arabicAnswer ? sayBtn(heard, true) : "") + "</div>";
     }
     var ending = last && (session.retried || session.missed.length === 0);
+    if (session.isTest) {
+      return '<div class="verdict" tabindex="-1">' + msg +
+        '<button class="btn btn-wide" data-act="next">' +
+        (last ? "Finish the test" : "Next") + "</button></div>";
+    }
     return '<div class="verdict" tabindex="-1">' + msg +
       (session.lastRight ? "" : confusedWith(t)) + leechOut(t) +
       (session.lastRight ? "" : whyHTML(t)) + roundControls(t) +
@@ -10847,7 +11453,19 @@
     var next = lesson ? LESSONS[LESSONS.indexOf(lesson) + 1] : null;
 
     var line;
-    if (session.isFixup) {
+    if (session.isTest) {
+      var prev = examHistory().length > 1 ? examHistory()[examHistory().length - 2] : null;
+      var gap = prev ? daysSince(prev.day) : null;
+      line = session.tasks.length + " at random from everything you have passed, with nothing to help you. " +
+        (prev
+          ? (score > prev.score
+              ? "Up from " + prev.score + "%"
+              : score < prev.score
+                ? "Down from " + prev.score + "%"
+                : "The same as") +
+            " " + (gap === 0 ? "earlier today" : gap === 1 ? "yesterday" : gap + " days ago") + "."
+          : "This is your first, so it is the line everything later is measured against.");
+    } else if (session.isFixup) {
       line = passed
         ? "All of them, second time round."
         : "Some are still slipping. They will come round again on their own.";
@@ -10893,13 +11511,15 @@
         "Fix these " + n + " now</button></div></div>";
     }
 
-    var eyebrow = session.isFixup ? "Patched up"
+    var eyebrow = session.isTest ? "Test over"
+      : session.isFixup ? "Patched up"
       : session.isConvo ? "Conversation over"
       : session.isReview ? "Review complete"
       : (passed ? "Lesson complete" : "Not there yet");
-    var tone = session.isReview || session.isConvo ? "review" : (passed ? "pass" : "fail");
+    var tone = session.isTest || session.isReview || session.isConvo ? "review" : (passed ? "pass" : "fail");
 
-    var again = session.isFixup ? ""
+    var again = session.isTest ? '<button class="btn btn-ghost" data-go="can">What you can do</button>'
+      : session.isFixup ? ""
       : session.isFollow
       ? '<button class="btn btn-ghost" data-go="follow" data-id="' + esc(session.convo.id) + '">Hear it again</button>'
       : session.isConvo
@@ -10925,7 +11545,8 @@
         ? '<button class="btn" data-go="lesson" data-id="' + next.id + '">Next lesson</button>'
         : '<button class="btn" data-go="home">Back to lessons</button>';
 
-    return topbarHTML(session.isToday ? "Today"
+    return topbarHTML(session.isTest ? "The test"
+      : session.isToday ? "Today"
       : session.isFixup ? "Fixing what you missed"
       : session.isConvo ? session.convo.title
       : session.isDrill ? (gameByKey(session.isDrill) || {}).label + " only"
@@ -10933,7 +11554,9 @@
       '<div class="card result fade-in" tabindex="-1">' +
       '<div class="eyebrow">' + eyebrow + "</div>" +
       '<div class="result-score mono ' + tone + '">' + score + "%</div>" +
-      '<p class="result-line">' + esc(line) + "</p>" + misses + circuit + "</div>" +
+      '<p class="result-line">' + esc(line) + "</p>" +
+      (session.isTest ? "" : '<p class="result-delta">' + esc(deltaLine(sessionDelta())) + "</p>") +
+      misses + circuit + "</div>" +
       '<div class="btn-row">' + again + onward + "</div>";
   }
 
@@ -10950,7 +11573,7 @@
   }
 
   function scorePhrase(task, right, phrase) {
-    if (!phrase || (task && task.isRetry)) return;
+    if (!phrase || (task && (task.isRetry || task.isTest))) return;
     if (task && task.isEcho && right) {
       var le = lessonOf(task, phrase);
       if (le) { bumpStrength(le.id, phrase.ar, true, "held"); save(); }
@@ -11005,7 +11628,8 @@
     // One wrong answer is not the end of the question. The one you chose
     // is struck out and you go again: a second try is retrieval, reading
     // the answer is not. The second one settles it either way.
-    if (value !== t.answer && !t.tried && t.options && t.options.length > 2 && !t.isRetry) {
+    if (value !== t.answer && !t.tried && t.options && t.options.length > 2 &&
+      !t.isRetry && !t.isTest) {
       t.tried = value;
       render();
       return;
@@ -11093,10 +11717,15 @@
     if (session.finished) { go({ name: "result" }, { replace: true }); return; }
     session.finished = true;
     var score = session.max ? Math.round(session.earned / session.max * 100) : 0;
-    // Sessions are the clock the spot checks run on.
-    store.runs = runCount() + 1;
+    // Sessions are the clock the spot checks run on. A test is not one:
+    // nothing in it counted, so nothing in it may move the clock either.
+    if (!session.isTest) store.runs = runCount() + 1;
     store.lastDay = today();
-    if (session.isFixup) {
+    noteDiary(score);
+    if (session.isTest) {
+      store.exams = examHistory().concat([{ day: today(), score: score, n: session.tasks.length }]).slice(-12);
+      save();
+    } else if (session.isFixup) {
       // Strengths already moved as each answer landed. A three-phrase
       // patch is not a review run and must not stand as one.
       save();
@@ -11142,6 +11771,8 @@
   }
 
   function advance() {
+    stopTape();
+    dropTape();
     // A single question has no next round and no end: either another
     // one, drawn fresh, or you put the phone away.
     if (session.isOne) {
@@ -11150,10 +11781,10 @@
       else go({ name: "home" });
       return;
     }
-    maybeExtend();
+    if (!session.isTest) maybeExtend();
     var atEnd = session.i >= session.tasks.length - 1;
 
-    if (atEnd && !session.retried) {
+    if (atEnd && !session.retried && !session.isTest) {
       session.retried = true;
       var seen = {}, repeats = [];
       session.missed.forEach(function (m) {
@@ -11190,6 +11821,8 @@
     if (view.name === "numbers") return numbersHTML();
     if (view.name === "loud") return loudHTML();
     if (view.name === "one") return oneHTML();
+    if (view.name === "can") return canHTML();
+    if (view.name === "diary") return diaryHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -11410,6 +12043,13 @@
       if (dest === "play") {
         session = buildSession(lessonById(el.getAttribute("data-id")));
         go({ name: "play" });
+        return;
+      }
+      if (dest === "can") { session = null; go({ name: "can" }); return; }
+      if (dest === "diary") { session = null; go({ name: "diary" }); return; }
+      if (dest === "test") {
+        var ex = buildExam();
+        if (ex) { session = ex; go({ name: "play" }); }
         return;
       }
       if (dest === "one") {
@@ -11657,6 +12297,13 @@
       return;
     }
     if (act === "mic-stop") { stopListening(); return; }
+    if (act === "tape") {
+      if (tape.on) stopTape();
+      else startTape(el.getAttribute("data-id") ||
+        (session && session.tasks[session.i].phrase ? session.tasks[session.i].phrase.ar : null));
+      return;
+    }
+    if (act === "tape-play") { playTape(); return; }
     if (act === "mic-again") {
       ears.blocked = null;
       ears.reason = null;
