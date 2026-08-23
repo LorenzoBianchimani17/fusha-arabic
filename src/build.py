@@ -11,8 +11,8 @@ HEAD = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Modern Standard Arabic for beginners: twenty-nine lessons, conversations you can hold out loud, no alphabet required.">
-<meta name="theme-color" content="#0B6E7F" media="(prefers-color-scheme: light)">
+<meta name="description" content="Modern Standard Arabic for beginners: thirty lessons, conversations you can hold out loud, no alphabet required.">
+<meta name="theme-color" content="#F3F0E8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0D1417" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Fusha">

@@ -2985,6 +2985,8 @@ section("knowing where you stand");
   let g5 = 0;
   while (g5++ < 80 && peek().view.name !== "result") playRound(true);
   check("the result says what moved", /class="result-delta"/.test(h));
+  check("and says it before the explanation, not after",
+    h.indexOf('class="result-delta"') < h.indexOf('class="result-line"'));
   check("in words, not numbers alone", /met for the first time|went solid|climbed a step/.test(h));
   check("and it is written down", D.diary().length === 1);
   const entry = D.diary()[0];
@@ -3371,6 +3373,26 @@ section("the phone, not the desktop");
   check("the words screen stacks its buttons on a phone", /btn-row-stack/.test(h));
   st.passive = {};
   click({ "data-go": "home" });
+}
+
+section("the warmer light theme");
+{
+  const css = require("fs").readFileSync("fusha.html", "utf8").split("</style>")[0];
+  const light = css.split(":root {")[1].split("}")[0];
+  const themed = css.split(':root[data-theme="light"] {')[1].split("}")[0];
+  const grab = (block, name) => (block.match(new RegExp("--" + name + ": (#[0-9A-Fa-f]{6})")) || [])[1];
+  check("the page is ivory, not white", grab(light, "bg") === "#F3F0E8");
+  check("and the cards are paper, not white", grab(light, "surface") === "#FCFAF5");
+  check("the ink is warm, not blue-black", grab(light, "ink") === "#1D1A15");
+  check("the accent is unchanged", grab(light, "accent") === "#0B6E7F");
+  check("and choosing light explicitly gives the same palette",
+    ["bg", "surface", "surface-2", "line", "line-strong", "ink", "ink-2", "ink-3",
+      "accent", "accent-soft", "amber", "good", "good-soft", "bad", "bad-soft"]
+      .every(k => grab(light, k) === grab(themed, k)));
+  check("nothing paints a colour outside the token blocks",
+    !/(background|color):\s*#[0-9A-Fa-f]{3,6}/.test(css.split(':root[data-theme="light"]')[1] || ""));
+  const head = require("fs").readFileSync("build.py", "utf8");
+  check("the browser bar matches the page", head.includes('content="#F3F0E8"'));
 }
 
 section("the look of it");

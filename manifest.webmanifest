@@ -3,7 +3,7 @@
   "short_name": "Fusha",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#EEF1F1",
+  "background_color": "#F3F0E8",
   "theme_color": "#0B6E7F",
   "description": "Modern Standard Arabic for beginners: lessons, conversations you can hold out loud, no alphabet required.",
   "icons": [

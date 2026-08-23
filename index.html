@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Modern Standard Arabic for beginners: twenty-nine lessons, conversations you can hold out loud, no alphabet required.">
-<meta name="theme-color" content="#0B6E7F" media="(prefers-color-scheme: light)">
+<meta name="description" content="Modern Standard Arabic for beginners: thirty lessons, conversations you can hold out loud, no alphabet required.">
+<meta name="theme-color" content="#F3F0E8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0D1417" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Fusha">
@@ -19,25 +19,29 @@
 <body>
 <style>
   :root {
-    --bg: #EEF1F1;
-    --surface: #FFFFFF;
-    --surface-2: #F7F9F9;
-    --line: #D8DFDF;
-    --line-strong: #BFCACB;
-    --ink: #131E22;
-    --ink-2: #566468;
-    --ink-3: #607177;
+    /* Ivory rather than white, and a warm near-black rather than a cold
+       one. The cool grey-green read like a control panel over a long
+       sitting; the accent is the same teal, which sits better on paper
+       than it did on white. */
+    --bg: #F3F0E8;
+    --surface: #FCFAF5;
+    --surface-2: #F0ECE2;
+    --line: #E0DACC;
+    --line-strong: #C6BEAA;
+    --ink: #1D1A15;
+    --ink-2: #575146;
+    --ink-3: #6A6357;
     --accent: #0B6E7F;
     --accent-ink: #084C58;
-    --accent-soft: #E2EFF1;
-    --amber: #B0790B;
+    --accent-soft: #E2EDED;
+    --amber: #A2700A;
     --good: #17693F;
-    --good-soft: #E3F2EA;
-    --bad: #B23A32;
-    --bad-soft: #FAE9E7;
+    --good-soft: #E4EFE4;
+    --bad: #A83A30;
+    --bad-soft: #F7E7E0;
     --on-accent: #FFFFFF;
-    --shadow: 0 1px 2px rgba(19, 30, 34, .06), 0 8px 24px -12px rgba(19, 30, 34, .18);
-    --shadow-lift: 0 2px 4px rgba(19, 30, 34, .07), 0 16px 40px -16px rgba(19, 30, 34, .28);
+    --shadow: 0 1px 2px rgba(45, 38, 26, .07), 0 8px 24px -12px rgba(45, 38, 26, .20);
+    --shadow-lift: 0 2px 4px rgba(45, 38, 26, .08), 0 16px 40px -16px rgba(45, 38, 26, .30);
 
     --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", "URW Palladio L", Georgia, serif;
@@ -118,25 +122,25 @@
   }
 
   :root[data-theme="light"] {
-    --bg: #EEF1F1;
-    --surface: #FFFFFF;
-    --surface-2: #F7F9F9;
-    --line: #D8DFDF;
-    --line-strong: #BFCACB;
-    --ink: #131E22;
-    --ink-2: #566468;
-    --ink-3: #607177;
+    --bg: #F3F0E8;
+    --surface: #FCFAF5;
+    --surface-2: #F0ECE2;
+    --line: #E0DACC;
+    --line-strong: #C6BEAA;
+    --ink: #1D1A15;
+    --ink-2: #575146;
+    --ink-3: #6A6357;
     --accent: #0B6E7F;
     --accent-ink: #084C58;
-    --accent-soft: #E2EFF1;
-    --amber: #B0790B;
-    --good: #1E7D4E;
-    --good-soft: #E3F2EA;
-    --bad: #B23A32;
-    --bad-soft: #FAE9E7;
+    --accent-soft: #E2EDED;
+    --amber: #A2700A;
+    --good: #17693F;
+    --good-soft: #E4EFE4;
+    --bad: #A83A30;
+    --bad-soft: #F7E7E0;
     --on-accent: #FFFFFF;
-    --shadow: 0 1px 2px rgba(19, 30, 34, .06), 0 8px 24px -12px rgba(19, 30, 34, .18);
-    --shadow-lift: 0 2px 4px rgba(19, 30, 34, .07), 0 16px 40px -16px rgba(19, 30, 34, .28);
+    --shadow: 0 1px 2px rgba(45, 38, 26, .07), 0 8px 24px -12px rgba(45, 38, 26, .20);
+    --shadow-lift: 0 2px 4px rgba(45, 38, 26, .08), 0 16px 40px -16px rgba(45, 38, 26, .30);
     --pattern-op: .16;
     --weave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M12.9 0 L31.1 0 L44 12.9 L44 31.1 L31.1 44 L12.9 44 L0 31.1 L0 12.9 Z' fill='none' stroke='%23000' stroke-width='1'/%3E%3C/svg%3E");
   }
@@ -568,7 +572,8 @@
   .diary-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .diary-what { font-size: var(--t-3); }
   .diary-delta { color: var(--ink-3); font-size: var(--t-2); line-height: 1.45; }
-  .result-delta { margin: 6px 0 0; color: var(--ink-2); font-size: var(--t-3); }
+  .result-delta { margin: 0 auto; max-width: 30ch; color: var(--ink); font-size: var(--t-6);
+    line-height: 1.4; letter-spacing: -.01em; }
   .can-lead { margin: 0 0 18px; color: var(--ink-3); font-size: var(--t-2); line-height: 1.55; }
   .can-group { margin: 0 0 22px; }
   .can-head { display: flex; align-items: center; gap: var(--s-2); margin: 0 0 8px;
@@ -1725,7 +1730,7 @@
   .result-score.fail { color: var(--amber); }
   .result-score.review { color: var(--accent); }
 
-  .result-line { color: var(--ink-2); font-size: var(--t-5); max-width: 32ch; margin: 0 auto; }
+  .result-line { color: var(--ink-3); font-size: var(--t-3); max-width: 34ch; margin: 10px auto 0; }
   .result-misses { margin-top: 26px; text-align: left; border-top: 1px solid var(--line); padding-top: var(--s-6); }
 
   .result-misses h3 {
@@ -12127,8 +12132,8 @@
       '<div class="card result fade-in" tabindex="-1">' +
       '<div class="eyebrow">' + eyebrow + "</div>" +
       '<div class="result-score mono ' + tone + '">' + score + "%</div>" +
-      '<p class="result-line">' + esc(line) + "</p>" +
       (session.isTest ? "" : '<p class="result-delta">' + esc(deltaLine(sessionDelta())) + "</p>") +
+      '<p class="result-line">' + esc(line) + "</p>" +
       misses + circuit + "</div>" +
       '<div class="btn-row">' + again + onward + "</div>";
   }
