@@ -68,8 +68,8 @@
       --bad: #E0776D;
       --bad-soft: #35191A;
       --on-accent: #08181C;
-      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
-      --shadow-lift: 0 2px 4px rgba(0, 0, 0, .45), 0 16px 40px -16px rgba(0, 0, 0, .8);
+      --shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 1px 2px rgba(0, 0, 0, .5);
+      --shadow-lift: inset 0 1px 0 rgba(255, 255, 255, .07), 0 10px 30px -14px rgba(0, 0, 0, .9);
       --pattern-op: .24;
     }
   }
@@ -92,8 +92,8 @@
     --bad: #E0776D;
     --bad-soft: #35191A;
     --on-accent: #08181C;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
-    --shadow-lift: 0 2px 4px rgba(0, 0, 0, .45), 0 16px 40px -16px rgba(0, 0, 0, .8);
+    --shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 1px 2px rgba(0, 0, 0, .5);
+    --shadow-lift: inset 0 1px 0 rgba(255, 255, 255, .07), 0 10px 30px -14px rgba(0, 0, 0, .9);
     --pattern-op: .24;
   }
 
@@ -316,8 +316,8 @@
 
   .stat dd {
     margin: 0;
-    font-family: var(--mono);
-    font-variant-numeric: tabular-nums;
+    font-family: var(--serif);
+    font-variant-numeric: tabular-nums oldstyle-nums;
     font-size: 19px;
     line-height: 1.2;
     letter-spacing: -.02em;
@@ -479,11 +479,20 @@
     width: 100%;
     text-align: left;
     padding: 15px 17px;
-    margin-bottom: 30px;
-    background: var(--accent-soft);
+    margin-bottom: 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--accent);
     border-radius: var(--r-md);
     transition: transform .14s ease, box-shadow .14s ease;
   }
+
+  /* The first card is the one to press; the others are the shelf below
+     it. Four identical accent slabs marked four things that were not
+     the action. */
+  .review.is-lead { background: var(--accent-soft); border-color: transparent; }
+  .review + .review { margin-top: -2px; }
+  .review:last-of-type { margin-bottom: 30px; }
 
   .review:hover:not(.is-off) { transform: translateY(-1px); box-shadow: var(--shadow-lift); }
   .review.is-off { opacity: .55; }
@@ -676,6 +685,8 @@
   .pb-more { color: var(--ink-3); font-size: 13px; margin: -12px 0 26px; }
   .make-note { color: var(--ink-3); font-size: 13px; margin: 10px 0 0; }
   .learn-jump { text-align: center; margin-top: 16px; }
+  .circuit { margin: 18px 0 4px; text-align: center; }
+  .circuit-why { display: block; margin-top: 6px; font-size: 12.5px; color: var(--ink-3); }
   .learn-jump .link-btn:hover { color: var(--accent); }
 
   .twin-group { margin-bottom: 30px; }
@@ -829,7 +840,39 @@
   .say:active:not(:disabled) { transform: scale(.96); }
   .say[disabled] { color: var(--ink-3); background: var(--surface-2); border: 1px solid var(--line); cursor: not-allowed; }
   .say.is-playing { animation: pulse .7s ease-in-out infinite; }
-  .say-sm { width: 27px; height: 27px; }
+  .say-sm { width: 27px; height: 27px; position: relative; }
+
+  /* Under a finger, 27px is a miss. The button keeps its size and grows
+     an invisible one around it. */
+  .say-sm::after,
+  .pb-tag::after,
+  .word-undo::after,
+  .peek::after,
+  .link-btn::after,
+  .icon-btn::after {
+    content: "";
+    position: absolute;
+    inset: -9px;
+  }
+
+  .pb-tag, .word-undo, .peek, .link-btn, .icon-btn { position: relative; }
+
+  /* Tapping a button on iOS leaves it hovered until you tap elsewhere,
+     which left every speaker enlarged and dimmed after use. */
+  @media (hover: none) {
+    .say:hover:not(:disabled), .say-lg:hover:not(:disabled) { filter: none; transform: none; }
+    .option:hover:not(:disabled), .tile:hover:not(:disabled) { transform: none; border-color: var(--line); }
+    .match-cell:hover:not(:disabled):not(.is-gone) { transform: none; border-color: var(--line); }
+    .review:hover:not(.is-off) { transform: none; box-shadow: none; }
+    .lesson:not(.is-locked):hover { transform: none; box-shadow: none; border-color: var(--line); }
+    .btn:hover, .mic:hover, .pb-link:hover, .convo-follow:hover { filter: none; }
+    .chip:hover { border-color: var(--line); color: var(--ink-3); }
+    .nav-item:hover:not(.is-off) { background: none; }
+    .say:active:not(:disabled), .btn:active, .option:active:not(:disabled),
+    .tile:active:not(:disabled), .chip:active, .lesson:active, .review:active {
+      transform: scale(.98);
+    }
+  }
 
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 
@@ -900,7 +943,17 @@
     letter-spacing: -.01em;
   }
 
-  .flash-rule { width: 34px; height: 1px; background: var(--line-strong); margin: 0 auto; }
+  .flash-rule {
+    height: auto;
+    color: var(--accent);
+    opacity: .45;
+    font-size: 11px;
+    letter-spacing: .55em;
+    text-indent: .55em;
+    text-align: center;
+  }
+
+  .flash-rule::before { content: "\00B7 \00B7 \00B7"; }
   .flash-en { font-size: 17px; color: var(--ink); line-height: 1.4; }
   .flash-hint { font-size: 13px; color: var(--ink-3); font-style: italic; }
 
@@ -1467,12 +1520,22 @@
   .result { text-align: center; padding: 42px 26px 34px; margin-top: 24px; }
 
   .result-score {
-    font-family: var(--mono);
-    font-variant-numeric: tabular-nums;
-    font-size: 62px;
+    font-family: var(--serif);
+    font-variant-numeric: tabular-nums oldstyle-nums;
+    font-size: 68px;
     line-height: 1;
-    letter-spacing: -.04em;
+    letter-spacing: -.03em;
     margin: 10px 0 6px;
+  }
+
+  .result-score::after {
+    content: "";
+    display: block;
+    width: 34px;
+    height: 1px;
+    margin: 14px auto 0;
+    background: var(--accent);
+    opacity: .5;
   }
 
   .result-score.pass { color: var(--good); }
@@ -1717,6 +1780,32 @@
         { ask: "Shùkran jazìlan", askEn: "Thank you very much", reply: "ʿÀfwan", en: "You are welcome" },
         { ask: "Àsif", askEn: "I am sorry", reply: "Là bà's", en: "No problem" },
         { ask: "Hal turìd shày?", askEn: "Would you like tea?", reply: "Naʿam, min fàdlik", en: "Yes, please" }
+      ]
+    },
+    {
+      id: 27,
+      title: "When you get stuck",
+      intro: "The moves that keep a conversation alive when you have lost the thread. Worth more than any list of nouns.",
+      phrases: [
+        { ar: "Marra ùkhra, min fàdlik", en: "Once more, please", core: true, note: "The single most useful thing you can say. Nobody minds saying it twice, and it keeps you in the conversation instead of nodding at something you did not catch." },
+        { ar: "Màdha yaʿni?", en: "What does that mean?", core: true, note: "Point at the word and ask. <b>Yaʿni</b> is the verb <b>to mean</b>, and you will hear it constantly on its own as a filler, the way English uses <b>I mean</b>." },
+        { ar: "Kèifa taqùl hàdha?", en: "How do you say this?", core: true, note: "Hold the thing up, or point. This is how you get vocabulary out of the person in front of you rather than out of a phone." },
+        { ar: "Mà hàdha?", en: "What is this?" },
+        { ar: "Là àʿrif", en: "I do not know" },
+        { ar: "Nasìtu al-kàlima", en: "I have forgotten the word", note: "Buys you a few seconds and usually gets you helped. <b>Kàlima</b> is <b>word</b>." },
+        { ar: "Fahìmtu", en: "I have understood" },
+        { ar: "Tàyyib", en: "All right", core: true, note: "The all-purpose <b>ok, fine, right then</b>. Said constantly, and it buys a moment of thinking time at the start of any sentence." },
+        { ar: "Tamàm", en: "Perfect" },
+        { ar: "Khalàs", en: "That is it, done", note: "Ends a thing: a haggle, a portion, a discussion. Firm without being rude." },
+        { ar: "Yàʿni", en: "I mean, sort of", note: "A filler, exactly like the English <b>I mean</b>. Sounds fluent and gives you a second to find the next word." },
+        { ar: "Inshàallah", en: "God willing", note: "Attached to anything in the future. Depending on the tone it means <b>yes</b>, <b>probably</b> or <b>almost certainly not</b>, and you will hear it twenty times a day." }
+      ],
+      dialogue: [
+        { ask: "Marra ùkhra, min fàdlik", askEn: "Once more, please", reply: "Tàyyib", en: "All right" },
+        { ask: "Màdha yaʿni?", askEn: "What does that mean?", reply: "Yaʿni shùkran", en: "It means thank you" },
+        { ask: "Hal fahìmt?", askEn: "Did you understand?", reply: "Naʿam, fahìmtu", en: "Yes, I have understood" },
+        { ask: "Hal fahìmt?", askEn: "Did you understand?", reply: "Là, marra ùkhra", en: "No, once more" },
+        { ask: "Ilà al-ghad, inshàallah", askEn: "See you tomorrow, God willing", reply: "Tamàm", en: "Perfect" }
       ]
     },
     {
@@ -2645,6 +2734,23 @@
     "Qalìlan fàqat": "قَلِيلًا فَقَطْ",
 
     "Min fàdlik": "مِنْ فَضْلِكَ",
+    "Marra ùkhra, min fàdlik": "مَرَّة أُخْرَى، مِنْ فَضْلِك",
+    "Màdha yaʿni?": "مَاذَا يَعْنِي؟",
+    "Kèifa taqùl hàdha?": "كَيْفَ تَقُولُ هَذَا؟",
+    "Mà hàdha?": "مَا هَذَا؟",
+    "Là àʿrif": "لَا أَعْرِف",
+    "Nasìtu al-kàlima": "نَسِيتُ الْكَلِمَة",
+    "Fahìmtu": "فَهِمْتُ",
+    "Tàyyib": "طَيِّب",
+    "Tamàm": "تَمَام",
+    "Khalàs": "خَلَاص",
+    "Yàʿni": "يَعْنِي",
+    "Inshàallah": "إِنْ شَاءَ اللَّه",
+    "Yaʿni shùkran": "يَعْنِي شُكْرًا",
+    "Hal fahìmt?": "هَلْ فَهِمْت؟",
+    "Naʿam, fahìmtu": "نَعَمْ، فَهِمْتُ",
+    "Là, marra ùkhra": "لَا، مَرَّة أُخْرَى",
+    "Ilà al-ghad, inshàallah": "إِلَى الْغَد، إِنْ شَاءَ اللَّه",
     "Min fàdliki": "مِنْ فَضْلِكِ",
     "Lau samàht": "لَوْ سَمَحْتَ",
     "Lau samàhti": "لَوْ سَمَحْتِ",
@@ -3183,6 +3289,39 @@
     },
     "Min àina ànti?": {
       egy: ["Ìnti minèin?", "انت منين؟"], lev: ["Min wèin ìnti?", "من وين انتِ؟"], gulf: ["Min wèin ìnti?", "من وين انت؟"]
+    },
+    "Marra ùkhra, min fàdlik": {
+      lev: ["Màrra tànye, lau samàht", "مرة تانية لو سمحت"]
+    },
+    "Màdha yaʿni?": {
+      lev: ["Shu yàʿni?", "شو يعني؟"]
+    },
+    "Kèifa taqùl hàdha?": {
+      lev: ["Kìf btʾùl hàda?", "كيف بتقول هدا؟"]
+    },
+    "Mà hàdha?": {
+      lev: ["Shu hàda?", "شو هدا؟"]
+    },
+    "Là àʿrif": {
+      lev: ["Mà bàʿref", "ما بعرف"]
+    },
+    "Nasìtu al-kàlima": {
+      lev: ["Nsìt al-kìlme", "نسيت الكلمة"]
+    },
+    "Fahìmtu": {
+      lev: ["Fhìmt", "فهمت"]
+    },
+    "Hal fahìmt?": {
+      lev: ["Fhìmt?", "فهمت؟"]
+    },
+    "Naʿam, fahìmtu": {
+      lev: ["Èh, fhìmt", "إي فهمت"]
+    },
+    "Là, marra ùkhra": {
+      lev: ["Làʾ, màrra tànye", "لأ مرة تانية"]
+    },
+    "Ilà al-ghad, inshàallah": {
+      lev: ["Bshùfak bùkra, inshàallah", "بشوفك بكرة إن شاء الله"]
     },
     "Min fàdlik": {
       lev: ["Min fàdlak", "من فضلك"]
@@ -4196,6 +4335,7 @@
     egy: {},
     gulf: {},
     lev: {
+      "Tàyyib": 1, "Tamàm": 1, "Khalàs": 1, "Yàʿni": 1, "Inshàallah": 1, "Yaʿni shùkran": 1,
       "Àhlan": 1, "Àhlan wa sàhlan": 1, "As-salàmu ʿaláikum": 1, "Wa ʿaláikum as-salàm": 1,
       "Sabàh al-khèir": 1, "Sabàh an-nùr": 1, "Masà al-khèir": 1, "Masà an-nùr": 1,
       "Al-hàmdu lillàh": 1, "Shùkran": 1, "Anà taʿbàn": 1, "Anà min Itàlya": 1,
@@ -4283,7 +4423,11 @@
     "al-ʿarabìyya": "Arabic", "inglizìyya": "English", "tàksi": "taxi",
     "sayyàra": "car", "qitàr": "train", "hàfila": "bus", "tà'ira": "plane",
     "tàdhkara": "ticket", "haqìba": "suitcase", "jawàz": "passport",
-    "safar": "travel", "sàfar": "travel", "ʿasìr": "juice", "àrnab": "rabbit", "mìftah": "key", "kitàb": "book", "hàtif": "phone",
+    "safar": "travel", "sàfar": "travel",
+    "marra": "a time, an occasion", "ùkhra": "another", "yaʿni": "it means; I mean",
+    "yàʿni": "it means; I mean", "taqùl": "you say", "nasìtu": "I have forgotten",
+    "fahìmtu": "I have understood", "fahìmt": "you understood", "tàyyib": "all right, fine",
+    "tamàm": "perfect", "khalàs": "that is it, done", "inshàallah": "God willing", "ʿasìr": "juice", "àrnab": "rabbit", "mìftah": "key", "kitàb": "book", "hàtif": "phone",
     "kùrsi": "chair", "tàwila": "table", "sarìr": "bed", "bàb": "door",
     "làun": "colour", "mìhna": "job", "ʿàmal": "work", "shàrika": "company",
     "kùntu": "I was", "dhahàbtu": "I went", "akàltu": "I ate",
@@ -4369,7 +4513,9 @@
     "tàʿa": "come", "ùʾʿod": "sit down", "wàʾʾef": "stop", "sàʿedni": "help me",
     "tfàddal": "here you are, go ahead", "tìsbah": "may you wake",
     "tsharràfna": "pleased to meet you", "màshi": "going along; on foot",
-    "kamàn": "too, also", "maʿlèsh": "never mind, no harm done",
+    "kamàn": "too, also", "màrra": "a time, an occasion", "tànye": "another, a second",
+    "btʾùl": "you say", "nsìt": "I have forgotten", "al-kìlme": "the word",
+    "fhìmt": "I understood; you understood", "maʿlèsh": "never mind, no harm done",
     "musàʿade": "help", "àkhod": "I take", "fàkker": "think (rah fàkker, I will think it over)",
     "tshàtti": "it is raining",
 
@@ -6082,26 +6228,42 @@
 
   function todayCopy(plan) {
     if (plan.kind === "first") {
-      return { line: "Start with lesson " + plan.next.id + ", " + plan.next.title.toLowerCase() + ".", cta: "Begin" };
+      return { line: "Start with lesson " + lessonNo(plan.next) + ", " + plan.next.title.toLowerCase() + ".", cta: "Begin" };
     }
     if (plan.kind === "core") {
       return {
         line: lastSeenLine() + plan.left + " core phrase" + (plan.left === 1 ? "" : "s") + " still to lock in" +
-          (plan.next ? ", then lesson " + plan.next.id : "") + ".",
+          (plan.next ? ", then lesson " + lessonNo(plan.next) : "") + ".",
         cta: "Start"
       };
     }
     if (plan.kind === "revise") {
       return {
         line: lastSeenLine() + "Core is solid. " + plan.weak + " other phrase" + (plan.weak === 1 ? "" : "s") + " to revisit" +
-          (plan.next ? ", then lesson " + plan.next.id : "") + ".",
+          (plan.next ? ", then lesson " + lessonNo(plan.next) : "") + ".",
         cta: "Start"
       };
     }
     if (plan.kind === "lesson") {
-      return { line: "Nothing needs revising. Lesson " + plan.next.id + ", " + plan.next.title.toLowerCase() + ", is next.", cta: "Start" };
+      return { line: "Nothing needs revising. Lesson " + lessonNo(plan.next) + ", " + plan.next.title.toLowerCase() + ", is next.", cta: "Start" };
     }
     return { line: "Every lesson passed and nothing slipping. Keep it warm with a mixed round.", cta: "Practise" };
+  }
+
+  var CIRCUIT = [
+    { go: "moment", label: "Now: three situations", why: "no English to translate" },
+    { go: "asked", label: "Now: five questions by ear", why: "just what they are asking" },
+    { go: "make", label: "Now: make a few sentences", why: "none of them taught as a phrase" }
+  ];
+
+  function circuitNext() {
+    var open = CIRCUIT.filter(function (c) {
+      if (c.go === "moment") return openMoments().length > 0;
+      if (c.go === "asked") return askPool().length > 0;
+      return combos().length > 0;
+    });
+    if (!open.length) return null;
+    return open[runCount() % open.length];
   }
 
   function startToday() {
@@ -6392,6 +6554,7 @@
       return {
         type: "convoturn",
         points: 1,
+        srcLesson: lessonById(lessonTeaching(turn.reply)),
         convo: convo,
         turn: turn,
         idx: idx,
@@ -6413,6 +6576,11 @@
   var learn = null;
   var dataProblems = checkData();
   load();
+
+  function lessonNo(l) {
+    var i = LESSONS.indexOf(l);
+    return i < 0 ? (l && l.id) : i + 1;
+  }
 
   function lessonById(id) {
     for (var i = 0; i < LESSONS.length; i++) if (LESSONS[i].id === Number(id)) return LESSONS[i];
@@ -6789,7 +6957,7 @@
         " in the pool, weighted toward what you get wrong.";
     }
 
-    return '<button class="review" data-go="review">' + head +
+    return '<button class="review is-lead" data-go="review">' + head +
       '<span class="review-meta">' + esc(meta) + "</span></span>" +
       (rv.runs
         ? '<span class="review-score">' + rv.best + "%</span>"
@@ -6985,7 +7153,7 @@
         : open
           ? '<span class="lesson-lock" aria-hidden="true">&rarr;</span>'
           : '<span class="lesson-lock" aria-hidden="true">&#9679;</span>';
-      var meta = open ? l.intro : "Score " + PASS + "% on lesson " + LESSONS[idx - 1].id + " to open this";
+      var meta = open ? l.intro : "Score " + PASS + "% on lesson " + idx + " to open this";
       return '<button class="' + cls + '" data-go="lesson" data-id="' + l.id + '"' +
         (open ? "" : " disabled") + ">" +
         '<span class="lesson-num">' + (idx + 1) + "</span>" +
@@ -7019,9 +7187,8 @@
       (counts.fading ? '<small> +' + counts.fading + " fading</small>" : "") + "</dd></div>" +
       "</dl>" +
 
-      varietyHTML(false) +
-      coreHTML() +
       todayHTML() +
+      coreHTML() +
       reviewHTML() +
       momentCardHTML() +
       makeCardHTML() +
@@ -7223,7 +7390,7 @@
   function wordRow(it, act, label) {
     return '<div class="pb-row">' + sayBtn(it.ar, true) +
       '<span class="pb-text"><span class="ar">' + esc(disp(it.ar)) + "</span>" +
-      '<span class="pb-en">' + esc(it.en) + " &#183; lesson " + it.lesson.id + "</span></span>" +
+      '<span class="pb-en">' + esc(it.en) + " &#183; lesson " + lessonNo(it.lesson) + "</span></span>" +
       '<button class="word-undo" data-act="' + act + '" data-id="' + esc(it.ar) +
       '" data-lesson="' + it.lesson.id + '">' + esc(label) + "</button></div>";
   }
@@ -7334,8 +7501,8 @@
             '<span class="pb-text"><span class="ar">' + esc(disp(item.ar)) + "</span>" +
             '<span class="pb-en">' + esc(item.en) + "</span></span>" +
             '<button class="pb-tag" data-go="lesson" data-id="' + item.lesson.id +
-            '" aria-label="Go to lesson ' + item.lesson.id + ', ' + esc(item.lesson.title) +
-            '">L' + item.lesson.id + "</button></div>";
+            '" aria-label="Go to lesson ' + lessonNo(item.lesson) + ', ' + esc(item.lesson.title) +
+            '">L' + lessonNo(item.lesson) + "</button></div>";
         });
         more = '<div class="pb-group"><h3>Elsewhere in the course</h3>' + rest + "</div>" +
           (found.length > COURSE_HITS
@@ -7402,7 +7569,26 @@
 
     { stem: "Bikàm ilà", ar: "بِكَمْ إِلَى", en: "How much to ___?", needs: 26, q: true,
       dia: { lev: ["Addèsh", "قديش", "ʿ", "ع"] },
-      words: ["Al-fùnduq", "Al-matàr", "Al-bàit", "As-sùq", "Al-màktab", "Al-mìtro"] }
+      words: ["Al-fùnduq", "Al-matàr", "Al-bàit", "As-sùq", "Al-màktab", "Al-mìtro"] },
+
+    // Every frame above says something about you. These three ask the
+    // person in front of you something, which is the half of a
+    // conversation the course could not start.
+    { stem: "Hal ʿìndak", ar: "هَلْ عِنْدَكَ", en: "Do you have ___?", needs: 11, q: true,
+      dia: { lev: ["ʿÀndak", "عندك"] },
+      words: ["Shày", "Qàhwa", "Mà'", "ʿAsìr", "Khubz", "Tàdhkara", "Ghùrfa", "Dawà'",
+        "Nùqud", "Hàtif", "Kitàb", "Sayyàra", "Kùrsi", "Tàwila", "Sàʿa", "Haqìba",
+        "Qìtta", "Kalb", "Dàrraja", "Tàksi"] },
+
+    { stem: "Hal turìd", ar: "هَلْ تُرِيدُ", en: "Would you like ___?", needs: 5, q: true,
+      dia: { lev: ["Bìddak", "بدك"] },
+      words: ["Qàhwa", "Mà'", "ʿAsìr", "Khubz", "Àruzz", "Dajàj", "Sàmak", "Làhm",
+        "Tàdhkara", "Ghùrfa", "Dawà'"] },
+
+    { stem: "Hal tùhib", ar: "هَلْ تُحِبُّ", en: "Do you like ___?", needs: 13, q: true,
+      dia: { lev: ["Bthèbb", "بتحب"] },
+      words: ["Ar-rabìʿ", "As-sàif", "Al-kharìf", "Ash-shità", "Ash-shàms",
+        "Al-màtar", "Ath-thàlj", "As-sàfar", "As-sùq", "Al-mìtro", "Al-qitàr"] }
   ];
 
   // A word taught on its own is written with a capital. Dropped into a
@@ -7447,6 +7633,12 @@
       WORD_LESSON = {};
       LESSONS.forEach(function (l) {
         l.phrases.forEach(function (p) { if (!WORD_LESSON[p.ar]) WORD_LESSON[p.ar] = l.id; });
+        // A line taught only inside a dialogue is still taught, and
+        // whatever you do with it should count for the lesson it is in.
+        (l.dialogue || []).forEach(function (d) {
+          if (!WORD_LESSON[d.ask]) WORD_LESSON[d.ask] = l.id;
+          if (!WORD_LESSON[d.reply]) WORD_LESSON[d.reply] = l.id;
+        });
       });
     }
     return WORD_LESSON[ar] || null;
@@ -7580,13 +7772,24 @@
     return m;
   }
 
+  // The sentence is new, but the word in it is one the course taught,
+  // and putting it into a sentence of your own is the strongest kind of
+  // practice there is.
+  function scoreMade() {
+    var w = made.c.word;
+    var lid = lessonTeaching(w);
+    if (!lid) return;
+    bumpStrength(lid, w, true);
+    save();
+  }
+
   function answerMake(en) {
     if (!made || made.checked || !made.hear) return;
     made.chosen = en;
     made.right = en === made.s.en;
     made.checked = true;
     made.run += 1;
-    if (made.right) made.got += 1;
+    if (made.right) { made.got += 1; scoreMade(); }
     render();
   }
 
@@ -7596,8 +7799,11 @@
     made.right = normalise(said) === normalise(made.target.join(" "));
     made.checked = true;
     made.run += 1;
-    if (made.right) made.got += 1;
-    if (made.right) speak(made.s.ar);
+    if (made.right) {
+      made.got += 1;
+      scoreMade();
+      speak(made.s.ar);
+    }
     render();
   }
 
@@ -8620,7 +8826,13 @@
     asked.right = key === asked.q.kind;
     asked.checked = true;
     asked.run += 1;
-    if (asked.right) asked.got += 1;
+    if (asked.right) {
+      asked.got += 1;
+      // Catching a question by ear is recall of that question, and it
+      // ought to count for it like any round does.
+      var lid = lessonTeaching(asked.q.ar);
+      if (lid) { bumpStrength(lid, asked.q.ar, true); save(); }
+    }
     render();
   }
 
@@ -8697,7 +8909,7 @@
     var coreN = lesson.phrases.filter(function (p) { return p.core; }).length;
     return topbarHTML(lesson.title) +
       '<div class="card" style="padding:26px 24px;margin-top:8px">' +
-      '<div class="eyebrow">Lesson ' + lesson.id + "</div>" +
+      '<div class="eyebrow">Lesson ' + lessonNo(lesson) + "</div>" +
       '<h2 style="font-size:26px;letter-spacing:-.02em;margin:8px 0">' + esc(lesson.title) + "</h2>" +
       '<p style="margin:0;color:var(--ink-2);font-size:15px">' + esc(lesson.intro) + "</p>" +
       '<p class="mono" style="margin:16px 0 0;color:var(--ink-3);font-size:13.5px">' +
@@ -8787,7 +8999,7 @@
       // Reading the cards is not learning them. This is the way out of
       // the pile at any point, not only at the last card.
       '<div class="learn-jump"><button class="link-btn" data-go="play" data-id="' + l.id +
-      '">Enough reading, play lesson ' + l.id + "</button></div>";
+      '">Enough reading, play lesson ' + lessonNo(l) + "</button></div>";
   }
 
   /* ============================================================
@@ -9123,7 +9335,7 @@
         ? "You held the whole conversation. Try it again later without the options in front of you."
         : "Read the exchange through again, then replay it; the reply always follows from what was just said.";
     } else if (session.isToday && session.todayNext) {
-      line = "Revision done. Lesson " + session.todayNext.id + ", " +
+      line = "Revision done. Lesson " + lessonNo(session.todayNext) + ", " +
         session.todayNext.title.toLowerCase() + ", is waiting when you are.";
     } else if (session.isDrill) {
       line = ((gameByKey(session.isDrill) || {}).label || "That game") +
@@ -9134,7 +9346,7 @@
         ", weighted toward the core and the phrases you keep getting wrong.";
     } else if (passed) {
       line = next
-        ? "Lesson " + next.id + ", " + next.title.toLowerCase() + ", is now open."
+        ? "Lesson " + lessonNo(next) + ", " + next.title.toLowerCase() + ", is now open."
         : "That is the whole course. Go back and push the weaker lessons up.";
     } else {
       line = "You need " + PASS + "% to move on. Study the phrases once more, then play again.";
@@ -9168,8 +9380,20 @@
       : session.isReview
         ? '<button class="btn btn-ghost" data-go="review">Review again</button>'
         : '<button class="btn btn-ghost" data-go="play" data-id="' + lesson.id + '">Play again</button>';
+    // Today does not end with the review: it hands you on to whichever
+    // of the producing screens is next in the circuit.
+    var circuit = "";
+    if (session.isToday || session.isReview) {
+      var step = circuitNext();
+      if (step) {
+        circuit = '<div class="circuit"><button class="btn btn-ghost btn-wide" data-go="' + step.go +
+          '">' + esc(step.label) + "</button>" +
+          '<span class="circuit-why">' + esc(step.why) + "</span></div>";
+      }
+    }
+
     var onward = session.isToday && session.todayNext
-      ? '<button class="btn" data-go="lesson" data-id="' + session.todayNext.id + '">Lesson ' + session.todayNext.id + "</button>"
+      ? '<button class="btn" data-go="lesson" data-id="' + session.todayNext.id + '">Lesson ' + lessonNo(session.todayNext) + "</button>"
       : !session.isReview && !session.isConvo && passed && next
         ? '<button class="btn" data-go="lesson" data-id="' + next.id + '">Next lesson</button>'
         : '<button class="btn" data-go="home">Back to lessons</button>';
@@ -9181,7 +9405,7 @@
       '<div class="card result fade-in">' +
       '<div class="eyebrow">' + eyebrow + "</div>" +
       '<div class="result-score mono ' + tone + '">' + score + "%</div>" +
-      '<p class="result-line">' + esc(line) + "</p>" + misses + "</div>" +
+      '<p class="result-line">' + esc(line) + "</p>" + misses + circuit + "</div>" +
       '<div class="btn-row">' + again + onward + "</div>";
   }
 
