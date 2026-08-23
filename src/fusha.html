@@ -523,6 +523,13 @@
   .key-cold { color: var(--amber); }
   .key-unmet { color: var(--ink-3); }
   .talk-repair { margin: 2px 0 10px 6px; color: var(--ink-3); font-size: var(--t-1); }
+  .street-group { margin: 0 0 var(--s-6); }
+  .street-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3);
+    padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .street-side { display: inline-flex; align-items: center; gap: var(--s-2); }
+  .street-tag { color: var(--ink-3); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+  .street-arrow { color: var(--ink-3); }
+  .street-en { flex: 1 0 100%; color: var(--ink-3); font-size: var(--t-1); }
   .now-group { margin: 0 0 var(--s-6); }
   .now-row { display: flex; align-items: center; gap: var(--s-4); padding: 14px 0;
     border-bottom: 1px solid var(--line); }
@@ -3583,9 +3590,56 @@
 
   var VARIETIES = [
     { key: "msa", label: "Fusha", where: "Written and formal Arabic. Read it everywhere, speak it nowhere." },
-    { key: "egy", label: "Egyptian", where: "Egypt, and understood across the Arab world through its films and music." },
-    { key: "lev", label: "Levantine", where: "Syria, Lebanon, Jordan, Palestine." },
-    { key: "gulf", label: "Gulf", where: "UAE, Saudi Arabia, Qatar, Kuwait, Bahrain, Oman." }
+    { key: "lev", label: "Levantine", where: "Syria, Lebanon, Jordan, Palestine. Written out in full: every phrase in the course.", done: true },
+    { key: "egy", label: "Egyptian", where: "Egypt, and understood everywhere through its films. Part written, and not being finished." },
+    { key: "gulf", label: "Gulf", where: "UAE, Saudi Arabia, Qatar, Kuwait, Bahrain, Oman. Part written, and not being finished." }
+  ];
+
+  // What actually changes between the book and the street, written for
+  // Levantine because that is the variety this course finished. Each
+  // rule cites real phrases and the screen renders the pair live from
+  // the table below, so an example can never drift from the data.
+  var STREET = [
+    {
+      rule: "The question words are the giveaway",
+      why: "Four words carry most of the difference. Learn these and half of what you hear stops being a wall.",
+      keys: ["Àina al-hammàm?", "Màdha yaʿni?", "Kam as-sìʿr?", "Mà ìsmuk?"]
+    },
+    {
+      rule: "The present tense wears a b-",
+      why: "Where fus·ha says I go, the street says b- and then the verb. It is not optional and it is everywhere.",
+      keys: ["Àdhhab", "Àʿrif", "Àshrab"]
+    },
+    {
+      rule: "I want is not a verb at all",
+      why: "It is a word that takes the endings: bìddi, bìddak, bìddo. Fus·ha conjugates a verb instead.",
+      keys: ["Urìd", "Urìd mà', min fàdlik", "Kam turìd?"]
+    },
+    {
+      rule: "No, in front of a verb, is mà",
+      why: "Là stays for the bare no. In front of a verb it becomes mà, and the b- stays where it is.",
+      keys: ["Là àʿrif", "Là àfham", "Hàdha là yàʿmal"]
+    },
+    {
+      rule: "Three consonants soften",
+      why: "Q goes quiet and becomes a catch in the throat, dh becomes d or z, th becomes t. This is most of what makes a familiar word unrecognisable.",
+      keys: ["Qàhwa", "Hàdha jamìl", "Tàdhkara"]
+    },
+    {
+      rule: "The you ending changes",
+      why: "Fus·ha -uk and -uki become -ak and -ik. Once you hear it, every second sentence has one.",
+      keys: ["Mà ìsmuk?", "Kèifa hàluk?", "Kam ʿìndak?"]
+    },
+    {
+      rule: "Yes and please are different words",
+      why: "Nobody says naʿam in a shop. And min fàdlik, which the course teaches, is heard as lau samàht.",
+      keys: ["Naʿam", "Min fàdlik", "Shùkran jazìlan"]
+    },
+    {
+      rule: "And some words are simply other words",
+      why: "No rule will get you these. They are the ones worth learning as they are.",
+      keys: ["Nùqud", "Hàdha kathìr", "Hàdha sadìqi", "Làkin"]
+    }
   ];
 
   // Keyed on the fusha phrase, so everything else in the app - progress,
@@ -5295,6 +5349,15 @@
       });
     });
 
+    STREET.forEach(function (r) {
+      var where = 'Street rule "' + r.rule + '"';
+      if (!r.keys || r.keys.length < 2) problems.push(where + " has fewer than 2 examples");
+      (r.keys || []).forEach(function (ar) {
+        if (!taught[ar]) problems.push(where + ' cites "' + ar + '", which no lesson teaches');
+        if (!DIALECT[ar]) problems.push(where + ' cites "' + ar + '", which has no spoken forms');
+      });
+    });
+
     var nowSeen = {};
     NOW.forEach(function (group) {
       if (!group.lines || !group.lines.length) problems.push('Right now group "' + group.title + '" is empty');
@@ -5386,9 +5449,9 @@
     return s !== null && s >= 3 ? 1 : 0.75;
   }
 
-  function speak(translit) {
+  function speak(translit, bookForm) {
     if (!canSpeak()) return;
-    var text = spk(translit);
+    var text = bookForm ? (SCRIPT[translit] || spk(translit)) : spk(translit);
     if (!text) return;
     window.speechSynthesis.cancel();
     var u = new window.SpeechSynthesisUtterance(text);
@@ -6084,7 +6147,12 @@
     { key: "say", label: "Say it", hint: "Say it aloud, then mark yourself" },
     { key: "listen", label: "Listen", hint: "Hear it, no text", needsVoice: true },
     { key: "write", label: "Write", hint: "Type the transliteration from memory" },
-    { key: "dictate", label: "Dictation", hint: "Hear a whole phrase, write it down", needsVoice: true }
+    { key: "dictate", label: "Dictation", hint: "Hear a whole phrase, write it down", needsVoice: true },
+    // Not in ASKING: it drills the difference between two spellings of
+    // the same phrase, which is a different skill from knowing the
+    // phrase, and it has no business taking slots in a lesson.
+    { key: "swap", label: "Street or television", hint: "Which is the dialect and which is the fus·ha",
+      needsDialect: true, drillOnly: true }
   ];
 
   var ASKING = ["quiz", "build", "dialog", "say", "listen", "write", "dictate"];
@@ -6102,7 +6170,9 @@
 
   function playable(k) {
     var g = gameByKey(k);
-    return !(g && g.needsVoice) || canSpeak();
+    if (g && g.needsVoice && !canSpeak()) return false;
+    if (g && g.needsDialect && variety() === "msa") return false;
+    return true;
   }
 
   function games() {
@@ -6554,6 +6624,38 @@
     };
   }
 
+  // One phrase, two spellings, and the question is only which is which.
+  // It must not move the phrase's strength: knowing that a word has a
+  // street form is not knowing the word.
+  function swapRound(lesson, phrase) {
+    var d = dialectOf(phrase.ar);
+    if (!d || d[0] === phrase.ar) return null;
+    var toStreet = Math.random() < 0.5;
+    var pool = [];
+    visiblePhrases(lesson).concat(reachable().map(function (it) { return it.phrase || it; }))
+      .forEach(function (p) {
+        if (!p || !p.ar || p.ar === phrase.ar) return;
+        var od = dialectOf(p.ar);
+        if (!od || od[0] === p.ar) return;
+        var text = toStreet ? od[0] : p.ar;
+        if (pool.indexOf(text) === -1) pool.push(text);
+      });
+    if (pool.length < 2) return null;
+    var answer = toStreet ? d[0] : phrase.ar;
+    var options = shuffle(pool).slice(0, 3).concat([answer]);
+    return {
+      type: "swap",
+      points: 1,
+      srcLesson: lesson,
+      phrase: phrase,
+      toStreet: toStreet,
+      prompt: toStreet ? phrase.ar : d[0],
+      answer: answer,
+      noMemory: true,
+      options: shuffle(options)
+    };
+  }
+
   function listenRound(lesson, phrase) {
     if (!SCRIPT[phrase.ar]) return null;
     var wrong = distractors(visiblePhrases(lesson), phrase.en, "en", optionsFor(lesson.id, phrase.ar));
@@ -6675,6 +6777,10 @@
       var n = tokens(disp(p.ar)).length;
       return n >= 2 && n <= 6;
     }
+    if (type === "swap") {
+      var d = dialectOf(p.ar);
+      return !!d && d[0] !== p.ar;
+    }
     if (type === "listen") return !!SCRIPT[p.ar];
     if (type === "dictate") return !!SCRIPT[p.ar] && tokens(disp(p.ar)).length >= 2;
     return true;
@@ -6702,6 +6808,7 @@
     if (type === "build") return canMake(item, "build") ? buildRound(lesson, p) : null;
     if (type === "say") return sayRound(lesson, p);
     if (type === "write") return writeRound(lesson, p);
+    if (type === "swap") return swapRound(lesson, p);
     if (type === "listen") return listenRound(lesson, p);
     if (type === "dictate") return dictateRound(lesson, p);
     return quizRound(lesson, p);
@@ -8089,6 +8196,7 @@
     if (v.name === "diary") return "#/diary";
     if (v.name === "mine") return "#/mine";
     if (v.name === "now") return "#/now";
+    if (v.name === "street") return "#/street";
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -8168,6 +8276,13 @@
       session = null;
       pbQuery = "";
       view = { name: "phrasebook" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "street") {
+      session = null;
+      view = { name: "street" };
       render();
       return;
     }
@@ -8567,12 +8682,12 @@
 
   function pickerHTML(note) {
     var g = games();
-    var on = GAMES.filter(function (x) { return g[x.key]; }).length;
+    var on = GAMES.filter(function (x) { return !x.drillOnly && g[x.key]; }).length;
     return '<div class="picker">' +
       '<div class="picker-head"><span>Games</span><span class="picker-note">' + esc(note) + "</span></div>" +
       (playable("listen") ? "" :
         '<div class="picker-warn">Listen needs an Arabic voice on this device. See <b>About the audio</b> below.</div>') +
-      '<div class="chips">' + GAMES.map(function (x) {
+      '<div class="chips">' + GAMES.filter(function (x) { return !x.drillOnly; }).map(function (x) {
         var isOn = g[x.key];
         var lastOne = isOn && on === 1;
         return '<button class="pill pill--md chip' + (isOn ? " is-on" : "") + '" data-act="game" data-key="' + x.key +
@@ -8739,6 +8854,55 @@
       }).join("") +
       '<div class="btn-row"><button class="btn btn-ghost" data-go="phrasebook">The whole phrasebook</button>' +
       '<button class="btn" data-go="home">Back</button></div>';
+  }
+
+  function streetHTML() {
+    var v = varietyInfo();
+    var isLev = variety() === "lev";
+
+    function pair(ar) {
+      var d = dialectOf(ar);
+      if (!d) return "";
+      return '<div class="street-row">' +
+        '<span class="street-side"><span class="street-tag">fus&#183;ha</span>' +
+        '<span class="ar">' + esc(ar) + "</span>" +
+        '<button class="say say-sm" data-act="say" data-say="' + esc(ar) + '" data-book="1"' +
+        (canSpeak() ? "" : " disabled") + ' aria-label="Hear the fus&#183;ha">' + SPEAKER_SVG + "</button></span>" +
+        '<span class="street-arrow" aria-hidden="true">&rarr;</span>' +
+        '<span class="street-side"><span class="street-tag">' + esc(v.label.toLowerCase()) + "</span>" +
+        '<span class="ar">' + esc(d[0]) + "</span>" + sayBtn(ar, true) + "</span>" +
+        '<span class="street-en">' + esc(englishFor(ar) || "") + "</span></div>";
+    }
+
+    if (variety() === "msa") {
+      return topbarHTML("Fus&#183;ha and the street") +
+        '<p class="pb-lead">You are on fus&#183;ha, so there is nothing to compare. Fus&#183;ha is what is written, ' +
+        "read on signs and spoken on the news; it is not what anybody says to you in a shop. " +
+        "Choose a dialect in the menu and this screen fills up with what changes.</p>" +
+        '<div class="btn-row"><button class="btn" data-act="nav-open">Open the menu</button></div>';
+    }
+
+    return topbarHTML("Fus&#183;ha and the street") +
+      '<p class="pb-lead">You will hear both. Fus&#183;ha on television, on signs and in anything written; ' +
+      esc(v.label) + " in the street, at home and in every shop. The course teaches one set of phrases and " +
+      "shows you whichever you have chosen; this is the map between them.</p>" +
+      (isLev
+        ? STREET.map(function (r) {
+            var rows = r.keys.map(pair).join("");
+            if (!rows) return "";
+            return '<div class="street-group"><h2 class="can-head">' + esc(r.rule) + "</h2>" +
+              '<p class="can-note">' + esc(r.why) + "</p>" + rows + "</div>";
+          }).join("")
+        : '<p class="can-lead">The rules below the pairs are written for Levantine, which is the variety ' +
+          "this course finished. " + esc(v.label) + " is here as spellings and audio only: correct where it is " +
+          "written, but not taught. Switching to Levantine gives you the whole map.</p>" +
+          '<div class="street-group">' +
+          STREET.map(function (r) { return r.keys.map(pair).join(""); }).join("") + "</div>") +
+      '<div class="btn-row">' +
+      (drillable().swap
+        ? '<button class="btn" data-act="drill" data-id="swap">Drill the difference</button>'
+        : "") +
+      '<button class="btn btn-ghost" data-go="home">Back</button></div>';
   }
 
   function mineHTML() {
@@ -8936,6 +9100,10 @@
         : "Name, country, job and age, in your words") + "</span></button>" +
 
       '<div class="nav-group">Which Arabic</div>' +
+      '<button class="nav-item" data-go="street"><span class="nav-label">Fus&#183;ha and the street</span>' +
+      '<span class="nav-note">' + (variety() === "msa"
+        ? "What changes once you pick a dialect"
+        : "What changes between the two, rule by rule") + "</span></button>" +
       VARIETIES.map(function (v) {
         var on = v.key === variety();
         return '<button class="nav-item nav-who' + (on ? " is-on" : "") + '" data-act="variety" data-id="' +
@@ -9092,10 +9260,15 @@
     return '<header class="masthead">' +
       '<button class="pill pill--md pb-link" data-act="nav-open" aria-label="Open the menu">&#9776; Menu</button>' +
       '<button class="pill pill--md pb-link now-link" data-go="now">Right now</button>' +
-      '<div class="eyebrow">Modern Standard Arabic</div>' +
+      '<div class="eyebrow">' + esc(variety() === "msa"
+        ? "Modern Standard Arabic"
+        : varietyInfo().label + " Arabic") + "</div>" +
       '<h1 class="wordmark">Fus<em>&#183;</em>ha</h1>' +
-      '<p class="tagline">The Arabic every Arab country understands, in ' + LESSONS.length +
-      ' lessons. No alphabet required.</p>' +
+      '<p class="tagline">' + (variety() === "msa"
+        ? "The Arabic every Arab country understands, in " + LESSONS.length +
+          " lessons. No alphabet required."
+        : "The spoken " + esc(varietyInfo().label) + " of " + LESSONS.length +
+          " lessons, with the fus&#183;ha behind every phrase. No alphabet required.") + "</p>" +
       (people.list.length > 1 && currentPerson()
         ? '<p class="whoami">Practising as <b>' + esc(currentPerson().name) + "</b></p>"
         : "") +
@@ -9151,7 +9324,7 @@
       '<div class="fold-body">' + convosHTML() + "</div></details>" +
 
       '<details class="guide fold" data-fold="games"><summary>Games<span class="fold-count">' +
-      GAMES.filter(function (g) { return games()[g.key]; }).length + " on</span></summary>" +
+      GAMES.filter(function (g) { return !g.drillOnly && games()[g.key]; }).length + " on</span></summary>" +
       '<div class="fold-body">' + pickerHTML("used in lessons and review") + "</div></details>" +
 
       '<details class="guide" data-fold="spelling"><summary>How to read the spelling</summary><div class="guide-body">' +
@@ -11337,6 +11510,7 @@
       t.type === "build" ? buildHTML(t) :
       t.type === "say" ? sayHTML(t) :
       t.type === "write" ? writeHTML(t) :
+      t.type === "swap" ? swapHTML(t) :
       t.type === "listen" ? listenHTML(t) :
       t.type === "dictate" ? dictateHTML(t) :
       t.type === "follow" ? followHTML(t) :
@@ -11504,6 +11678,23 @@
         '<button class="btn btn-ghost" data-act="say-grade" data-value="missed">Missed it</button>' +
         '<button class="btn" data-act="say-grade" data-value="got">Got it</button>' +
         "</div>");
+  }
+
+  function swapHTML(t) {
+    var v = varietyInfo();
+    return '<div class="prompt">' +
+      '<div class="prompt-label">' + (t.toStreet
+        ? "On television they say"
+        : "In the street they say") + "</div>" +
+      '<div class="say-row"><div class="prompt-main ar">' + esc(t.prompt) + "</div>" +
+      '<button class="say" data-act="say" data-say="' + esc(t.phrase.ar) + '"' +
+      (t.toStreet ? ' data-book="1"' : "") + (canSpeak() ? "" : " disabled") +
+      ' aria-label="Hear it">' + SPEAKER_SVG + "</button></div>" +
+      '<div class="prompt-sub">' + esc(t.phrase.en) + "</div>" +
+      '<div class="prompt-label" style="margin-top:22px">' + (t.toStreet
+        ? "How would you hear it in " + esc(v.label) + "?"
+        : "And in fus&#183;ha?") + "</div>" +
+      "</div>" + optionsHTML(t.options, true, t);
   }
 
   function writeHTML(t) {
@@ -11938,7 +12129,7 @@
   }
 
   function scorePhrase(task, right, phrase) {
-    if (!phrase || (task && (task.isRetry || task.isTest))) return;
+    if (!phrase || (task && (task.isRetry || task.isTest || task.noMemory))) return;
     if (task && task.isEcho && right) {
       var le = lessonOf(task, phrase);
       if (le) { bumpStrength(le.id, phrase.ar, true, "held"); save(); }
@@ -12190,6 +12381,7 @@
     if (view.name === "diary") return diaryHTML();
     if (view.name === "mine") return mineHTML();
     if (view.name === "now") return nowHTML();
+    if (view.name === "street") return streetHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -12378,7 +12570,10 @@
     if (!el || el.disabled) return;
 
     var act = el.getAttribute("data-act");
-    if (act === "say") { speak(el.getAttribute("data-say")); return; }
+    if (act === "say") {
+      speak(el.getAttribute("data-say"), el.getAttribute("data-book") === "1");
+      return;
+    }
 
     var dest = el.getAttribute("data-go");
     if (dest) {
@@ -12421,6 +12616,7 @@
       if (dest === "diary") { session = null; go({ name: "diary" }); return; }
       if (dest === "mine") { session = null; go({ name: "mine" }); return; }
       if (dest === "now") { session = null; go({ name: "now" }); return; }
+      if (dest === "street") { session = null; go({ name: "street" }); return; }
       if (dest === "test") {
         var ex = buildExam();
         if (ex) { session = ex; go({ name: "play" }); }
@@ -12599,7 +12795,7 @@
     if (act === "game") {
       var key = el.getAttribute("data-key");
       var live = games();
-      var on = GAMES.filter(function (x) { return live[x.key]; });
+      var on = GAMES.filter(function (x) { return !x.drillOnly && live[x.key]; });
       if (live[key] && on.length === 1) return;
       // Write down what you asked for, not what the device could manage
       // at that moment: on iOS the voices arrive a second late, and

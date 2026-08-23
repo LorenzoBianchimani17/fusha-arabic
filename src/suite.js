@@ -3102,6 +3102,76 @@ section("words you brought, and the screen for right now");
   click({ "data-go": "home" });
 }
 
+section("fus·ha and the street");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.variety = undefined;
+
+  // on fus·ha there is nothing to compare, and it says so
+  click({ "data-go": "street" });
+  check("the map has a screen", peek().view.name === "street");
+  check("on fus·ha it explains what a dialect would give you",
+    /nothing to compare/.test(screenOnly()));
+  check("and no pairs are shown", !/class="street-row"/.test(h));
+
+  st.variety = "lev";
+  click({ "data-go": "street" });
+  const scr = screenOnly();
+  check("with a dialect chosen it fills up", /class="street-row"/.test(scr));
+  check("every rule is there", D.STREET.every(r => scr.includes(r.rule)));
+  check("each pair shows both sides",
+    (scr.match(/class="street-tag">fus/g) || []).length >= 20);
+  check("and both can be heard", /data-book="1"/.test(scr));
+
+  // the drill
+  check("the difference can be drilled", D.GAMES.some(g => g.key === "swap"));
+  check("but not in a lesson, where it would take a slot",
+    D.ASKING.indexOf("swap") === -1);
+  click({ "data-act": "drill", "data-id": "swap" });
+  const sw = peek().session;
+  check("the drill builds", !!sw);
+  check("every round is a swap", sw.tasks.every(t => t.type === "swap"));
+  check("with four to choose from", sw.tasks.every(t => t.options.length === 4));
+  check("and the right answer among them",
+    sw.tasks.every(t => t.options.indexOf(t.answer) !== -1));
+  check("the answer is the other spelling, never the same one",
+    sw.tasks.every(t => t.answer !== t.prompt));
+
+  const t0 = sw.tasks[0];
+  const before = JSON.stringify(st.str);
+  click({ "data-act": "answer", "data-value": t0.answer });
+  check("answering works", peek().session.state === "checked");
+  check("and it does not move the phrase in memory",
+    JSON.stringify(st.str) === before);
+
+  // fus·ha has no swap drill at all
+  st.variety = undefined;
+  click({ "data-go": "home" });
+  check("on fus·ha the drill is not offered", !D.playable("swap"));
+  st.variety = "lev";
+
+  // Levantine leads from the first screen
+  click({ "data-go": "home" });
+  check("the masthead follows the variety", /Levantine Arabic/.test(h));
+  check("and the tagline with it", /spoken Levantine of/.test(h));
+  st.variety = undefined;
+  click({ "data-go": "home" });
+  check("on fus·ha it says fus·ha", /Modern Standard Arabic/.test(h));
+
+  // the other two are declared, not extended
+  const lev = D.VARIETIES.find(v => v.key === "lev");
+  const egy = D.VARIETIES.find(v => v.key === "egy");
+  check("Levantine is marked as the finished one", lev.done === true);
+  check("and comes before the part-written ones",
+    D.VARIETIES.indexOf(lev) < D.VARIETIES.indexOf(egy));
+  check("which say so themselves", /not being finished/.test(egy.where));
+
+  st.str = {};
+  click({ "data-go": "home" });
+}
+
 section("the games got harder in the right places");
 {
   const D = global.__data;

@@ -30,6 +30,8 @@ HOOKS = (
     ' diary: diary, weekSummary: weekSummary, unseen: unseen, deltaLine: deltaLine,'
     ' NOW: NOW, mineWords: mineWords, mineLesson: mineLesson, MINE_ID: MINE_ID,'
     ' buildAimed: buildAimed, canById: canById, canOpen: canOpen, REPAIRS: REPAIRS,'
+    ' STREET: STREET, swapRound: swapRound, varietyCoverage: varietyCoverage,'
+    ' ASKING: ASKING, playable: playable, drillable: drillable,'
     ' englishFor: englishFor, courseIndex: courseIndex, normalise: normalise,'
     ' sameSaid: sameSaid, tokens: tokens, canMake: canMake, coreCounts: coreCounts,'
     ' lessonNo: lessonNo, RECHECK_AFTER: RECHECK_AFTER, HOLDS: HOLDS, today: today,'
