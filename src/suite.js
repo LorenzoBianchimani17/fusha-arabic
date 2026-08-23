@@ -307,9 +307,16 @@ section("the app knows what day it is");
   st.lastDay = today() - 1;
   click({ "data-go": "home" });
   check("it knows you were here yesterday", /Yesterday was your last go/.test(h));
+  st.lastDay = today() - 4;
+  click({ "data-go": "home" });
+  check("and counts the days when it is only a few", /It has been 4 days/.test(h));
+
+  // past a week it stops counting and offers a way back in instead
   st.lastDay = today() - 40;
   click({ "data-go": "home" });
-  check("and that you have been gone a while", /It has been a while/.test(h));
+  check("and that you have been gone a while", /You have been away a few weeks/.test(h));
+  check("a break offers an easier way in", /Ease back in/.test(h));
+  st.lastDay = today() - 1;
   st.lastDay = today();
   click({ "data-go": "home" });
   check("and says nothing when you are here today", !/It has been/.test(h));
@@ -807,7 +814,9 @@ section("the home screen is not a pile any more");
   check("each fold says how much is inside", (h.match(/class="fold-count"/g) || []).length === 3);
   check("nothing was lost in the folding",
     (h.match(/data-go="lesson"/g) || []).length >= LESSONS.length &&
-    (h.match(/data-go="convo"/g) || []).length === CONVOS.length &&
+    // the written conversations, plus today's stitched one twice (the
+    // card and the menu)
+    (h.match(/data-go="convo"/g) || []).length === CONVOS.length + 2 &&
     (h.match(/data-act="game"/g) || []).length >= 6);
 
   // a newcomer needs to see the course without hunting for it
@@ -2706,6 +2715,139 @@ section("when you are wrong");
   check("and the verdict counts the slips and offers the way out", /has slipped \d+ times/.test(h));
 
   st.str = {}; st.games = undefined;
+  click({ "data-go": "home" });
+}
+
+section("the rhythm of using it");
+{
+  unlockAll();
+  const { today } = global.__data;
+  const st = peek().store;
+  st.str = {}; st.pace = undefined; st.lastDay = today();
+
+  click({ "data-go": "home" });
+  const card = h.split('class="today"')[1].split("</div>")[0] + h.split('class="today"')[1].split('class="btn today-go"')[0];
+  check("the home card asks how long you have", /data-act="pace"/.test(h));
+  check("all three lengths are offered",
+    ["short", "normal", "long"].every(k => h.includes('data-act="pace" data-id="' + k + '"')));
+  check("ten minutes is the one it starts on",
+    /is-on" data-act="pace" data-id="normal"/.test(h));
+
+  click({ "data-go": "review" });
+  const normal = peek().session.tasks.length;
+
+  click({ "data-go": "home" });
+  click({ "data-act": "pace", "data-id": "short" });
+  check("choosing three minutes sticks", peek().store.pace === "short");
+  check("and the card shows it", /is-on" data-act="pace" data-id="short"/.test(h));
+  click({ "data-go": "review" });
+  const short = peek().session.tasks.length;
+
+  click({ "data-go": "home" });
+  click({ "data-act": "pace", "data-id": "long" });
+  click({ "data-go": "review" });
+  const long = peek().session.tasks.length;
+
+  console.log(`    ${short} / ${normal} / ${long} rounds`);
+  check("three minutes is a short session", short < normal);
+  check("as long as it takes is a long one", long > normal);
+  check("and even the short one is worth opening", short >= 5);
+
+  st.pace = undefined;
+
+  // coming back after a week away
+  st.str = {};
+  LESSONS.forEach(l => l.phrases.forEach(p => {
+    st.str[l.id + "|" + p.ar] = { s: 3, n: 4, day: today() - 30 };
+  }));
+  st.lastDay = today() - 30;
+  click({ "data-go": "home" });
+  check("a month away is named", /You have been away/.test(h));
+  check("with what it actually cost", /slipped a step/.test(h));
+
+  click({ "data-act": "today" });
+  check("the way back in is its own session", peek().session.isBack === true);
+  const first = peek().session.tasks.slice(0, 4).filter(t => t.isBack);
+  check("which leads with phrases it picked for you", first.length === 4);
+  check("two of them the backbone",
+    first.filter(t => t.phrase && t.phrase.core).length >= 2);
+  check("and it opens on a phrase, not a matching grid",
+    peek().session.tasks[0].isBack === true);
+  check("it says why they are first", /worth having back first/.test(h));
+
+  st.lastDay = today();
+  st.str = {};
+  click({ "data-go": "home" });
+  check("and none of that shows on a normal day", !/You have been away/.test(h));
+
+  // one phrase, for the thirty seconds it usually gets
+  check("the home screen offers a single question", /class="review one-card" data-go="one"/.test(h));
+  check("so does the menu", /data-go="one"/.test(h.split("</nav>")[0]));
+
+  const runsBefore = (peek().store.runs || 0) + ((peek().store.review || {}).runs || 0);
+  click({ "data-go": "one" });
+  check("it opens on its own screen", peek().view.name === "one");
+  check("with one question in it", peek().session.tasks.length === 1);
+  check("and it knows it is not a session", peek().session.isOne === true);
+  const screen = screenOnly();
+  check("no counter", !/class="counter"/.test(screen));
+  check("no progress bar", !/class="bar"/.test(screen));
+  check("and it says so", /no session and no score|Leave whenever you like/.test(screen));
+
+  st.lastDay = today() - 3;
+  const t0 = peek().session.tasks[0];
+  let guard = 0;
+  while (guard++ < 6 && peek().session.state !== "checked") playRound(true);
+  check("answering it works", peek().session.state === "checked");
+  const src0 = t0.srcLesson || (t0.phrase && t0.phrase._lesson);
+  check("and it counts for the phrase",
+    !t0.phrase || !src0 || (st.str[src0.id + "|" + t0.phrase.ar] || {}).s > 0);
+  check("and counts as having been here today", st.lastDay === today());
+  check("the way on is another one, not a score", /data-act="next"[^>]*>Another one/.test(h));
+  check("and a way out that is not a defeat", /data-go="home"[^>]*>That is enough/.test(h));
+
+  click({ "data-act": "next" });
+  check("another one is a fresh question", peek().session.tasks.length === 1);
+  check("still with no score anywhere", peek().view.name === "one");
+  check("and no run has been counted",
+    (peek().store.runs || 0) + ((peek().store.review || {}).runs || 0) === runsBefore);
+
+  click({ "data-go": "home" });
+  st.str = {};
+
+  // a conversation a day, stitched rather than written
+  check("the home screen offers today's conversation", /class="review daily-card"/.test(h));
+  click({ "data-go": "convo", "data-id": "daily" });
+  const day1 = peek().session.convo.turns.map(t => t.reply).join("|");
+  check("it is a conversation like any other", peek().session.isConvo === true);
+  check("four exchanges", peek().session.convo.turns.length === 4);
+  check("all of them ones you have met",
+    peek().session.convo.turns.every(t =>
+      LESSONS.some(l => (l.dialogue || []).some(d => d.reply === t.reply))));
+  check("no exchange twice", new Set(peek().session.convo.turns.map(t => t.reply)).size === 4);
+  check("and it says what it is, without pretending", /Not a story/.test(h));
+
+  click({ "data-go": "convo", "data-id": "daily" });
+  check("the same four all day", peek().session.convo.turns.map(t => t.reply).join("|") === day1);
+
+  const realToday = Date.now();
+  try {
+    Date.now = () => realToday + 86400000;
+    click({ "data-go": "home" });
+    click({ "data-go": "convo", "data-id": "daily" });
+    check("and a different four tomorrow",
+      peek().session.convo.turns.map(t => t.reply).join("|") !== day1);
+  } finally { Date.now = () => realToday; }
+
+  click({ "data-go": "convo", "data-id": "daily" });
+  let g2 = 0;
+  while (g2++ < 40 && peek().view.name !== "result") playRound(true);
+  check("finishing it works", peek().view.name === "result");
+  check("and the day is marked", peek().store.daily === today());
+  click({ "data-go": "home" });
+  check("so the card says so", /Today's is done/.test(h));
+  peek().store.daily = undefined;
+  st.str = {};
   click({ "data-go": "home" });
 }
 

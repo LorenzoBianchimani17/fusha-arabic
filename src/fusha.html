@@ -500,6 +500,9 @@
     box-shadow: var(--shadow);
   }
 
+  .one-note { margin: 22px 0 0; color: var(--ink-3); font-size: var(--t-1); text-align: center; }
+  .today-pace { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-3); }
+  .today-pace .pchip { font-size: var(--t-1); }
   .today-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--s-2); }
   .today-line { font-size: var(--t-5); line-height: 1.35; letter-spacing: -.01em; }
   .today-go { flex: none; padding: var(--s-4) 20px; }
@@ -5026,6 +5029,22 @@
   var PASS = 70;
   var ROUNDS = 10;
   var REVIEW_ROUNDS = 12;
+
+  // Three minutes in a queue and twenty on the sofa are not the same
+  // session, and there was only ever one length.
+  var PACES = [
+    { key: "short", label: "3 minutes", rounds: 5 },
+    { key: "normal", label: "10 minutes", rounds: 12 },
+    { key: "long", label: "As long as it takes", rounds: 22 }
+  ];
+
+  function pace() {
+    var p = store.pace;
+    for (var i = 0; i < PACES.length; i++) if (PACES[i].key === p) return PACES[i];
+    return PACES[1];
+  }
+
+  function reviewRounds() { return pace().rounds; }
   var MATCH_PAIRS = 5;
   var RETRY_MAX = 4;
 
@@ -6517,6 +6536,8 @@
       isFollow: !!fields.isFollow,
       isFixup: !!fields.isFixup,
       isToday: !!fields.isToday,
+      isBack: !!fields.isBack,
+      isOne: !!fields.isOne,
       extended: false,
       grew: false,
       convo: fields.convo || null,
@@ -6685,8 +6706,8 @@
     }
 
     var guard = 0;
-    while (picked.length < REVIEW_ROUNDS && guard++ < 40) {
-      var batch = drawWeighted(open, REVIEW_ROUNDS - picked.length);
+    while (picked.length < reviewRounds() && guard++ < 40) {
+      var batch = drawWeighted(open, reviewRounds() - picked.length);
       var made = 0;
       batch.forEach(function (item) {
         var r = roundFor(item);
@@ -6709,17 +6730,45 @@
     // The spot checks and yesterday's misses were seeded by hand and are
     // meant to lead: interleaving them with everything else buried them
     // in the middle of the session.
-    var leads = picked.filter(function (r) { return r.isCheck || r.isMiss; });
-    var rest = picked.filter(function (r) { return !r.isCheck && !r.isMiss; });
+    // Coming back from a break, what matters is the backbone and the
+    // things that have drifted furthest, in that order. Two of each, so
+    // the way back in is short and recognisable rather than a wall of
+    // everything that came due while you were gone.
+    if (fields && fields.isBack) {
+      var back = [], taken = {};
+      function takeBack(list, n) {
+        for (var i = 0; i < list.length && n > 0; i++) {
+          var it = list[i];
+          if (taken[it.lesson.id + "|" + it.ar]) continue;
+          var r = roundFor(it);
+          if (!r) continue;
+          r.isBack = true;
+          taken[it.lesson.id + "|" + it.ar] = true;
+          back.push(r);
+          n--;
+        }
+      }
+      takeBack(shuffle(open.filter(function (it) { return it.core; })), 2);
+      takeBack(shuffle(open.filter(function (it) {
+        return isFading(it.lesson.id, it.ar);
+      })).sort(function (a, b) {
+        return strengthOf(a.lesson.id, a.ar) - strengthOf(b.lesson.id, b.ar);
+      }), 2);
+      picked = back.concat(picked);
+    }
+
+    var leads = picked.filter(function (r) { return r.isCheck || r.isMiss || r.isBack; });
+    var rest = picked.filter(function (r) { return !r.isCheck && !r.isMiss && !r.isBack; });
 
     var tasks = [];
-    for (var i = 0; i < matchCount(asking); i++) {
+    var grids = (fields && fields.isBack) ? 0 : matchCount(asking);
+    for (var i = 0; i < grids; i++) {
       var grid = mixedMatch();
       if (grid) tasks.push(grid);
     }
     if (asking.length) {
       tasks = tasks.concat(leads,
-        interleave(rest, Math.max(0, REVIEW_ROUNDS - leads.length)));
+        interleave(rest, Math.max(0, reviewRounds() - leads.length)));
     }
     if (!tasks.length) {
       var only = mixedMatch();
@@ -6731,6 +6780,7 @@
     return newSession({
       isReview: true,
       isToday: !!f.isToday,
+      isBack: !!f.isBack,
       todayNext: f.todayNext || null,
       reviewPool: pool.length,
       tasks: tasks
@@ -6822,8 +6872,8 @@
     if (!usable.length) return null;
 
     var picked = [], guard = 0;
-    while (picked.length < REVIEW_ROUNDS && guard++ < 40) {
-      var batch = drawWeighted(usable, REVIEW_ROUNDS - picked.length);
+    while (picked.length < reviewRounds() && guard++ < 40) {
+      var batch = drawWeighted(usable, reviewRounds() - picked.length);
       var made = 0;
       batch.forEach(function (item) {
         var r = makeRound(item.lesson, item, type);
@@ -6833,6 +6883,29 @@
     }
     if (!picked.length) return null;
     return newSession({ isReview: true, isDrill: type, reviewPool: pool.length, tasks: picked });
+  }
+
+  // Thirty seconds in a lift is the session this app actually gets, and
+  // a ten-round review with a score at the end does not fit in it. One
+  // question, full screen, no counter, no score. It still counts for
+  // memory: the arithmetic does not care that you only did one.
+  function buildOne() {
+    if (!finishedLessons().length) return null;
+    var asking = askingGames();
+    var types = asking.length ? asking : ["quiz"];
+    var pool = studied().filter(function (it) {
+      return !it.known && types.some(function (t) { return canMake(it, t); });
+    });
+    if (!pool.length) return null;
+    var draw = drawWeighted(pool, 6);
+    for (var i = 0; i < draw.length; i++) {
+      var options = typeFor(draw[i], types);
+      for (var j = 0; j < options.length; j++) {
+        var r = makeRound(draw[i].lesson, draw[i], options[j]);
+        if (r) return newSession({ isOne: true, tasks: [r] });
+      }
+    }
+    return null;
   }
 
   // Straight from the score screen, on exactly what you just got wrong,
@@ -6896,7 +6969,38 @@
     return "It has been a while. ";
   }
 
+  // A week away and half the course has come due. Landing in a normal
+  // session while that is true is how people quietly give up.
+  var AWAY_DAYS = 7;
+
+  function backAfterBreak() {
+    var d = daysSince(store.lastDay);
+    return d !== null && d >= AWAY_DAYS;
+  }
+
+  function slippedWhileAway() {
+    var n = 0;
+    finishedLessons().forEach(function (l) {
+      visiblePhrases(l).forEach(function (p) {
+        if (isFading(l.id, p.ar)) n++;
+      });
+    });
+    return n;
+  }
+
   function todayCopy(plan) {
+    if (backAfterBreak()) {
+      var slipped = slippedWhileAway();
+      var d = daysSince(store.lastDay);
+      return {
+        line: "You have been away " + (d < 14 ? d + " days" : d < 60 ? "a few weeks" : "a while") + ". " +
+          (slipped
+            ? slipped + " phrase" + (slipped === 1 ? " has" : "s have") + " slipped a step, which is all a break costs. " +
+              "This one puts the important ones in front of you first."
+            : "Nothing has fallen far. Start where you left off."),
+        cta: "Ease back in"
+      };
+    }
     if (plan.kind === "first") {
       return { line: "Start with lesson " + lessonNo(plan.next) + ", " + plan.next.title.toLowerCase() + ".", cta: "Begin" };
     }
@@ -6940,6 +7044,10 @@
 
   function startToday() {
     var plan = todayPlan();
+    if (backAfterBreak()) {
+      var back = buildReview({ isToday: true, isBack: true, todayNext: plan.next });
+      if (back) { session = back; go({ name: "play" }); return; }
+    }
     if (plan.kind === "first" || plan.kind === "lesson") {
       go({ name: "lesson", lesson: plan.next });
       return;
@@ -7167,9 +7275,71 @@
   }
 
   function convoById(id) {
+    if (id === "daily") return dailyConvo();
     for (var i = 0; i < CONVOS.length; i++) if (CONVOS[i].id === id) return CONVOS[i];
     return null;
   }
+
+  // The nineteen written conversations never change, and after a
+  // fortnight that is what is wrong with them. This one is stitched
+  // from exchanges you have actually met, four of them, a different
+  // four every day. It is not a story and does not pretend to be one.
+  var DAILY_TURNS = 4;
+  var dailyMade = null;
+
+  function seededRandom(seed) {
+    var x = (seed * 2654435761 + 1013904223) % 4294967296;
+    return function () {
+      x = (x * 1664525 + 1013904223) % 4294967296;
+      return x / 4294967296;
+    };
+  }
+
+  function dailyPool() {
+    var seen = {}, out = [];
+    finishedLessons().forEach(function (l) {
+      (l.dialogue || []).forEach(function (d) {
+        if (seen[d.reply] || isHidden(l.id, d.reply)) return;
+        seen[d.reply] = true;
+        out.push({ lesson: l, ex: d });
+      });
+    });
+    return out;
+  }
+
+  function dailyConvo() {
+    if (dailyMade && dailyMade.day === today() && dailyMade.who === people.current) {
+      return dailyMade.convo;
+    }
+    var pool = dailyPool();
+    if (pool.length < 3) return null;
+
+    var rnd = seededRandom(today() + 1);
+    var order = pool.slice();
+    for (var i = order.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1));
+      var tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+    }
+    var picked = order.slice(0, Math.min(DAILY_TURNS, order.length));
+    // Course order, so a greeting opens it and whatever you learned
+    // last comes at the end. That much shape is honest; a plot is not.
+    picked.sort(function (a, b) { return LESSONS.indexOf(a.lesson) - LESSONS.indexOf(b.lesson); });
+
+    var convo = {
+      id: "daily",
+      title: "Today's conversation",
+      setting: "Four exchanges you have already met, one after another. Not a story: a run at replying without stopping.",
+      needs: [],
+      isDaily: true,
+      turns: picked.map(function (p) {
+        return { say: p.ex.ask, sayEn: p.ex.askEn, reply: p.ex.reply, replyEn: p.ex.en };
+      })
+    };
+    dailyMade = { day: today(), who: people.current, convo: convo };
+    return convo;
+  }
+
+  function dailyDone() { return store.daily === today(); }
 
   // The whole exchange at natural speed, then questions about it. The
   // other games test one phrase at a time; following a conversation you
@@ -7276,6 +7446,7 @@
     if (v.name === "asked") return "#/asked";
     if (v.name === "numbers") return "#/numbers";
     if (v.name === "loud") return "#/loud/" + (loud ? loud.mode : "shadow");
+    if (v.name === "one") return "#/one";
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -7354,6 +7525,13 @@
       session = null;
       pbQuery = "";
       view = { name: "phrasebook" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "one") {
+      session = buildOne();
+      view = session ? { name: "one" } : { name: "home" };
       render();
       return;
     }
@@ -7580,10 +7758,17 @@
 
   function todayHTML() {
     var copy = todayCopy(todayPlan());
+    var now = pace();
     return '<div class="today">' +
       '<div class="today-body">' +
       '<span class="eyebrow">Today</span>' +
       '<span class="today-line">' + esc(copy.line) + "</span>" +
+      '<span class="today-pace">' + PACES.map(function (p) {
+        var on = p.key === now.key;
+        return '<button class="pill pill--md chip pchip' + (on ? " is-on" : "") +
+          '" data-act="pace" data-id="' + p.key + '" aria-pressed="' + (on ? "true" : "false") +
+          '">' + esc(p.label) + "</button>";
+      }).join("") + "</span>" +
       "</div>" +
       '<button class="btn today-go" data-act="today">' + esc(copy.cta) + "</button>" +
       "</div>";
@@ -7686,6 +7871,34 @@
         ? '<span class="pill pill--tag review-score">' + rv.best + "%</span>"
         : '<span class="lesson-lock" aria-hidden="true">&rarr;</span>') +
       "</button>";
+  }
+
+  function oneCardHTML() {
+    if (!finishedLessons().length) return "";
+    return '<button class="review one-card" data-go="one">' +
+      '<span class="review-body">' +
+      '<span class="eyebrow">Thirty seconds</span>' +
+      '<span class="review-title">One phrase, then put it down</span>' +
+      '<span class="review-meta">A single question, no session and no score.' +
+      " It still counts toward the phrase.</span></span>" +
+      '<span class="lesson-lock" aria-hidden="true">&rarr;</span></button>';
+  }
+
+  function dailyCardHTML() {
+    var c = dailyConvo();
+    if (!c) return "";
+    var done = dailyDone();
+    return '<button class="review daily-card" data-go="convo" data-id="daily">' +
+      '<span class="review-body">' +
+      '<span class="eyebrow">A conversation a day</span>' +
+      '<span class="review-title">' + (done ? "Today's is done" : "Four replies, straight through") + "</span>" +
+      '<span class="review-meta">' + (done
+        ? "Run it again if you like. Tomorrow it will be four different ones."
+        : c.turns.length + " exchanges you have met, in a different order every day.") +
+      "</span></span>" +
+      (done
+        ? '<span class="pill pill--tag review-score">done</span>'
+        : '<span class="lesson-lock" aria-hidden="true">&rarr;</span>') + "</button>";
   }
 
   function twinsCardHTML() {
@@ -7821,6 +8034,16 @@
       '><span class="nav-label">Mixed review</span>' +
       '<span class="nav-note">' + (done ? "Everything you have passed" : "Pass a lesson to open this") + "</span></button>" +
 
+      '<button class="nav-item' + (dailyConvo() ? "" : " is-off") + '" data-go="convo" data-id="daily"' +
+      (dailyConvo() ? "" : " disabled") + '><span class="nav-label">Today\'s conversation</span>' +
+      '<span class="nav-note">' + (dailyConvo()
+        ? (dailyDone() ? "Done today. Tomorrow it is a different four" : "Four exchanges you know, stitched fresh each day")
+        : "Pass a couple of lessons to open this") + "</span></button>" +
+
+      '<button class="nav-item' + (done ? "" : " is-off") + '" data-go="one"' + (done ? "" : " disabled") +
+      '><span class="nav-label">One phrase</span>' +
+      '<span class="nav-note">' + (done ? "A single question, no session" : "Pass a lesson to open this") + "</span></button>" +
+
       '<div class="nav-group">One game at a time</div>' + drills +
 
       '<button class="nav-item' + (canSpeak() ? "" : " is-off") + '" data-act="ear-only"' +
@@ -7944,6 +8167,8 @@
       todayHTML() +
       coreHTML() +
       reviewHTML() +
+      dailyCardHTML() +
+      oneCardHTML() +
       momentCardHTML() +
       makeCardHTML() +
       twinsCardHTML() +
@@ -10103,6 +10328,7 @@
      ============================================================ */
 
   function roundNote(t) {
+    if (t.isBack) return "One of the ones worth having back first";
     if (t.isEcho) return "The same one again, on purpose";
     if (t.isCheck) return "A phrase you set aside, coming back for its check";
     if (t.isMiss) return "You missed this one recently";
@@ -10129,11 +10355,8 @@
     return !!(t.startedAt && Date.now() - t.startedAt > QUICK_MS);
   }
 
-  function playHTML() {
-    var t = session.tasks[session.i];
-    var pct = Math.round(session.i / session.tasks.length * 100);
-    var body =
-      t.type === "match" ? matchHTML(t) :
+  function roundBodyHTML(t) {
+    return t.type === "match" ? matchHTML(t) :
       t.type === "quiz" ? quizHTML(t) :
       t.type === "build" ? buildHTML(t) :
       t.type === "say" ? sayHTML(t) :
@@ -10142,6 +10365,32 @@
       t.type === "dictate" ? dictateHTML(t) :
       t.type === "follow" ? followHTML(t) :
       t.type === "convoturn" ? convoTurnHTML(t) : dialogHTML(t);
+  }
+
+  // No counter, no progress bar, no score: three things whose only job
+  // is to tell you how much is left, on a screen where the answer is
+  // none.
+  function oneHTML() {
+    if (!session || !session.isOne) {
+      return topbarHTML("One phrase") +
+        '<p class="pb-lead">Pass a lesson first: there is nothing to ask you yet.</p>' +
+        '<div class="btn-row"><button class="btn" data-go="home">Back to the lessons</button></div>';
+    }
+    var t = session.tasks[session.i];
+    var quick1 = isQuick(t) && session.state === "asking";
+    if (quick1 && !t.startedAt) t.startedAt = Date.now();
+    return topbarHTML("One phrase") +
+      (quick1 ? '<div class="quickbar"><i></i></div>' : "") +
+      '<div class="fade-in">' + roundBodyHTML(t) + "</div>" + verdictHTML(t) +
+      (session.state === "asking"
+        ? '<p class="one-note">One question, and it counts like any other. Leave whenever you like.</p>'
+        : "");
+  }
+
+  function playHTML() {
+    var t = session.tasks[session.i];
+    var pct = Math.round(session.i / session.tasks.length * 100);
+    var body = roundBodyHTML(t);
     var title = session.isToday ? "Today"
       : session.isFixup ? "Fixing what you missed"
       : session.isFollow ? session.convo.title + " \u00b7 listening"
@@ -10558,7 +10807,10 @@
       (session.lastRight ? "" : confusedWith(t)) + leechOut(t) +
       (session.lastRight ? "" : whyHTML(t)) + roundControls(t) +
       '<button class="btn btn-wide" data-act="next">' +
-      (ending ? "See your score" : "Continue") + "</button>" +
+      (session.isOne ? "Another one" : ending ? "See your score" : "Continue") + "</button>" +
+      (session.isOne
+        ? '<button class="link-btn only-just" data-go="home">That is enough</button>'
+        : "") +
       // Right, but only just, is not the same as right. Saying so pulls
       // the phrase back a step instead of letting it sail off for a
       // month on an answer you had to dig for.
@@ -10722,6 +10974,10 @@
     } else {
       scorePhrase(task, right, phrase);
     }
+    // A single question never reaches finish(), which is where the app
+    // usually notices you were here. Answering one still counts as a
+    // visit, or a week of them would read as a week away.
+    if (session.isOne) { store.lastDay = today(); save(); }
     render();
   }
 
@@ -10834,6 +11090,7 @@
       store.review = rv;
       save();
     } else if (session.isConvo) {
+      if (session.convo.isDaily) store.daily = today();
       if (!store.convos) store.convos = {};
       var c = store.convos[session.convo.id] || { best: 0 };
       if (score > c.best) c.best = score;
@@ -10868,6 +11125,14 @@
   }
 
   function advance() {
+    // A single question has no next round and no end: either another
+    // one, drawn fresh, or you put the phone away.
+    if (session.isOne) {
+      var again = buildOne();
+      if (again) { session = again; go({ name: "one" }); }
+      else go({ name: "home" });
+      return;
+    }
     maybeExtend();
     var atEnd = session.i >= session.tasks.length - 1;
 
@@ -10907,6 +11172,7 @@
     if (view.name === "asked") return askedHTML();
     if (view.name === "numbers") return numbersHTML();
     if (view.name === "loud") return loudHTML();
+    if (view.name === "one") return oneHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -11127,6 +11393,11 @@
       if (dest === "play") {
         session = buildSession(lessonById(el.getAttribute("data-id")));
         go({ name: "play" });
+        return;
+      }
+      if (dest === "one") {
+        var os = buildOne();
+        if (os) { session = os; go({ name: "one" }); }
         return;
       }
       if (dest === "review") {
@@ -11538,6 +11809,12 @@
     }
     if (act === "unpassive-all") {
       if (window.confirm("Ask you to produce all of them again?")) { unpassiveAll(); render(); }
+      return;
+    }
+    if (act === "pace") {
+      store.pace = el.getAttribute("data-id");
+      save();
+      render();
       return;
     }
     if (act === "ear-only") {
