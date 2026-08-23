@@ -48,13 +48,44 @@ draw from once the mechanisms are in and have been used for a week.
 
 ## Done, 2026-08-23
 
-Delivery 0 (the source into the repository) and deliveries 1 to 4 (the
-sixteen learning mechanisms) are built and live. Sections 1 to 4 below
-are kept as the record of what they were meant to do; the code is in
-`src/fusha.html` and the tests that hold each one in place are in
-`src/suite.js`.
+Everything on this list is built and live except one item, which is at
+the bottom. Sections 0 to 10 below are kept as the record of what each
+thing was meant to do; the code is in `src/fusha.html` and the tests
+that hold each one in place are in `src/suite.js`.
 
-What is left to draw from: sections 5 to 11.
+In order, as it was shipped:
+
+- **Delivery 0**, the source into the repository.
+- **Deliveries 1 to 4**, the sixteen learning mechanisms (sections 1 to
+  4). The spaced repetition was found to be losing ground over 150 days
+  and was fixed: longer holds, and one step of decay however long you
+  are away.
+- **Section 7**, more to say: the "Answering back" lesson, the past
+  tense in the second person, and twenty-six situations from someone
+  who lives there.
+- **Section 5**, the rhythm of using it: three session lengths, a
+  return session after a week away, one phrase at a time, and a
+  conversation a day stitched from what you know.
+- **Section 6**, knowing where you stand: a test with no help,
+  twenty-four things you can or cannot do, a diary of what changed, and
+  recording yourself in Say it.
+- **Section 8**, features: your own words, the screen for right now, a
+  free-talk partner that repairs instead of giving up, a strength strip
+  per lesson, revision aimed at a situation, and export to a file.
+- **Section 9**, the dialect: a screen and a drill on what changes
+  between fus-ha and the street, Levantine leading from the first
+  screen, Egyptian and Gulf declared part-written.
+- **Section 10**, the warmer light theme and a result screen that leads
+  with what changed.
+
+**Still open, and not something the app can do for itself: looking at
+the screens on a real phone.** Two or three screenshots would replace a
+lot of guessing about the layout at 375 points wide.
+
+Where it stands: 30 lessons, 402 phrases, 91 core, 132 exchanges, 84
+situations, 24 capabilities, 22 lines on the right-now screen, 8 rules
+on the fus-ha-and-the-street screen, and every phrase written out in
+Levantine.
 
 ## 0. Before anything else
 
