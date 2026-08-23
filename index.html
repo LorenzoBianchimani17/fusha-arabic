@@ -1922,6 +1922,32 @@
       ]
     },
     {
+      id: 30,
+      title: "Answering back",
+      intro: "You can ask now. These are the short replies that close an exchange instead of leaving it hanging.",
+      phrases: [
+        { ar: "Naʿam, ʿìndi", en: "Yes, I have it", core: true },
+        { ar: "Là, làisa ʿìndi", en: "No, I have not got it", core: true },
+        { ar: "Bi at-ta'kìd", en: "Certainly", core: true, note: "The warm yes. <b>Naʿam</b> answers a question; this answers a person." },
+        { ar: "Kamà turìd", en: "As you like", note: "Hands the decision back, which is polite and buys you a moment." },
+        { ar: "Anà muwàfiq", en: "I agree" },
+        { ar: "Là màniʿ", en: "I do not mind" },
+        { ar: "Rùbbama fi màrra ùkhra", en: "Maybe another time", note: "A no that leaves the door open, which is how a no is usually said." },
+        { ar: "Ìdha àmkan", en: "If possible" },
+        { ar: "Anà mustaʿìdd", en: "I am ready" },
+        { ar: "Àsif, là àstatìʿ", en: "Sorry, I cannot", core: true },
+        { ar: "Sa'akùn hunàk", en: "I will be there" },
+        { ar: "Làisa al-àn", en: "Not now" }
+      ],
+      dialogue: [
+        { ask: "Hal turìd shày?", askEn: "Would you like tea?", reply: "Bi at-ta'kìd", en: "Certainly" },
+        { ask: "Hal nàshrab qàhwa màʿan?", askEn: "Shall we have a coffee together?", reply: "Rùbbama fi màrra ùkhra", en: "Maybe another time" },
+        { ask: "Hal yùmkin at-taswìr?", askEn: "May I take photos?", reply: "Là màniʿ", en: "I do not mind" },
+        { ask: "Hayyà bina", askEn: "Let us go", reply: "Anà mustaʿìdd", en: "I am ready" },
+        { ask: "Matà?", askEn: "When?", reply: "Làisa al-àn", en: "Not now" }
+      ]
+    },
+    {
       id: 6,
       title: "Goodbyes",
       intro: "Leaving well, from see you later to good night.",
@@ -2461,6 +2487,12 @@
         { ar: "Qarà'tu", en: "I read (past)", note: "English spells the past and the present the same here. Arabic does not: <b>àqra</b> is I read now, <b>qarà'tu</b> is I read then." },
         { ar: "Ra'àitu", en: "I saw" },
         { ar: "Fàʿaltu", en: "I did" },
+        { ar: "Màdha àkalta?", en: "What did you eat?", core: true, note: "The past of a question is the same question with the past verb in it. <b>Àkalta</b> is you ate; <b>akàltu</b>, with a u, is I ate." },
+        { ar: "Hal dhahàbta?", en: "Did you go?" },
+        { ar: "Àʿjabani", en: "I liked it", core: true, note: "Literally <b>it pleased me</b>. Arabic puts the thing first and you second, which is why the ending is <b>-ni</b>, me." },
+        { ar: "Hal àʿjabak?", en: "Did you like it?", core: true },
+        { ar: "Lam àʿrif", en: "I did not know", note: "<b>Lam</b> plus the present is how fus-ha says did not. Levantine just puts <b>mà</b> in front of the past, which is easier and what you will hear." },
+        { ar: "Kàna hunàk", en: "He was there" },
         { ar: "Màdha fàʿalta?", en: "What did you do?" },
         { ar: "Màdha fàʿalta ams?", en: "What did you do yesterday?" },
         { ar: "Àina kùnta?", en: "Where were you?" },
@@ -2470,7 +2502,10 @@
         { ask: "Màdha fàʿalta ams?", askEn: "What did you do yesterday?", reply: "Dhahàbtu ilà al-bàit", en: "I went home" },
         { ask: "Àina kùnta?", askEn: "Where were you?", reply: "Kùntu fi al-bàit", en: "I was at home" },
         { ask: "Hal akàlta?", askEn: "Did you eat?", reply: "Naʿam, akàltu", en: "Yes, I ate" },
-        { ask: "Kèifa kàna?", askEn: "How was it?", reply: "Kàna jamìlan", en: "It was lovely" }
+        { ask: "Kèifa kàna?", askEn: "How was it?", reply: "Kàna jamìlan", en: "It was lovely" },
+        { ask: "Màdha àkalta?", askEn: "What did you eat?", reply: "Akàltu", en: "I ate" },
+        { ask: "Hal àʿjabak?", askEn: "Did you like it?", reply: "Àʿjabani", en: "I liked it" },
+        { ask: "Hal dhahàbta?", askEn: "Did you go?", reply: "Là, lam àʿrif", en: "No, I did not know" }
       ]
     },
     {
@@ -2900,6 +2935,25 @@
     "Qalìlan fàqat": "قَلِيلًا فَقَطْ",
 
     "Min fàdlik": "مِنْ فَضْلِكَ",
+    "Màdha àkalta?": "مَاذَا أَكَلْتَ؟",
+    "Hal dhahàbta?": "هَلْ ذَهَبْتَ؟",
+    "Àʿjabani": "أَعْجَبَنِي",
+    "Hal àʿjabak?": "هَلْ أَعْجَبَكَ؟",
+    "Lam àʿrif": "لَمْ أَعْرِف",
+    "Kàna hunàk": "كَانَ هُنَاك",
+    "Là, lam àʿrif": "لَا، لَمْ أَعْرِف",
+    "Naʿam, ʿìndi": "نَعَمْ، عِنْدِي",
+    "Là, làisa ʿìndi": "لَا، لَيْسَ عِنْدِي",
+    "Bi at-ta'kìd": "بِالتَّأْكِيد",
+    "Kamà turìd": "كَمَا تُرِيد",
+    "Anà muwàfiq": "أَنَا مُوَافِق",
+    "Là màniʿ": "لَا مَانِع",
+    "Rùbbama fi màrra ùkhra": "رُبَّمَا فِي مَرَّة أُخْرَى",
+    "Ìdha àmkan": "إِذَا أَمْكَن",
+    "Anà mustaʿìdd": "أَنَا مُسْتَعِدّ",
+    "Àsif, là àstatìʿ": "آسِف، لَا أَسْتَطِيع",
+    "Sa'akùn hunàk": "سَأَكُونُ هُنَاك",
+    "Làisa al-àn": "لَيْسَ الْآن",
     "Naʿam, làkin làisa ʿìndi nùqud": "نَعَمْ، لَكِنْ لَيْسَ عِنْدِي نُقُود",
     "Hal ʿìndak al-mìftah?": "هَلْ عِنْدَكَ الْمِفْتَاح؟",
     "Hal tàdhhab al-àn?": "هَلْ تَذْهَبُ الْآن؟",
@@ -3612,6 +3666,63 @@
     },
     "Hal al-àn munàsib?": {
       lev: ["Hàllaʾ mnìh?", "هلق منيح؟"]
+    },
+    "Naʿam, ʿìndi": {
+      lev: ["Èh, ʿàndi", "إي عندي"]
+    },
+    "Là, làisa ʿìndi": {
+      lev: ["Làʾ, mà ʿàndi", "لأ ما عندي"]
+    },
+    "Bi at-ta'kìd": {
+      lev: ["Àkid", "أكيد"]
+    },
+    "Kamà turìd": {
+      lev: ["Zay mà bìddak", "زي ما بدك"]
+    },
+    "Anà muwàfiq": {
+      lev: ["Anà mwàfeʾ", "أنا موافق"]
+    },
+    "Là màniʿ": {
+      lev: ["Mà fìh màniʿ", "ما فيه مانع"]
+    },
+    "Rùbbama fi màrra ùkhra": {
+      lev: ["Yùmken màrra tànye", "يمكن مرة تانية"]
+    },
+    "Ìdha àmkan": {
+      lev: ["Ìza mùmken", "إذا ممكن"]
+    },
+    "Anà mustaʿìdd": {
+      lev: ["Anà jàhez", "أنا جاهز"]
+    },
+    "Àsif, là àstatìʿ": {
+      lev: ["Àsef, mà bàʾder", "آسف ما بقدر"]
+    },
+    "Sa'akùn hunàk": {
+      lev: ["Rah kùn hunìk", "رح كون هنيك"]
+    },
+    "Làisa al-àn": {
+      lev: ["Mish hàllaʾ", "مش هلق"]
+    },
+    "Màdha àkalta?": {
+      lev: ["Shu akàlt?", "شو أكلت؟"]
+    },
+    "Hal dhahàbta?": {
+      lev: ["Riht?", "رحت؟"]
+    },
+    "Àʿjabani": {
+      lev: ["ʿÀjabni", "عجبني"]
+    },
+    "Hal àʿjabak?": {
+      lev: ["ʿÀjabak?", "عجبك؟"]
+    },
+    "Lam àʿrif": {
+      lev: ["Mà ʿrìft", "ما عرفت"]
+    },
+    "Kàna hunàk": {
+      lev: ["Kàn hunìk", "كان هنيك"]
+    },
+    "Là, lam àʿrif": {
+      lev: ["Làʾ, mà ʿrìft", "لأ ما عرفت"]
     },
     "Min fàdlik": {
       lev: ["Min fàdlak", "من فضلك"]
@@ -4710,6 +4821,12 @@
     "tàdhkara": "ticket", "haqìba": "suitcase", "jawàz": "passport",
     "safar": "travel", "sàfar": "travel",
     "marra": "a time, an occasion", "ùkhra": "another", "làkin": "but",
+    "ta'kìd": "certainty (bi at-ta'kìd, certainly)", "kamà": "as, like",
+    "àʿjabani": "it pleased me", "àʿjabak": "it pleased you", "lam": "did not",
+    "àkalta": "you ate", "dhahàbta": "you went",
+    "muwàfiq": "in agreement", "màniʿ": "an objection", "ìdha": "if",
+    "àmkan": "it is possible", "mustaʿìdd": "ready", "àstatìʿ": "I can",
+    "sa'akùn": "I will be",
     "li'ànna": "because", "thùmma": "and then", "àidan": "also, too",
     "rùbbama": "maybe", "àʿtaqid": "I think", "làisa": "is not, are not",
     "hùnaka": "there is", "mushkìla": "a problem", "maʿì": "with me, on me",
@@ -4805,7 +4922,11 @@
     "tàʿa": "come", "ùʾʿod": "sit down", "wàʾʾef": "stop", "sàʿedni": "help me",
     "tfàddal": "here you are, go ahead", "tìsbah": "may you wake",
     "tsharràfna": "pleased to meet you", "màshi": "going along; on foot",
-    "kamàn": "too, also", "bas": "but; only", "baʿd": "after", "ʿashàn": "because",
+    "kamàn": "too, also", "bas": "but; only", "baʿd": "after",
+    "àkid": "certainly", "zay": "like, as", "mwàfeʾ": "in agreement",
+    "ʿàjabni": "I liked it", "ʿàjabak": "you liked it", "ʿrìft": "I knew",
+    "màniʿ": "an objection", "ìza": "if", "jàhez": "ready",
+    "bàʾder": "I can", "kùn": "be (rah kùn, I will be)", "mish": "not", "ʿashàn": "because",
     "yùmken": "maybe", "bàʿtiqid": "I think", "fìh": "there is",
     "mushkìle": "a problem", "màʿi": "with me, on me", "nùss": "half",
     "rùbʿ": "a quarter", "as-sabàh": "the morning", "bis-sabàh": "in the morning",
@@ -8957,7 +9078,36 @@
     { en: "You are on the platform and nobody has said when the train comes.", ok: ["Matà al-qitàr?"] },
     { en: "Someone has apologised for a mix-up and it is genuinely fine.", ok: ["Là bà's", "ʿÀfwan"] },
     { en: "You have knocked something over in a shop.", ok: ["Àsif"] },
-    { en: "Someone is telling you to hurry and you need a second.", ok: ["Làhza min fàdlik", "Intàdhir làhza"] }
+    { en: "Someone is telling you to hurry and you need a second.", ok: ["Làhza min fàdlik", "Intàdhir làhza"] },
+
+    // Not a tourist any more: the neighbour, the colleague, the baker who
+    // knows your face. These are the exchanges that repeat.
+    { en: "A neighbour you pass every morning says sabàh al-khèir.", ok: ["Sabàh an-nùr"] },
+    { en: "The baker knows your face by now and asks how you are.", ok: ["Al-hàmdu lillàh", "Anà bikhèir", "Là bà's"] },
+    { en: "A colleague asks if you want a coffee.", ok: ["Bi at-ta'kìd", "Bikùll surùr"] },
+    { en: "Someone asks whether you have any change on you.", ok: ["Naʿam, ʿìndi", "Là, làisa ʿìndi", "Làisa maʿì"] },
+    { en: "You are invited somewhere on a day you cannot go.", ok: ["Àsif, là àstatìʿ", "Rùbbama fi màrra ùkhra"] },
+    { en: "They propose eight o'clock and it suits you.", ok: ["Bi at-ta'kìd", "Tamàm", "Fi as-sàʿa thamàniya"] },
+    { en: "They ask whether now is a good moment.", ok: ["Al-àn munàsib", "Làisa al-àn"] },
+    { en: "You have agreed to meet and want to say you will turn up.", ok: ["Sa'akùn hunàk"] },
+    { en: "Someone asks what you did yesterday.", ok: ["Dhahàbtu ilà al-bàit", "Kùntu fi al-bàit", "Akàltu"] },
+    { en: "A colleague asks whether you liked the food.", ok: ["Àʿjabani", "Kàna jamìlan"] },
+    { en: "It turns out there was a meeting and nobody told you.", ok: ["Lam àʿrif"] },
+    { en: "Someone asks where you live.", ok: ["Àskun fi Milàno"] },
+    { en: "You are leaving the office at the end of the day.", ok: ["Maʿa salàma", "Ilà al-ghad"] },
+    { en: "You want to fix something for first thing tomorrow.", ok: ["Ghàdan sabàhan"] },
+    { en: "They ask whether next week would work.", ok: ["Al-usbùʿ al-qàdim", "Bi at-ta'kìd"] },
+    { en: "A friend is mid-story and you have lost the thread.", ok: ["Marra ùkhra, min fàdlik", "Là àfham"] },
+    { en: "You are stuck in traffic and will not be on time.", ok: ["Anà mut'àkhkhir"] },
+    { en: "Someone thanks you for holding the door.", ok: ["ʿÀfwan", "Là bà's"] },
+    { en: "You want to agree with what has just been said.", ok: ["Anà muwàfiq", "Tamàm", "Tàyyib"] },
+    { en: "Someone asks whether you mind them opening the window.", ok: ["Là màniʿ", "Tafàddal"] },
+    { en: "They are asking you to decide and you would rather they did.", ok: ["Kamà turìd"] },
+    { en: "You are at the door and they ask if you are ready.", ok: ["Anà mustaʿìdd"] },
+    { en: "It has been a long day and someone asks how it is going.", ok: ["Anà taʿbàn"] },
+    { en: "Somebody is fussing over a small mistake of yours.", ok: ["Là bà's", "Àsif"] },
+    { en: "A friend says they will come, God willing.", ok: ["Tamàm", "Tàyyib"] },
+    { en: "You cannot remember the word for the thing in your hand.", ok: ["Nasìtu al-kàlima", "Kèifa taqùl hàdha?"] }
   ];
 
   // A situation is worth asking once you have passed a lesson that can

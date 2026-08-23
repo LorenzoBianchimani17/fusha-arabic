@@ -2319,6 +2319,39 @@ section("when you get stuck");
   click({ "data-go": "home" });
 }
 
+section("answering back, and the past");
+{
+  const D = global.__data;
+  const answers = LESSONS.find(l => l.id === 30);
+  check("there is a lesson of replies", !!answers && answers.phrases.length >= 12);
+  check("and it sits next to the repair kit",
+    Math.abs(LESSONS.indexOf(answers) - LESSONS.findIndex(l => l.id === 27)) === 1);
+  ["Naʿam, ʿìndi", "Là, làisa ʿìndi", "Bi at-ta'kìd", "Àsif, là àstatìʿ", "Làisa al-àn"]
+    .forEach(ar => check("it can now say " + ar, answers.phrases.some(p => p.ar === ar)));
+  check("every reply can be spoken", answers.phrases.every(p => !!SCRIPT[p.ar]));
+  check("and exists in Levantine",
+    answers.phrases.every(p => (D.DIALECT[p.ar] || {}).lev || (D.SAME.lev || {})[p.ar]));
+
+  // the past tense stopped being first person only
+  const past = LESSONS.find(l => l.title === "Talking about the past");
+  check("the past has a second person now",
+    past.phrases.some(p => p.ar === "Màdha àkalta?") && past.phrases.some(p => p.ar === "Hal dhahàbta?"));
+  check("and a way to say you liked it",
+    past.phrases.some(p => p.ar === "Àʿjabani") && past.phrases.some(p => p.ar === "Hal àʿjabak?"));
+  check("and a way to say you did not know", past.phrases.some(p => p.ar === "Lam àʿrif"));
+  check("all of it speakable in both",
+    past.phrases.every(p => !!SCRIPT[p.ar] && ((D.DIALECT[p.ar] || {}).lev || (D.SAME.lev || {})[p.ar])));
+
+  // situations from someone who lives there
+  check(`there are more situations now (${D.MOMENTS.length})`, D.MOMENTS.length >= 80);
+  check("the new ones are answerable from the course", (function () {
+    const taught = {};
+    LESSONS.forEach(l => l.phrases.forEach(p => { taught[p.ar] = 1; }));
+    return D.MOMENTS.every(m => m.ok.every(ar => taught[ar]));
+  })());
+  check("and none is written twice", new Set(D.MOMENTS.map(m => m.en)).size === D.MOMENTS.length);
+}
+
 section("out loud, and by ear");
 {
   const D = global.__data;
