@@ -3582,6 +3582,25 @@ section("backup to a file");
   check("where the browser will not do it, it says so, and changes nothing",
     /will not let the page hand you a file|download was refused/.test(h));
 
+  // inside a viewer that offers a proper door, it uses that instead
+  let asked = null;
+  global.window.claude = {
+    use: name => ({
+      then(f) {
+        f(name === "downloads" ? {
+          save(req) { asked = req; return { then(g) { g(); return { catch() {} }; } }; }
+        } : null);
+        return { catch() {} };
+      }
+    })
+  };
+  click({ "data-act": "save-file" });
+  check("the viewer's own save is used where there is one", !!asked);
+  check("with a sensible name", /^fusha-[a-z0-9-]+\.txt$/.test(asked.filename));
+  check("and the backup code as its contents", asked.data.indexOf("fusha1:") === 0);
+  check("and it only claims success when the viewer accepted", /Saved\./.test(h));
+  delete global.window.claude;
+
   // reading a file back goes through the same door as the code
   const code = peek().store && h.match(/data-act="backup"[^>]*>([\s\S]*?)<\/textarea>/);
   global.window.FileReader = function () {

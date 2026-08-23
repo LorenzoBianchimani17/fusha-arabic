@@ -8570,18 +8570,23 @@
       typeof URL !== "undefined" && !!URL.createObjectURL;
   }
 
-  function saveToFile() {
+  function fileName() {
+    var who = currentPerson() ? currentPerson().name.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase() : "";
+    return "fusha-" + (who || "progress") + ".txt";
+  }
+
+  function saveByLink(text) {
     if (!canFile()) {
       restoreNote = { tone: "bad", text: "This browser will not let the page hand you a file. The code above still works." };
       render();
       return;
     }
     try {
-      var blob = new window.Blob([backupCode()], { type: "text/plain" });
+      var blob = new window.Blob([text], { type: "text/plain" });
       var url = URL.createObjectURL(blob);
       var a = document.createElement("a");
       a.href = url;
-      a.download = "fusha-" + (currentPerson() ? currentPerson().name.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase() : "progress") + ".txt";
+      a.download = fileName();
       if (document.body && document.body.appendChild) document.body.appendChild(a);
       a.click();
       if (document.body && document.body.removeChild) document.body.removeChild(a);
@@ -8590,11 +8595,38 @@
           try { URL.revokeObjectURL(url); } catch (e) { /* already gone */ }
         }, 2000);
       }
-      restoreNote = { tone: "ok", text: "Saved. Keep the file somewhere that is not this browser." };
+      // A page cannot see whether the file arrived, and inside some
+      // viewers it never does. Saying "saved" would be a guess.
+      restoreNote = { tone: "ok", text: "Asked for the file. If nothing arrived, this viewer blocks downloads from the page, and the code above still works." };
     } catch (e) {
-      restoreNote = { tone: "bad", text: "The download was refused here. Some viewers block it; the code above still works." };
+      restoreNote = { tone: "bad", text: "The download was refused here. The code above still works." };
     }
     render();
+  }
+
+  function saveToFile() {
+    var text = backupCode();
+    // Inside the artifact viewer the page cannot hand you a file on its
+    // own, and there is a proper door for it that asks you first.
+    var host = typeof window.claude !== "undefined" ? window.claude : null;
+    if (host && typeof host.use === "function") {
+      try {
+        host.use("downloads").then(function (d) {
+          if (!d || typeof d.save !== "function") { saveByLink(text); return; }
+          d.save({ filename: fileName(), data: text }).then(function () {
+            restoreNote = { tone: "ok", text: "Saved. Keep it somewhere that is not this browser." };
+            render();
+          })["catch"](function (err) {
+            restoreNote = (err && err.code === "declined")
+              ? { tone: "bad", text: "Left as it was." }
+              : { tone: "bad", text: "That did not save. The code above still works." };
+            render();
+          });
+        })["catch"](function () { saveByLink(text); });
+        return;
+      } catch (e) { /* fall through to the ordinary link */ }
+    }
+    saveByLink(text);
   }
 
   function readFile(file) {
