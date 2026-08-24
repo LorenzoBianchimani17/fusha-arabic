@@ -541,6 +541,28 @@
   .street-tag { color: var(--ink-3); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
   .street-arrow { color: var(--ink-3); }
   .street-en { flex: 1 0 100%; color: var(--ink-3); font-size: var(--t-1); }
+  .verdict-msg.warn { color: var(--amber); background: var(--surface-2); }
+  .flash-alt { margin-top: var(--s-3); color: var(--ink-3); font-size: var(--t-2);
+    display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+  .flash-alt .ar { color: var(--ink-2); font-size: var(--t-4); }
+  .flash-ending { margin-top: var(--s-3); color: var(--ink-3); font-size: var(--t-1);
+    line-height: 1.5; }
+  .flash-ending b { color: var(--ink-2); }
+  .aside-key { flex: 1 0 100%; margin: var(--s-3) 0 0; color: var(--ink-3);
+    font-size: var(--t-1); line-height: 1.55; }
+  .aside-key b { color: var(--ink-2); font-weight: 600; }
+  .twin-inline { margin: var(--s-5) 0 0; padding: 14px; border: 1px solid var(--line);
+    border-radius: var(--r-md); background: var(--surface-2); }
+  .twin-inline-head { margin: 0 0 10px; color: var(--ink-2); font-size: var(--t-2); line-height: 1.5; }
+  .twin-inline-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+  .review-choose { margin: calc(var(--s-3) * -1) 0 var(--s-5); text-align: right; }
+  .heard-no { background: transparent; border-color: var(--line-strong); color: var(--ink-3); }
+  .twin.is-pick { border-color: var(--good); }
+  .twin-pick { color: var(--good); background: var(--good-soft); white-space: nowrap; }
+  .learn-count { margin: var(--s-4) 0 0; text-align: center; color: var(--ink-3); font-size: var(--t-1); }
+  .flash-tags { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+  .how-tag.is-safe { color: var(--good); background: var(--good-soft); }
+  .how-tag.is-direct { color: var(--amber); background: var(--surface-2); }
   .now-group { margin: 0 0 var(--s-6); }
   .now-row { display: flex; align-items: center; gap: var(--s-4); padding: 14px 0;
     border-bottom: 1px solid var(--line); }
@@ -2386,17 +2408,17 @@
       title: "Meeting someone",
       intro: "Opening a conversation, and taking a no gracefully.",
       phrases: [
-        { ar: "Lau samàhti", en: "Excuse me", f: "Lau samàht", fLabel: "Speaking to a man", note: "This whole lesson uses the forms for speaking to a woman. The flashcards show the version you would use with a man." },
+        { ar: "Lau samàhti", en: "Excuse me", f: "Lau samàht", fLabel: "Speaking to a man", note: "This whole lesson uses the forms for speaking to a woman. The flashcards show the version you would use with a man.", how: "safe" },
         { ar: "Hal tatakàllamìn al-inglizìyya?", en: "Do you speak English?" },
         { ar: "Mà ìsmuki?", en: "What is your name?", f: "Mà ìsmuk?", fLabel: "Speaking to a man" },
-        { ar: "Tashàrraft", en: "Nice to meet you" },
+        { ar: "Tashàrraft", en: "Nice to meet you", how: "safe" },
         { ar: "Hal ànti min hùna?", en: "Are you from here?" },
-        { ar: "Hal tuhibbìn al-qàhwa?", en: "Do you like coffee?" },
-        { ar: "Hal nàshrab qàhwa màʿan?", en: "Shall we have a coffee together?", note: "Worth knowing: nobody actually flirts in Modern Standard Arabic. In real life this happens in the local dialect. What carries over is the structure and the politeness, not the exact words." },
+        { ar: "Hal tuhibbìn al-qàhwa?", en: "Do you like coffee?", how: "safe" },
+        { ar: "Hal nàshrab qàhwa màʿan?", en: "Shall we have a coffee together?", note: "Worth knowing: nobody actually flirts in Modern Standard Arabic. In real life this happens in the local dialect. What carries over is the structure and the politeness, not the exact words.", how: "direct" },
         { ar: "Bikùll surùr", en: "With pleasure" },
-        { ar: "Ànti latìfa", en: "You are kind" },
-        { ar: "Ànti jamìla", en: "You are beautiful", note: "In much of the Arab world, complimenting a stranger's looks lands badly and closes the conversation. <b>Ànti latìfa</b> is the safer compliment, and it works better once you are already talking." },
-        { ar: "Mà raqm hàtifiki?", en: "What is your phone number?" },
+        { ar: "Ànti latìfa", en: "You are kind", how: "safe" },
+        { ar: "Ànti jamìla", en: "You are beautiful", note: "In much of the Arab world, complimenting a stranger's looks lands badly and closes the conversation. <b>Ànti latìfa</b> is the safer compliment, and it works better once you are already talking.", how: "direct" },
+        { ar: "Mà raqm hàtifiki?", en: "What is your phone number?", how: "direct" },
         { ar: "Là, shùkran", en: "No, thank you", core: true },
         { ar: "Àsifa, anà mashghùla", en: "Sorry, I am busy", note: "Learn to recognise this one instantly. It is the polite refusal, and it means the conversation is over." },
         { ar: "Là bà's, maʿa salàma", en: "That is fine, goodbye", note: "The most useful phrase here. A no is a complete answer; this is how you accept it and leave well." },
@@ -2414,8 +2436,8 @@
       title: "Getting to know someone",
       intro: "The questions after the first two minutes: what you do, what you like, how long you have been here.",
       phrases: [
-        { ar: "Mà tùhibbìn an tafʿalì?", en: "What do you like to do?", f: "Mà tùhib an tàfʿal?", fLabel: "Speaking to a man", core: true, note: "Like lesson 19, this one is written for speaking to a woman; the flashcard shows the form for a man." },
-        { ar: "Hal ʿìndaki hiwayàt?", en: "Do you have any hobbies?", f: "Hal ʿìndak hiwayàt?", fLabel: "Speaking to a man" },
+        { ar: "Mà tùhibbìn an tafʿalì?", en: "What do you like to do?", f: "Mà tùhib an tàfʿal?", fLabel: "Speaking to a man", core: true, note: "Like Meeting someone, this one is written for speaking to a woman; the flashcard shows the form for a man.", how: "safe" },
+        { ar: "Hal ʿìndaki hiwayàt?", en: "Do you have any hobbies?", f: "Hal ʿìndak hiwayàt?", fLabel: "Speaking to a man", how: "safe" },
         { ar: "Ùhib al-mùsiqa", en: "I like music", core: true },
         { ar: "Ày nàuʿ min al-mùsiqa?", en: "What kind of music?", note: "<b>Ày nàuʿ</b>, what kind, works on anything: music, food, films. It is the question that keeps a conversation going after a one-word answer." },
         { ar: "Ùhib al-aflàm", en: "I like films" },
@@ -2469,22 +2491,97 @@
       title: "Keeping in touch",
       intro: "The end of a good conversation: a number, a message, and a time to meet again.",
       phrases: [
-        { ar: "Hàdha raqmi", en: "This is my number", core: true },
-        { ar: "Sa'attàsil biki", en: "I will call you", f: "Sa'attàsil bik", fLabel: "Speaking to a man", note: "Like lesson 19, written for speaking to a woman." },
-        { ar: "Ìttasili bi", en: "Call me", f: "Ìttasil bi", fLabel: "Speaking to a man" },
+        { ar: "Hàdha ràqmi", en: "This is my number", core: true },
+        { ar: "Sa'àttasil biki", en: "I will call you", f: "Sa'àttasil bik", fLabel: "Speaking to a man", note: "Written for speaking to a woman, like Meeting someone." },
+        { ar: "Ìttasili bi", en: "Call me", f: "Ìttasil bi", fLabel: "Speaking to a man", how: "direct" },
         { ar: "Ìbʿathi li risàla", en: "Send me a message", f: "Ìbʿath li risàla", fLabel: "Speaking to a man", core: true },
-        { ar: "Hal ànti hùrra ghàdan?", en: "Are you free tomorrow?", f: "Hal ànta hùrr ghàdan?", fLabel: "Speaking to a man" },
+        { ar: "Hal ànti hùrra ghàdan?", en: "Are you free tomorrow?", f: "Hal ànta hùrr ghàdan?", fLabel: "Speaking to a man", how: "direct" },
         { ar: "Anà hùrr al-làila", en: "I am free tonight" },
-        { ar: "Àina naltàqi?", en: "Where shall we meet?", core: true },
-        { ar: "Naltàqi hunàk", en: "Let us meet there" },
-        { ar: "Urìd an àraki màrra ùkhra", en: "I would like to see you again", f: "Urìd an aràk màrra ùkhra", fLabel: "Speaking to a man", note: "Direct, and none the worse for it. Said at the end of an evening that went well, it is understood everywhere." },
+        { ar: "Àina nàltaqi?", en: "Where shall we meet?", core: true },
+        { ar: "Nàltaqi hunàk", en: "Let us meet there" },
+        { ar: "Urìd an àraki màrra ùkhra", en: "I would like to see you again", f: "Urìd an aràk màrra ùkhra", fLabel: "Speaking to a man", note: "Direct, and none the worse for it. Said at the end of an evening that went well, it is understood everywhere.", how: "direct" },
         { ar: "Kàna màsa'an jamìlan", en: "It was a lovely evening" }
       ],
       dialogue: [
         { ask: "Hal ànti hùrra ghàdan?", askEn: "Are you free tomorrow?", reply: "Naʿam, anà hùrra", en: "Yes, I am free" },
-        { ask: "Àina naltàqi?", askEn: "Where shall we meet?", reply: "Naltàqi hunàk", en: "Let us meet there" },
-        { ask: "Sa'attàsil biki", askEn: "I will call you", reply: "Hàdha raqmi", en: "This is my number" },
+        { ask: "Àina nàltaqi?", askEn: "Where shall we meet?", reply: "Nàltaqi hunàk", en: "Let us meet there" },
+        { ask: "Sa'àttasil biki", askEn: "I will call you", reply: "Hàdha ràqmi", en: "This is my number" },
         { ask: "Kàna màsa'an jamìlan", askEn: "It was a lovely evening", reply: "Urìd an aràk màrra ùkhra", en: "I would like to see you again" }
+      ]
+    },
+    {
+      id: 34,
+      title: "Keeping it going",
+      intro: "The short words that keep the other person talking. None of them is a sentence, and they matter more than most sentences.",
+      phrases: [
+        { ar: "Tàbʿan", en: "Of course", core: true },
+        { ar: "Sahìh", en: "True, right" },
+        { ar: "Hàddithini àkthar", en: "Tell me more", core: true, how: "safe" },
+        { ar: "Wa baʿd?", en: "And then?", note: "Two syllables that buy you another minute of listening, which is what you want at this stage." },
+        { ar: "Yà salàm!", en: "How lovely!" },
+        { ar: "Mà shà' Allàh", en: "Said on hearing something good", note: "Said when something good is reported: a new job, a child, a fine house. Leaving it out where it is expected is more noticeable than getting it slightly wrong." },
+        { ar: "Miskìn", en: "Poor thing" },
+        { ar: "Àsif ʿalà dhàlik", en: "I am sorry to hear that" },
+        { ar: "Kèifa dhàlik?", en: "How come?" },
+        { ar: "Wa ànti?", en: "And you?", f: "Wa ànta?", fLabel: "Speaking to a man", core: true, note: "The cheapest way to keep a conversation level: answer, then hand it straight back." },
+        { ar: "Àsif, mà ìsmuki màrra ùkhra?", en: "Sorry, your name again?", f: "Àsif, mà ìsmuk màrra ùkhra?", fLabel: "Speaking to a man", note: "Asking once, early, is nothing. Asking on the third meeting is something else." },
+        { ar: "Hal qùltu sahìh?", en: "Did I say it right?" }
+      ],
+      dialogue: [
+        { ask: "Hal àʿjabak?", askEn: "Did you like it?", reply: "Tàbʿan", en: "Of course" },
+        { ask: "Anà taʿbàn", askEn: "I am tired", reply: "Miskìn", en: "Poor thing" },
+        { ask: "Kàna jamìlan", askEn: "It was lovely", reply: "Yà salàm!", en: "How lovely!" },
+        { ask: "Mà ìsmuki?", askEn: "What is your name?", reply: "Àsif, mà ìsmuki màrra ùkhra?", en: "Sorry, your name again?" }
+      ]
+    },
+    {
+      id: 35,
+      title: "Married, single, and who you live with",
+      intro: "Asked early and openly across the Arab world, and worth being able to answer before it is asked.",
+      phrases: [
+        { ar: "Hal ànti mutazàwwija?", en: "Are you married?", f: "Hal ànta mutazàwwij?", fLabel: "Speaking to a man", note: "Normal small talk in most of the Arab world, and asked far sooner than it would be in Italy. Asked of a woman you have just met it can still read as a proposition rather than a question, so it is the safer one to answer than to ask.", how: "direct" },
+        { ar: "Anà mutazàwwij", en: "I am married", f: "Anà mutazàwwija", fLabel: "Said by a woman" },
+        { ar: "Lastu mutazàwwij", en: "I am not married", f: "Lastu mutazàwwija", fLabel: "Said by a woman", core: true },
+        { ar: "Hal ʿìndaki àtfal?", en: "Do you have children?", f: "Hal ʿìndak àtfal?", fLabel: "Speaking to a man" },
+        { ar: "ʿÌndi wàlad wa bint", en: "I have a boy and a girl" },
+        { ar: "Làisa ʿìndi àtfal", en: "I have no children" },
+        { ar: "Aʿìsh wàhdi", en: "I live alone", core: true },
+        { ar: "Aʿìsh maʿa ùsrati", en: "I live with my family" },
+        { ar: "Aʿìsh maʿa sadìq", en: "I live with a friend" },
+        { ar: "Hal ànti hùna wàhdaki?", en: "Are you here on your own?", f: "Hal ànta hùna wàhdak?", fLabel: "Speaking to a man", how: "direct" },
+        { ar: "Anà hùna li al-ʿàmal", en: "I am here for work" },
+        { ar: "Anà hùna li as-siyàha", en: "I am here as a tourist" }
+      ],
+      dialogue: [
+        { ask: "Hal ànti mutazàwwija?", askEn: "Are you married?", reply: "Lastu mutazàwwija", en: "I am not married" },
+        { ask: "Hal ʿìndaki àtfal?", askEn: "Do you have children?", reply: "Làisa ʿìndi àtfal", en: "I have no children" },
+        { ask: "Hal ànti hùna wàhdaki?", askEn: "Are you here on your own?", reply: "Aʿìsh maʿa ùsrati", en: "I live with my family" },
+        { ask: "Màdha tàfʿal hùna?", askEn: "What are you doing here?", reply: "Anà hùna li al-ʿàmal", en: "I am here for work" }
+      ]
+    },
+    {
+      id: 36,
+      title: "At the table",
+      intro: "Ordering for two, saying what you do not eat, and settling the bill without a scene.",
+      phrases: [
+        { ar: "Màdha tànsahìn?", en: "What do you recommend?", f: "Màdha tànsah?", fLabel: "Speaking to a man", core: true },
+        { ar: "Anà nabàti", en: "I am vegetarian", f: "Anà nabatìyya", fLabel: "Said by a woman", core: true },
+        { ar: "Là àkul làhm", en: "I do not eat meat" },
+        { ar: "Là àshrab al-kùhul", en: "I do not drink alcohol", note: "Worth having ready. In much of the region it is the ordinary answer and nobody blinks; offering a reason is not expected." },
+        { ar: "Hal fìhi làhm khinzìr?", en: "Does it have pork in it?" },
+        { ar: "Bidùn sùkkar, min fàdlik", en: "Without sugar, please", note: "Tea and coffee arrive sweet by default in most of the region. If you want it plain, you have to say so before it is poured." },
+        { ar: "Ladhìdh!", en: "Delicious!", core: true },
+        { ar: "Shabìʿt, shùkran", en: "I am full, thank you" },
+        { ar: "Àkthar min al-làzim", en: "That is more than enough" },
+        { ar: "Anà àdʿuki", en: "It is on me", f: "Anà àdʿuk", fLabel: "Speaking to a man", note: "Expect this to be contested. Insisting once is polite; insisting three times is the custom.", how: "direct" },
+        { ar: "Hal nàqsim al-hisàb?", en: "Shall we split the bill?" },
+        { ar: "Al-hisàb ʿalàyya", en: "The bill is on me" }
+      ],
+      dialogue: [
+        { ask: "Màdha tànsahìn?", askEn: "What do you recommend?", reply: "As-sàmak ladhìdh hùna", en: "The fish is good here" },
+        { ask: "Hal fìhi làhm khinzìr?", askEn: "Does it have pork in it?", reply: "Là, àbadan", en: "No, none at all" },
+        { ask: "Hal nàqsim al-hisàb?", askEn: "Shall we split the bill?", reply: "Al-hisàb ʿalàyya", en: "The bill is on me" },
+        { ask: "Hal turìdìn àkthar?", askEn: "Would you like more?", reply: "Shabìʿt, shùkran", en: "I am full, thank you" }
       ]
     },
     {
@@ -2821,6 +2918,33 @@
         { say: "Mà ìsmuk?", sayEn: "What is your name?", reply: "Ismì Marco", replyEn: "My name is Marco" },
         { say: "Tashàrraft", sayEn: "Nice to meet you", reply: "Wa anà àidan", replyEn: "Me too" },
         { say: "Maʿa salàma", sayEn: "Goodbye", reply: "Ilà al-liqà", replyEn: "See you again" }
+      ]
+    },
+    {
+      id: "tenminutes",
+      title: "Ten minutes in",
+      setting: "You have been talking a while and it is going well. She asks first.",
+      needs: [1, 2, 3, 18, 30, 31, 32, 33],
+      turns: [
+        { say: "Mà tùhib an tàfʿal?", sayEn: "What do you like to do?", reply: "Ùhib al-mùsiqa", replyEn: "I like music" },
+        { say: "Ày nàuʿ min al-mùsiqa?", sayEn: "What kind of music?", reply: "Ùhibbu jìddan", replyEn: "I like it a lot" },
+        { say: "Mùndhu matà ànta hùna?", sayEn: "How long have you been here?", reply: "Anà hùna mùndhu sàna", replyEn: "I have been here a year" },
+        {
+          say: "Hal nàshrab qàhwa màʿan?",
+          sayEn: "Shall we have a coffee together?",
+          reply: "Bikùll surùr",
+          replyEn: "With pleasure",
+          alts: [
+            {
+              reply: "Bikùll surùr", replyEn: "With pleasure",
+              next: { say: "Mumtàz", sayEn: "Excellent", reply: "Àina nàltaqi?", replyEn: "Where shall we meet?" }
+            },
+            {
+              reply: "Àsif, là àstatìʿ", replyEn: "Sorry, I cannot",
+              next: { say: "Là bà's, maʿa salàma", sayEn: "That is fine, goodbye", reply: "Ilà al-liqà", replyEn: "See you again" }
+            }
+          ]
+        }
       ]
     },
     {
@@ -3297,9 +3421,9 @@
     "Àbadan": "أَبَدًا",
     "Al-fìlm mumtìʿ": "الْفِيلْمُ مُمْتِع",
     "Hal ta'tìn hùna dà'iman?": "هَلْ تَأْتِينَ هُنَا دَائِمًا؟",
-    "Hàdha raqmi": "هَذَا رَقْمِي",
-    "Sa'attàsil biki": "سَأَتَّصِلُ بِكِ",
-    "Sa'attàsil bik": "سَأَتَّصِلُ بِكَ",
+    "Hàdha ràqmi": "هَذَا رَقْمِي",
+    "Sa'àttasil biki": "سَأَتَّصِلُ بِكِ",
+    "Sa'àttasil bik": "سَأَتَّصِلُ بِكَ",
     "Ìttasili bi": "اِتَّصِلِي بِي",
     "Ìttasil bi": "اِتَّصِلْ بِي",
     "Ìbʿathi li risàla": "اِبْعَثِي لِي رِسَالَة",
@@ -3307,12 +3431,62 @@
     "Hal ànti hùrra ghàdan?": "هَلْ أَنْتِ حُرَّةٌ غَدًا؟",
     "Hal ànta hùrr ghàdan?": "هَلْ أَنْتَ حُرٌّ غَدًا؟",
     "Anà hùrr al-làila": "أَنَا حُرٌّ اللَّيْلَة",
-    "Naʿam, anà hùrra": "نَعَمْ، أَنَا حُرَّة",
-    "Àina naltàqi?": "أَيْنَ نَلْتَقِي؟",
-    "Naltàqi hunàk": "نَلْتَقِي هُنَاك",
+    "Naʿam, anà hùrra": "نَعَمْ، أَنَا حُرَّةٌ",
+    "Àina nàltaqi?": "أَيْنَ نَلْتَقِي؟",
+    "Nàltaqi hunàk": "نَلْتَقِي هُنَاك",
     "Urìd an àraki màrra ùkhra": "أُرِيدُ أَنْ أَرَاكِ مَرَّةً أُخْرَى",
     "Urìd an aràk màrra ùkhra": "أُرِيدُ أَنْ أَرَاكَ مَرَّةً أُخْرَى",
     "Kàna màsa'an jamìlan": "كَانَ مَسَاءً جَمِيلًا",
+    "Tàbʿan": "طَبْعًا",
+    "Sahìh": "صَحِيح",
+    "Hàddithini àkthar": "حَدِّثْنِي أَكْثَر",
+    "Wa baʿd?": "وَبَعْد؟",
+    "Yà salàm!": "يَا سَلَام!",
+    "Mà shà' Allàh": "مَا شَاءَ اللَّه",
+    "Miskìn": "مِسْكِين",
+    "Àsif ʿalà dhàlik": "آسِفٌ عَلَى ذَلِك",
+    "Kèifa dhàlik?": "كَيْفَ ذَلِك؟",
+    "Wa ànti?": "وَأَنْتِ؟",
+    "Wa ànta?": "وَأَنْتَ؟",
+    "Àsif, mà ìsmuki màrra ùkhra?": "آسِفٌ، مَا اسْمُكِ مَرَّةً أُخْرَى؟",
+    "Àsif, mà ìsmuk màrra ùkhra?": "آسِفٌ، مَا اسْمُكَ مَرَّةً أُخْرَى؟",
+    "Hal qùltu sahìh?": "هَلْ قُلْتُ صَحِيح؟",
+    "Hal ànti mutazàwwija?": "هَلْ أَنْتِ مُتَزَوِّجَة؟",
+    "Hal ànta mutazàwwij?": "هَلْ أَنْتَ مُتَزَوِّج؟",
+    "Anà mutazàwwij": "أَنَا مُتَزَوِّج",
+    "Anà mutazàwwija": "أَنَا مُتَزَوِّجَة",
+    "Lastu mutazàwwij": "لَسْتُ مُتَزَوِّجًا",
+    "Lastu mutazàwwija": "لَسْتُ مُتَزَوِّجَة",
+    "Hal ʿìndaki àtfal?": "هَلْ عِنْدَكِ أَطْفَال؟",
+    "Hal ʿìndak àtfal?": "هَلْ عِنْدَكَ أَطْفَال؟",
+    "ʿÌndi wàlad wa bint": "عِنْدِي وَلَدٌ وَبِنْت",
+    "Làisa ʿìndi àtfal": "لَيْسَ عِنْدِي أَطْفَال",
+    "Aʿìsh wàhdi": "أَعِيشُ وَحْدِي",
+    "Aʿìsh maʿa ùsrati": "أَعِيشُ مَعَ أُسْرَتِي",
+    "Aʿìsh maʿa sadìq": "أَعِيشُ مَعَ صَدِيق",
+    "Hal ànti hùna wàhdaki?": "هَلْ أَنْتِ هُنَا وَحْدَكِ؟",
+    "Hal ànta hùna wàhdak?": "هَلْ أَنْتَ هُنَا وَحْدَك؟",
+    "Anà hùna li al-ʿàmal": "أَنَا هُنَا لِلْعَمَل",
+    "Anà hùna li as-siyàha": "أَنَا هُنَا لِلسِّيَاحَة",
+    "Màdha tàfʿal hùna?": "مَاذَا تَفْعَلُ هُنَا؟",
+    "Màdha tànsahìn?": "مَاذَا تَنْصَحِين؟",
+    "Màdha tànsah?": "مَاذَا تَنْصَح؟",
+    "Anà nabàti": "أَنَا نَبَاتِي",
+    "Anà nabatìyya": "أَنَا نَبَاتِيَّة",
+    "Là àkul làhm": "لَا آكُلُ لَحْم",
+    "Là àshrab al-kùhul": "لَا أَشْرَبُ الْكُحُول",
+    "Hal fìhi làhm khinzìr?": "هَلْ فِيهِ لَحْمُ خِنْزِير؟",
+    "Bidùn sùkkar, min fàdlik": "بِدُونِ سُكَّر، مِنْ فَضْلِك",
+    "Ladhìdh!": "لَذِيذ!",
+    "Shabìʿt, shùkran": "شَبِعْتُ، شُكْرًا",
+    "Àkthar min al-làzim": "أَكْثَرُ مِنَ اللَّازِم",
+    "Anà àdʿuki": "أَنَا أَدْعُوكِ",
+    "Anà àdʿuk": "أَنَا أَدْعُوكَ",
+    "Hal nàqsim al-hisàb?": "هَلْ نَقْسِمُ الْحِسَاب؟",
+    "Al-hisàb ʿalàyya": "الْحِسَابُ عَلَيَّ",
+    "As-sàmak ladhìdh hùna": "السَّمَكُ لَذِيذٌ هُنَا",
+    "Là, àbadan": "لَا، أَبَدًا",
+    "Hal turìdìn àkthar?": "هَلْ تُرِيدِينَ أَكْثَر؟",
     "Ilà al-liqà qarìban": "إِلَى اللِّقَاءِ قَرِيبًا",
     "Ilà al-ghad": "إِلَى الْغَد",
     "Tùsbih ʿalà khèir": "تُصْبِحُ عَلَى خَيْرٍ",
@@ -4832,13 +5006,13 @@
     "Hal ta'tìn hùna dà'iman?": {
       lev: ["Bìtiji hòn dàyman?", "بتيجي هون دايما؟"]
     },
-    "Hàdha raqmi": {
+    "Hàdha ràqmi": {
       lev: ["Hàda nìmerti", "هدا نمرتي"]
     },
-    "Sa'attàsil biki": {
+    "Sa'àttasil biki": {
       lev: ["Rah ittàsel fìki", "رح اتصل فيكي"]
     },
-    "Sa'attàsil bik": {
+    "Sa'àttasil bik": {
       lev: ["Rah ittàsel fìk", "رح اتصل فيك"]
     },
     "Ìttasili bi": {
@@ -4848,10 +5022,10 @@
       lev: ["Ittàsel fìyyi", "اتصل فيي"]
     },
     "Ìbʿathi li risàla": {
-      lev: ["Ìbʿatili rasàle", "ابعتيلي رسالة"]
+      lev: ["Ìbʿatili risàle", "ابعتيلي رسالة"]
     },
     "Ìbʿath li risàla": {
-      lev: ["Ìbʿatli rasàle", "ابعتلي رسالة"]
+      lev: ["Ìbʿatli risàle", "ابعتلي رسالة"]
     },
     "Hal ànti hùrra ghàdan?": {
       lev: ["Fàdye bùkra?", "فاضية بكرا؟"]
@@ -4863,22 +5037,157 @@
       lev: ["Anà fàdi al-lèile", "أنا فاضي الليلة"]
     },
     "Naʿam, anà hùrra": {
-      lev: ["Èh, anà fàdye", "إيه أنا فاضية"]
+      lev: ["Èh, anà fàdye", "إي أنا فاضية"]
     },
-    "Àina naltàqi?": {
+    "Àina nàltaqi?": {
       lev: ["Wèin bnìtlaʾa?", "وين بنتلاقى؟"]
     },
-    "Naltàqi hunàk": {
+    "Nàltaqi hunàk": {
       lev: ["Bnìtlaʾa hunìk", "بنتلاقى هنيك"]
     },
     "Urìd an àraki màrra ùkhra": {
-      lev: ["Bìddi shùfik màrra tànye", "بدي شوفك مرة تانية"]
+      lev: ["Bìddi shùfik màrra tànye", "بدي شوفِك مرة تانية"]
     },
     "Urìd an aràk màrra ùkhra": {
       lev: ["Bìddi shùfak màrra tànye", "بدي شوفك مرة تانية"]
     },
     "Kàna màsa'an jamìlan": {
       lev: ["Kàn màsa hìlu", "كان مسا حلو"]
+    },
+    "Sahìh": {
+      lev: ["Sahh", "صح"]
+    },
+    "Hàddithini àkthar": {
+      lev: ["Ihkìli aktàr", "احكيلي أكتر"]
+    },
+    "Wa baʿd?": {
+      lev: ["W baʿdèin?", "وبعدين؟"]
+    },
+    "Àsif ʿalà dhàlik": {
+      lev: ["Àsef ktìr", "آسف كتير"]
+    },
+    "Kèifa dhàlik?": {
+      lev: ["Kìf hèik?", "كيف هيك؟"]
+    },
+    "Wa ànti?": {
+      lev: ["W ìnti?", "وإنتي؟"]
+    },
+    "Wa ànta?": {
+      lev: ["W ìnta?", "وإنتَ؟"]
+    },
+    "Àsif, mà ìsmuki màrra ùkhra?": {
+      lev: ["Àsef, shu ìsmik kamàn màrra?", "آسف شو اسمك كمان مرة؟"]
+    },
+    "Àsif, mà ìsmuk màrra ùkhra?": {
+      lev: ["Àsef, shu ìsmak kamàn màrra?", "آسف شو اسمك كمان مرة؟"]
+    },
+    "Hal qùltu sahìh?": {
+      lev: ["ʾÌlt sahh?", "قلت صح؟"]
+    },
+    "Hal ànti mutazàwwija?": {
+      lev: ["Ìnti mitzàwwje?", "إنتي متزوجة؟"]
+    },
+    "Hal ànta mutazàwwij?": {
+      lev: ["Ìnta mitzàwwej?", "إنتَ متزوج؟"]
+    },
+    "Anà mutazàwwij": {
+      lev: ["Anà mitzàwwej", "أنا متزوج"]
+    },
+    "Anà mutazàwwija": {
+      lev: ["Anà mitzàwwje", "أنا متزوجة"]
+    },
+    "Lastu mutazàwwij": {
+      lev: ["Mà ana mitzàwwej", "ما أنا متزوج"]
+    },
+    "Lastu mutazàwwija": {
+      lev: ["Mà ana mitzàwwje", "ما أنا متزوجة"]
+    },
+    "Hal ʿìndaki àtfal?": {
+      lev: ["ʿÀndik wlàd?", "عندك ولاد؟"]
+    },
+    "Hal ʿìndak àtfal?": {
+      lev: ["ʿÀndak wlàd?", "عندك ولاد؟"]
+    },
+    "ʿÌndi wàlad wa bint": {
+      lev: ["ʿÀndi sàbi w bint", "عندي صبي وبنت"]
+    },
+    "Làisa ʿìndi àtfal": {
+      lev: ["Mà ʿàndi wlàd", "ما عندي ولاد"]
+    },
+    "Aʿìsh wàhdi": {
+      lev: ["ʿAyesh làhali", "عايش لحالي"]
+    },
+    "Aʿìsh maʿa ùsrati": {
+      lev: ["ʿAyesh maʿ ʿèilti", "عايش مع عيلتي"]
+    },
+    "Aʿìsh maʿa sadìq": {
+      lev: ["ʿAyesh maʿ sàheb", "عايش مع صاحب"]
+    },
+    "Hal ànti hùna wàhdaki?": {
+      lev: ["Ìnti hòn làhalik?", "إنتي هون لحالك؟"]
+    },
+    "Hal ànta hùna wàhdak?": {
+      lev: ["Ìnta hòn làhalak?", "إنتَ هون لحالك؟"]
+    },
+    "Anà hùna li al-ʿàmal": {
+      lev: ["Anà hòn la ash-shùghel", "أنا هون للشغل"]
+    },
+    "Anà hùna li as-siyàha": {
+      lev: ["Anà hòn siyàha", "أنا هون سياحة"]
+    },
+    "Màdha tàfʿal hùna?": {
+      lev: ["Shu ʿam tìʿmal hòn?", "شو عم تعمل هون؟"]
+    },
+    "Màdha tànsahìn?": {
+      lev: ["Shu bitìnsahi?", "شو بتنصحي؟"]
+    },
+    "Màdha tànsah?": {
+      lev: ["Shu bitìnsah?", "شو بتنصح؟"]
+    },
+    "Anà nabàti": {
+      lev: ["Anà nabàti", "أنا نباتي"]
+    },
+    "Anà nabatìyya": {
+      lev: ["Anà nabatìyye", "أنا نباتية"]
+    },
+    "Là àkul làhm": {
+      lev: ["Mà bòkol làhme", "ما بوكل لحمة"]
+    },
+    "Là àshrab al-kùhul": {
+      lev: ["Mà bìshrab kuhùl", "ما بشرب كحول"]
+    },
+    "Hal fìhi làhm khinzìr?": {
+      lev: ["Fìh làhem khanzìr?", "فيه لحم خنزير؟"]
+    },
+    "Bidùn sùkkar, min fàdlik": {
+      lev: ["Bidùn sùkkar, lau samàht", "بدون سكر لو سمحت"]
+    },
+    "Shabìʿt, shùkran": {
+      lev: ["Shbìʿt, shùkran", "شبعت شكرا"]
+    },
+    "Àkthar min al-làzim": {
+      lev: ["Aktàr min al-làzem", "أكتر من اللازم"]
+    },
+    "Anà àdʿuki": {
+      lev: ["Anà ʿàzemtik", "أنا عازمتك"]
+    },
+    "Anà àdʿuk": {
+      lev: ["Anà ʿàzemak", "أنا عازمك"]
+    },
+    "Hal nàqsim al-hisàb?": {
+      lev: ["Nìʾsem al-hsàb?", "نقسم الحساب؟"]
+    },
+    "Al-hisàb ʿalàyya": {
+      lev: ["Al-hsàb ʿalàyyi", "الحساب عليي"]
+    },
+    "As-sàmak ladhìdh hùna": {
+      lev: ["As-sàmak tàyyeb hòn", "السمك طيب هون"]
+    },
+    "Là, àbadan": {
+      lev: ["Làʾ, àbadan", "لأ أبدا"]
+    },
+    "Hal turìdìn àkthar?": {
+      lev: ["Bìddik kamàn?", "بدك كمان؟"]
     },
     "Ilà al-liqà qarìban": {
       lev: ["Bshùfik arìb", "بشوفكِ قريب"]
@@ -5290,6 +5599,8 @@
     gulf: {},
     lev: {
       "Mumtàz": 1, "Mumtìʿ": 1, "Mùmill": 1, "Sàʿb": 1, "Hàsab": 1, "Àbadan": 1,
+      "Tàbʿan": 1, "Yà salàm!": 1, "Mà shà' Allàh": 1, "Miskìn": 1,
+      "Ladhìdh!": 1,
       "Tàyyib": 1, "Tamàm": 1, "Khalàs": 1, "Yàʿni": 1, "Inshàallah": 1, "Yaʿni shùkran": 1,
       "Àhlan": 1, "Àhlan wa sàhlan": 1, "As-salàmu ʿaláikum": 1, "Wa ʿaláikum as-salàm": 1,
       "Sabàh al-khèir": 1, "Sabàh an-nùr": 1, "Masà al-khèir": 1, "Masà an-nùr": 1,
@@ -5442,10 +5753,23 @@
   // Every word below appears in a Levantine line somewhere in the course;
   // anything the two varieties share falls through to the fus-ha table.
   var GLOSS_LEV = {
+    "ana": "I", "bint": "a girl, a daughter", "sàheb": "a friend",
+    "àbadan": "never, not at all", "bìddik": "you want (to a woman)",
+    "mitzàwwje": "married (a woman)", "mitzàwwej": "married", "wlàd": "children",
+    "sàbi": "a boy", "làhali": "on my own", "làhalik": "on your own (to a woman)",
+    "làhalak": "on your own", "ʿayesh": "living", "la": "for, to",
+    "siyàha": "tourism", "bitìnsahi": "you recommend (to a woman)", "bitìnsah": "you recommend",
+    "nabàti": "vegetarian", "nabatìyye": "vegetarian (a woman)", "kuhùl": "alcohol",
+    "khanzìr": "pork, pig", "làhem": "meat", "bidùn": "without", "sùkkar": "sugar",
+    "shbìʿt": "I am full", "aktàr": "more", "al-làzem": "what is needed",
+    "ʿàzemtik": "I am inviting you (to a woman)", "ʿàzemak": "I am inviting you",
+    "nìʾsem": "we split", "ʿalàyyi": "on me", "tàyyeb": "good, tasty",
+    "sahh": "right, true", "ihkìli": "tell me", "aktàr": "more",
+    "hèik": "like this, so", "ìsmak": "your name", "ʾìlt": "I said",
     "nìmerti": "my number", "rah": "going to, will", "ittàsel": "I call, call",
     "ittàsli": "call (to a woman)", "fìki": "you (to a woman)", "fìk": "you",
     "fìyyi": "me", "ìbʿatili": "send me (to a woman)", "ìbʿatli": "send me",
-    "rasàle": "a message", "fàdye": "free (a woman)", "fàdi": "free",
+    "risàle": "a message", "fàdye": "free (a woman)", "fàdi": "free",
     "al-lèile": "tonight", "bnìtlaʾa": "we meet", "shùfik": "see you (to a woman)",
     "shùfak": "see you", "màsa": "evening", "kàn": "it was",
     "bithìbbi": "you like (to a woman)", "bithìbb": "you like",
@@ -5701,7 +6025,12 @@
       if (taught[ar].indexOf(id) === -1) taught[ar].push(id);
     }
     LESSONS.forEach(function (l) {
-      l.phrases.forEach(function (p) { teaches(p.ar, l.id); });
+      l.phrases.forEach(function (p) {
+        teaches(p.ar, l.id);
+        // The other gender's form is on the card, spoken, and labelled:
+        // a conversation is allowed to put it in someone's mouth.
+        if (p.f) teaches(p.f, l.id);
+      });
       (l.dialogue || []).forEach(function (d) { teaches(d.ask, l.id); teaches(d.reply, l.id); });
     });
 
@@ -5967,7 +6296,11 @@
       (close ? "That matches" : near.sure ? "Closest to" : "It heard") + "</span>" +
       '<span class="heard-text ar">' + esc(near.text || "-") + "</span>" +
       (close ? "" : '<span class="heard-note">Recognisers are shaky on Modern Standard Arabic. You decide.</span>') +
-      yes + "</div>";
+      yes +
+      // What it heard is a guess and yours is not. Saying so should not
+      // cost you the round.
+      '<button class="pill pill--md heard-no" data-act="heard-drop">No, I will type it</button>' +
+      "</div>";
   }
 
   function sayBtn(translit, small) {
@@ -7014,10 +7347,29 @@
       .replace(/"/g, "&quot;");
   }
 
-  function distractors(pool, correct, field, n) {
+  // A wrong answer has to be wrong. Two phrases that do the same job -
+  // marhàban and àhlan, anà bikhèir and al-hàmdu lillàh - are both right
+  // answers to the same question, and offering one as the mistake is the
+  // app being wrong, not you.
+  function sameJob(a, b) {
+    if (!a || !b || a === b) return false;
+    var ga = null, gb = null;
+    TWINS.forEach(function (t) {
+      if (t.members.indexOf(a) !== -1) ga = t.id;
+      if (t.members.indexOf(b) !== -1) gb = t.id;
+    });
+    return !!ga && ga === gb;
+  }
+
+  function phraseOf(p) {
+    return p && (p.ar || p.reply || null);
+  }
+
+  function distractors(pool, correct, field, n, answerAr) {
     var out = [];
     shuffle(pool).forEach(function (p) {
       if (out.length >= n || p[field] === correct) return;
+      if (answerAr && sameJob(phraseOf(p), answerAr)) return;
       for (var i = 0; i < out.length; i++) if (out[i][field] === p[field]) return;
       out.push(p);
     });
@@ -7029,6 +7381,36 @@
   // "assalamu alaikum" and "as-salàmu ʿaláikum" are one phrase.
   function sameSaid(a, b) {
     return normalise(a).replace(/ /g, "") === normalise(b).replace(/ /g, "");
+  }
+
+  // Doubled letters are a spelling decision, not a word. Al-hàmdu lillàh
+  // typed as alhamdulilah is the same sentence, and being marked wrong
+  // for it teaches nothing about Arabic.
+  function sameSaidLoose(a, b) {
+    var flat = function (x) {
+      return normalise(x).replace(/ /g, "").replace(/(.)\1+/g, "$1");
+    };
+    return flat(a) === flat(b);
+  }
+
+  // What you typed against every form of the phrase this app knows: the
+  // one on screen, the fus-ha behind it, and the other dialects. Choosing
+  // Levantine should not make the fus-ha you already know into an error.
+  function judgeTyped(typed, ar) {
+    if (!normalise(typed)) return null;
+    var shown = disp(ar);
+    if (sameSaid(typed, shown)) return { right: true };
+    if (sameSaid(typed, ar)) return { right: true, other: ar === shown ? null : "fusha" };
+    var loose = sameSaidLoose(typed, shown) || sameSaidLoose(typed, ar);
+    if (loose) return { right: true, loose: true };
+    var found = null;
+    VARIETIES.forEach(function (v) {
+      if (found || v.key === "msa" || v.key === variety()) return;
+      var d = (DIALECT[ar] || {})[v.key];
+      if (d && (sameSaid(typed, d[0]) || sameSaidLoose(typed, d[0]))) found = v.label;
+    });
+    if (found) return { right: true, other: found };
+    return { right: false };
   }
 
   // What counts as the same typed answer: accents, case, the ayn mark,
@@ -7066,7 +7448,7 @@
     var toEnglish = isPassive(phrase.ar) || Math.random() < 0.5;
     var field = toEnglish ? "en" : "ar";
     var want = optionsFor(lesson.id, phrase.ar);
-    var wrong = distractors(visiblePhrases(lesson), phrase[field], field, want);
+    var wrong = distractors(visiblePhrases(lesson), phrase[field], field, want, phrase.ar);
     if (!wrong.length) return null;
     return {
       type: "quiz",
@@ -7137,7 +7519,7 @@
 
   function listenRound(lesson, phrase) {
     if (!SCRIPT[phrase.ar]) return null;
-    var wrong = distractors(visiblePhrases(lesson), phrase.en, "en", optionsFor(lesson.id, phrase.ar));
+    var wrong = distractors(visiblePhrases(lesson), phrase.en, "en", optionsFor(lesson.id, phrase.ar), phrase.ar);
     if (!wrong.length) return null;
     return {
       type: "listen",
@@ -7214,8 +7596,8 @@
     if (isPassive(exchange.reply)) return null;
     var wide = replyPool();
     var want = Math.max(1, optionsFor(lesson.id, exchange.reply) - 1);
-    var wrong = distractors(wide.length > 12 ? wide : lesson.dialogue, exchange.reply, "reply", want);
-    if (!wrong.length) wrong = distractors(lesson.dialogue, exchange.reply, "reply", want);
+    var wrong = distractors(wide.length > 12 ? wide : lesson.dialogue, exchange.reply, "reply", want, exchange.reply);
+    if (!wrong.length) wrong = distractors(lesson.dialogue, exchange.reply, "reply", want, exchange.reply);
     if (!wrong.length) return null;
     return {
       type: "dialog",
@@ -7278,7 +7660,7 @@
         stuck.toEnglish = true;
         stuck.prompt = p.ar;
         stuck.answer = p.en;
-        stuck.options = shuffle(distractors(visiblePhrases(lesson), p.en, "en", 3)
+        stuck.options = shuffle(distractors(visiblePhrases(lesson), p.en, "en", 3, p.ar)
           .concat([p]).map(function (x) { return x.en; }));
       }
       return stuck;
@@ -7466,6 +7848,7 @@
       isBack: !!fields.isBack,
       isOne: !!fields.isOne,
       isTest: !!fields.isTest,
+      only: fields.only || null,
       aimed: fields.aimed || null,
       extended: false,
       grew: false,
@@ -7574,11 +7957,30 @@
     return order;
   }
 
+  function chosenLessons() {
+    var want = store.chosen || [];
+    var open = finishedLessons();
+    var live = want.filter(function (id) {
+      return open.some(function (l) { return l.id === id; });
+    });
+    return live;
+  }
+
   function buildReview(fields) {
     var pool = finishedLessons();
     if (!pool.length) return null;
 
+    var only = (fields && fields.only) || null;
+    if (only && only.length) {
+      pool = pool.filter(function (l) { return only.indexOf(l.id) !== -1; });
+      if (!pool.length) return null;
+    }
+
     var all = studied();
+    if (only && only.length) {
+      all = all.filter(function (it) { return only.indexOf(it.lesson.id) !== -1; });
+      if (!all.length) return null;
+    }
     var asking = askingGames();
     var types = asking.length ? asking : ["quiz"];
 
@@ -7711,6 +8113,7 @@
     var f = fields || {};
     return newSession({
       isReview: true,
+      only: only && only.length ? only : null,
       isToday: !!f.isToday,
       isBack: !!f.isBack,
       todayNext: f.todayNext || null,
@@ -7875,7 +8278,7 @@
       // always, for anything that cannot be typed.
       if (r.type === "quiz") {
         var field = r.toEnglish ? "en" : "ar";
-        var wrong = distractors(visiblePhrases(item.lesson), p[field], field, 3);
+        var wrong = distractors(visiblePhrases(item.lesson), p[field], field, 3, p.ar);
         if (wrong.length) {
           r.options = shuffle(wrong.concat([p]).map(function (x) { return x[field]; }));
         }
@@ -8088,20 +8491,42 @@
   }
 
   var CIRCUIT = [
+    { go: "twins", label: "Now: pick which one you will say", why: "the course just gave you a second way to say the same thing" },
     { go: "moment", label: "Now: three situations", why: "no English to translate" },
     { go: "asked", label: "Now: five questions by ear", why: "just what they are asking" },
     { go: "make", label: "Now: make a few sentences", why: "none of them taught as a phrase" },
     { go: "numbers", label: "Now: a few numbers by ear", why: "the ones that cost money" }
   ];
 
+  // "Next lesson" is the only thing the score screen has ever suggested,
+  // and it is not always the right one. If a lesson you passed is coming
+  // apart, say so and offer it by name.
+  function weakestLesson(skip) {
+    var worst = null, worstN = 0;
+    finishedLessons().forEach(function (l) {
+      if (l.isMine || (skip && l.id === skip.id)) return;
+      var n = 0;
+      visiblePhrases(l).forEach(function (p) {
+        if (knownRec(l.id, p.ar)) return;
+        var st = strengthOf(l.id, p.ar);
+        if (st === null) return;
+        if (st <= 1 || isFading(l.id, p.ar)) n++;
+      });
+      if (n > worstN) { worstN = n; worst = l; }
+    });
+    return worstN >= 3 ? { lesson: worst, n: worstN } : null;
+  }
+
   function circuitNext() {
     var open = CIRCUIT.filter(function (c) {
+      if (c.go === "twins") return twinsToDecide().length > 0;
       if (c.go === "moment") return openMoments().length > 0;
       if (c.go === "asked") return askPool().length > 0;
       if (c.go === "numbers") return true;
       return combos().length > 0;
     });
     if (!open.length) return null;
+    if (open[0].go === "twins") return open[0];
     return open[runCount() % open.length];
   }
 
@@ -8606,15 +9031,32 @@
     return newSession({ isConvo: true, isFollow: true, convo: convo, tasks: tasks });
   }
 
+  function convoTurns(convo) {
+    var out = convo.turns.slice();
+    // The branch supplies the last turn. Until you choose, it is the
+    // first way it can go.
+    var last = out[out.length - 1];
+    if (last && last.alts) out.push(last.alts[0].next);
+    return out;
+  }
+
   function buildConvo(convo) {
     var elsewhere = [];
-    CONVOS.forEach(function (c) { c.turns.forEach(function (t) { elsewhere.push(t.reply); }); });
+    CONVOS.forEach(function (c) {
+      c.turns.forEach(function (t) {
+        elsewhere.push(t.reply);
+        (t.alts || []).forEach(function (a) { elsewhere.push(a.reply); });
+      });
+    });
 
-    var tasks = convo.turns.map(function (turn, idx) {
+    var tasks = convoTurns(convo).map(function (turn, idx) {
       var near = convo.turns.map(function (t) { return t.reply; });
       var wrong = [];
       shuffle(near).concat(shuffle(elsewhere)).forEach(function (r) {
         if (wrong.length >= 2 || r === turn.reply || wrong.indexOf(r) !== -1) return;
+        // never offer another phrase that answers the same thing
+        if (sameJob(r, turn.reply)) return;
+        if (turn.alts && turn.alts.some(function (a) { return a.reply === r; })) return;
         wrong.push(r);
       });
       // Support fades everywhere else once a phrase is solid, and a
@@ -8623,8 +9065,15 @@
       var lid = lessonTeaching(turn.reply);
       var st = lid ? strengthOf(lid, turn.reply) : null;
       var produce = st !== null && st >= MASTERED;
+      // A turn with alts has more than one right answer, and each one
+      // leads somewhere else. Producing it from memory would hide the
+      // choice, so this one always shows what the choices are.
+      var answers = turn.alts ? turn.alts.map(function (a) { return a.reply; }) : null;
+      var options = answers
+        ? shuffle(answers.concat(wrong.slice(0, 1)))
+        : shuffle(wrong.concat([turn.reply]));
       return {
-        produce: produce,
+        produce: answers ? false : produce,
         typed: "",
         type: "convoturn",
         points: 1,
@@ -8632,8 +9081,10 @@
         convo: convo,
         turn: turn,
         idx: idx,
+        alts: turn.alts || null,
+        answers: answers,
         answer: turn.reply,
-        options: shuffle(wrong.concat([turn.reply]))
+        options: options
       };
     });
 
@@ -8686,8 +9137,10 @@
     if (v.name === "mine") return "#/mine";
     if (v.name === "now") return "#/now";
     if (v.name === "street") return "#/street";
+    if (v.name === "choose") return "#/choose";
     if (v.name === "sounds") return "#/sounds";
     if (v.name === "frame") return "#/frame";
+    if (v.name === "answers") return "#/answers";
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -8771,6 +9224,14 @@
       return;
     }
 
+    if (parts[0] === "answers") {
+      session = null;
+      answers = newAnswers(null);
+      view = { name: "answers" };
+      render();
+      return;
+    }
+
     if (parts[0] === "frame") {
       session = null;
       frameRun = newFrameRun(null);
@@ -8782,6 +9243,13 @@
     if (parts[0] === "sounds") {
       session = null;
       view = { name: "sounds" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "choose") {
+      session = null;
+      view = { name: "choose" };
       render();
       return;
     }
@@ -8961,7 +9429,9 @@
 
       if (parts[2] === "study") {
         var idx = Math.min(Math.max(parseInt(parts[3], 10) || 1, 1), lesson.phrases.length) - 1;
-        learn = { lesson: lesson, i: idx, shown: false };
+        var kept = learn && learn.lesson === lesson ? learn.at : null;
+        learn = { lesson: lesson, i: idx, shown: false, at: kept || {} };
+        restoreCard();
         session = null;
         view = { name: "learn" };
         render();
@@ -9523,6 +9993,46 @@
       '<div class="btn-row"><button class="btn" data-go="home">Back</button></div>';
   }
 
+  // The mixed review draws on everything you have passed, which is right
+  // most of the time and wrong when you are going somewhere on Tuesday
+  // and want the four lessons that matter for it.
+  function chooseHTML() {
+    var open = finishedLessons();
+    if (!open.length) {
+      return topbarHTML("Choose your lessons") +
+        '<p class="pb-lead">Pass a lesson first: there is nothing to choose between yet.</p>' +
+        '<div class="btn-row"><button class="btn" data-go="home">Back to the lessons</button></div>';
+    }
+    var picked = chosenLessons();
+    var n = 0;
+    open.forEach(function (l) {
+      visiblePhrases(l).forEach(function (p) {
+        if (!picked.length || picked.indexOf(l.id) !== -1) n++;
+      });
+    });
+    return topbarHTML("Choose your lessons") +
+      '<p class="pb-lead">Tick the lessons you want to practise and the session draws from those alone. ' +
+      "Tick none and it draws from everything, which is what the mixed review does.</p>" +
+      '<div class="scope-row">' +
+      '<button class="pill pill--md chip" data-act="chose-all">All of them</button>' +
+      '<button class="pill pill--md chip" data-act="chose-none">None</button></div>' +
+      '<div class="scope-grid">' + open.map(function (l) {
+        var on = picked.indexOf(l.id) !== -1;
+        return '<button class="scope-cell' + (on ? " is-on" : "") + '" data-act="chose" data-id="' + l.id +
+          '" title="' + esc(l.title) + '" aria-pressed="' + (on ? "true" : "false") + '">' +
+          lessonNo(l) + "</button>";
+      }).join("") + "</div>" +
+      '<p class="scope-list">' + esc(picked.length
+        ? open.filter(function (l) { return picked.indexOf(l.id) !== -1; })
+            .map(function (l) { return l.title; }).join(" · ")
+        : "Everything you have passed") + "</p>" +
+      '<p class="can-lead">' + n + " phrase" + (n === 1 ? "" : "s") + " in the draw." +
+      (picked.length ? " Nothing else will come up until you change this." : "") + "</p>" +
+      '<div class="btn-row">' +
+      '<button class="btn btn-wide" data-act="chose-play">Play these</button></div>' +
+      '<div class="btn-row"><button class="btn btn-ghost" data-go="home">Back</button></div>';
+  }
+
   function streetHTML() {
     var v = varietyInfo();
     var isLev = variety() === "lev";
@@ -9850,6 +10360,11 @@
       '<span class="nav-note">Ten you know, out loud, without stopping</span></button>' +
       '<button class="nav-item" data-go="numbers"><span class="nav-label">Numbers by ear</span>' +
       '<span class="nav-note">A price or a time, said once. Type the digits</span></button>' +
+      '<button class="nav-item' + (replyPool().length >= 3 ? "" : " is-off") + '" data-go="answers"' +
+      (replyPool().length >= 3 ? "" : " disabled") + '><span class="nav-label">Was that a yes?</span>' +
+      '<span class="nav-note">' + (replyPool().length >= 3
+        ? "Yes, maybe or no, by ear. Understanding a soft no is the whole game"
+        : "Pass a few more lessons to open this") + "</span></button>" +
       '<button class="nav-item' + (openAsks ? "" : " is-off") + '" data-go="asked"' +
       (openAsks ? "" : " disabled") + '><span class="nav-label">What are they asking?</span>' +
       '<span class="nav-note">' + (openAsks
@@ -9982,6 +10497,10 @@
       todayHTML() +
       coreHTML() +
       reviewHTML() +
+      (finishedLessons().length > 1
+        ? '<p class="review-choose"><button class="link-btn" data-go="choose">' +
+          "or choose which lessons to draw from</button></p>"
+        : "") +
       sidesHTML() +
       momentCardHTML() +
       makeCardHTML() +
@@ -11148,18 +11667,27 @@
      ============================================================ */
 
   var MOMENTS = [
-    { en: "The conversation is going well and you want to know what she does with her time.", ok: ["Mà tùhibbìn an tafʿalì?", "Hal ʿìndaki hiwayàt?"] },
+    { en: "The conversation is going well and you want to know what she does with her time.",
+      ok: ["Mà tùhibbìn an tafʿalì?", "Hal ʿìndaki hiwayàt?"],
+      no: ["Ànti jamìla", "Mà raqm hàtifiki?"],
+      why: "Both are understood. Both also end the getting-to-know part and replace it with something else, which is not what you were doing." },
     { en: "She says she likes music. Do not let it die there.", ok: ["Ày nàuʿ min al-mùsiqa?", "Ùhib al-mùsiqa"] },
     { en: "She asks what you like doing.", ok: ["Ùhib al-mùsiqa", "Ùhib al-aflàm", "Ùhib as-sàfar", "Ùhib at-tabkh"] },
     { en: "You want to know whether she has been here long.", ok: ["Mùndhu matà ànti hùna?"] },
     { en: "She asks how long you have been here. It is a year.", ok: ["Anà hùna mùndhu sàna"] },
     { en: "She asks what you thought of the film.", ok: ["Mumtàz", "Mumtìʿ", "Lam yùʿjibni", "Nàuʿan mà"] },
     { en: "Someone says something surprising and you want them to go on.", ok: ["Haqqan?"] },
-    { en: "You are asked whether you come here often, and you do not.", ok: ["Àhyanan", "Àbadan"] },
+    { en: "You are asked whether you come here often, and you do not.",
+      ok: ["Àhyanan", "Àbadan"],
+      no: ["Hal ànti hùna wàhdaki?"],
+      why: "Answering a question with that one reads as checking whether she is alone, which is not a friendly thing to be asked by a stranger." },
     { en: "The evening is over and it went well.", ok: ["Kàna màsa'an jamìlan", "Urìd an àraki màrra ùkhra"] },
-    { en: "She agrees to meet again. You have no way to reach her.", ok: ["Mà raqm hàtifiki?", "Hàdha raqmi"] },
+    { en: "She agrees to meet again. You have no way to reach her.",
+      ok: ["Mà raqm hàtifiki?", "Hàdha ràqmi"],
+      no: ["Ànti jamìla"],
+      why: "You already have the yes. Reaching for a compliment now asks for a second one." },
     { en: "You want to see her tomorrow.", ok: ["Hal ànti hùrra ghàdan?"] },
-    { en: "You have a time but not a place.", ok: ["Àina naltàqi?"] },
+    { en: "You have a time but not a place.", ok: ["Àina nàltaqi?"] },
     { en: "A shopkeeper looks up as you walk in.", ok: ["Marhàban", "As-salàmu ʿaláikum", "Àhlan"] },
     { en: "He says as-salàmu ʿaláikum first.", ok: ["Wa ʿaláikum as-salàm"] },
     { en: "Nine in the morning, and you pass a neighbour.", ok: ["Sabàh al-khèir", "Marhàban"] },
@@ -11297,6 +11825,20 @@
     return hit;
   }
 
+  // Some situations have an answer that is perfectly good Arabic and
+  // still the wrong thing to say. Right and wrong is not the useful
+  // verdict there.
+  function momentMisfire(typed) {
+    var said = normalise(typed);
+    if (!said || !moment.m.no) return null;
+    var hit = null;
+    moment.m.no.forEach(function (ar) {
+      if (hit) return;
+      if (sameSaid(said, disp(ar)) || sameSaid(said, ar)) hit = ar;
+    });
+    return hit;
+  }
+
   // More than one answer is right, so the microphone is judged against
   // all of them and keeps the best.
   function heardMoment(list) {
@@ -11323,6 +11865,16 @@
     speak(matched);
   }
 
+  // Understood, and it costs you the exchange. It is not marked wrong -
+  // the Arabic was right - and it does not count for the phrase either.
+  function settleMisfire(ar) {
+    moment.matched = null;
+    moment.misfire = ar;
+    moment.right = false;
+    moment.checked = true;
+    moment.run += 1;
+  }
+
   function checkMoment() {
     if (!moment || moment.checked) return;
     var field = app.querySelector('[data-act="moment-typing"]');
@@ -11330,6 +11882,8 @@
     if (!normalise(moment.typed)) return;
     // Producing it cold is the hardest way to remember a phrase, so it
     // counts for that phrase the same as any round does.
+    var miss = momentMisfire(moment.typed);
+    if (miss) { settleMisfire(miss); render(); return; }
     var hit = momentMatch(moment.typed);
     settleMoment(!!hit, hit);
     render();
@@ -11353,6 +11907,8 @@
       // Close enough to one of them is an answer, and saying it is
       // harder than typing it.
       if (best.ar && best.score >= HEARD_OK) { settleMoment(true, best.ar); return; }
+      var spokenMiss = momentMisfire(best.text || "");
+      if (spokenMiss) { settleMisfire(spokenMiss); render(); return; }
       render();
     }, function () { render(); }, function () { render(); });
   }
@@ -11400,10 +11956,13 @@
       ? '<div class="verdict" tabindex="-1">' +
         (mo.right
           ? '<div class="verdict-msg ok"><b>That works.</b></div>'
-          : mo.shown
-            ? '<div class="verdict-msg no"><b>Here it is.</b></div>'
-            : '<div class="verdict-msg no"><b>Not one of these.</b>&nbsp;<span class="ar">' +
-              esc(mo.typed) + "</span></div>") +
+          : mo.misfire
+            ? '<div class="verdict-msg warn"><b>Understood, and it lands badly.</b>&nbsp;<span>' +
+              esc(mo.m.why || "Right Arabic, wrong moment.") + "</span></div>"
+            : mo.shown
+              ? '<div class="verdict-msg no"><b>Here it is.</b></div>'
+              : '<div class="verdict-msg no"><b>Not one of these.</b>&nbsp;<span class="ar">' +
+                esc(mo.typed) + "</span></div>") +
         answers +
         '<button class="btn btn-wide" data-act="moment-next">Another situation</button></div>'
       : "";
@@ -11585,10 +12144,13 @@
       var rows = reached.map(function (ar) {
         var off = isPassive(ar);
         var note = noteFor(ar);
-        return '<div class="twin' + (off ? " is-off" : "") + '">' +
+        return '<div class="twin' + (off ? " is-off" : "") + (ar === t.keep ? " is-pick" : "") + '">' +
           '<div class="twin-line">' + sayBtn(ar, true) +
           '<span class="pb-text"><span class="ar">' + esc(disp(ar)) + "</span>" +
           '<span class="pb-en">' + esc(englishFor(ar) || "") + "</span></span>" +
+          (ar === t.keep
+            ? '<span class="pill pill--tag twin-pick">the one said most</span>'
+            : "") +
           '<button class="pill pill--md pb-tag" data-act="passive" data-id="' + esc(ar) + '">' +
           (off ? "Say it too" : "Recognise only") + "</button></div>" +
           (note ? '<div class="twin-note">' + note + "</div>" : "") + "</div>";
@@ -11629,6 +12191,50 @@
   // The giveaway word is not the same word in every Arabic, and naming
   // the fus-ha one after a question you heard in Levantine would be a
   // lie about what you just listened to.
+  /* ============================================================
+     WAS THAT A YES?
+
+     The course teaches twenty ways of answering and never once asks
+     you to tell them apart. In the conversation this app exists for,
+     understanding a soft no is the single most useful thing you can
+     do: it is the difference between leaving well and not noticing.
+     Nothing here is new material. Every line is already taught.
+     ============================================================ */
+
+  var SIDES = [
+    { key: "yes", en: "A yes" },
+    { key: "maybe", en: "A maybe" },
+    { key: "no", en: "A no" }
+  ];
+
+  var REPLIES = [
+    { ar: "Bikùll surùr", side: "yes" },
+    { ar: "Bi at-ta'kìd", side: "yes" },
+    { ar: "Anà muwàfiq", side: "yes" },
+    { ar: "Là màniʿ", side: "yes", note: "Literally <i>no objection</i>, and it is a yes, not a shrug." },
+    { ar: "Anà mustaʿìdd", side: "yes" },
+    { ar: "Sa'akùn hunàk", side: "yes" },
+    { ar: "Kamà turìd", side: "yes", note: "As you like: a yes that hands the choice back to you." },
+    { ar: "Naʿam, ʿìndi", side: "yes" },
+    { ar: "Al-àn munàsib", side: "yes" },
+    { ar: "Tàyyib", side: "yes", note: "All right. Agreement, but a mild one: it accepts what was said rather than welcoming it." },
+
+    { ar: "Rùbbama fi màrra ùkhra", side: "maybe", note: "Maybe another time. In practice this is usually a no said kindly - and taking it as a maybe is how you end up asking twice." },
+    { ar: "Ìdha àmkan", side: "maybe" },
+    { ar: "Sa'ufàkkir", side: "maybe", note: "I will think about it. In a shop it is a no; from a person it is genuinely open." },
+    { ar: "Inshàallah", side: "maybe", note: "God willing. It can be a yes, a maybe or a polite no, and only the tone tells you which. If someone answers a plan with this and nothing else, do not book anything." },
+    { ar: "Làhiqan", side: "maybe" },
+    { ar: "Hàsab", side: "maybe" },
+    { ar: "Nàuʿan mà", side: "maybe" },
+
+    { ar: "Àsifa, anà mashghùla", side: "no", note: "The polite refusal, and the one to learn first. It is complete: it does not want a follow-up question." },
+    { ar: "Àsif, là àstatìʿ", side: "no" },
+    { ar: "Làisa al-àn", side: "no", note: "Not now. A no about this moment, not about you." },
+    { ar: "Là, shùkran", side: "no" },
+    { ar: "Là, làisa ʿìndi", side: "no" },
+    { ar: "Là urìd", side: "no" }
+  ];
+
   var ASK_KINDS = [
     { key: "where", en: "Where something is", word: "àina", lev: "wèin" },
     { key: "wherefrom", en: "Where you are from", word: "min àina", lev: "min wèin" },
@@ -11664,6 +12270,9 @@
     if (String(ar).indexOf("?") === -1) return null;
     var w = normalise(ar).split(" ");
     if (w[0] === "lau" && (w[1] === "samaht" || w[1] === "samahti")) w = w.slice(2);
+    // an apology in front of a question is the same problem as a polite
+    // opener in front of one: the ear has to look past both
+    if (w[0] === "asif" || w[0] === "asifa" || w[0] === "asef") w = w.slice(1);
 
     if (w[0] === "shu") return "what";
     if (w[0] === "min" && (w[1] === "wein" || w[1] === "aina")) return "wherefrom";
@@ -11697,6 +12306,7 @@
     if (w[0] === "ila" && w[1] === "aina") return "whereto";
     if (w[0] === "mata") return "when";
     if (w[0] === "mundhu" && w[1] === "mata") return "when";
+    if ((w[0] === "wa" || w[0] === "w") && (w[1] === "baʿd" || w[1] === "bad" || w[1] === "baʿdein" || w[1] === "badein")) return "when";
     if (w[0] === "haqqan") return "yesno";
     if (w[0] === "kam" || w[0] === "bikam") return "howmuch";
     if (w[0] === "ma" || w[0] === "madha") return "what";
@@ -11748,6 +12358,104 @@
       c.turns.forEach(function (t) { add(t.say, t.sayEn, true); });
     });
     return out;
+  }
+
+  /* ---------- was that a yes? ---------- */
+
+  var answers = null;
+
+  function replyPool() {
+    var out = [];
+    REPLIES.forEach(function (r) {
+      var lid = lessonTeaching(r.ar);
+      var rec = lid ? recordOf(lid) : null;
+      if (rec && rec.done && !isHidden(lid, r.ar)) out.push(r);
+    });
+    return out;
+  }
+
+  function sideByKey(k) {
+    for (var i = 0; i < SIDES.length; i++) if (SIDES[i].key === k) return SIDES[i];
+    return null;
+  }
+
+  function newAnswers(prev) {
+    var pool = replyPool();
+    if (pool.length < 3) return null;
+    var r = shuffle(pool)[0];
+    if (prev && pool.length > 1) {
+      var g = 0;
+      while (g++ < 8 && r.ar === prev.r.ar) r = shuffle(pool)[0];
+    }
+    return {
+      r: r,
+      chosen: null,
+      checked: false,
+      right: false,
+      run: prev ? prev.run : 0,
+      got: prev ? prev.got : 0
+    };
+  }
+
+  function answersPick(side) {
+    if (!answers || answers.checked) return;
+    answers.chosen = side;
+    answers.checked = true;
+    answers.right = side === answers.r.side;
+    answers.run += 1;
+    if (answers.right) answers.got += 1;
+    render();
+  }
+
+  function answersHTML() {
+    if (!answers) {
+      return topbarHTML("Was that a yes?") +
+        '<p class="pb-lead">Pass a few more lessons: this draws on the answers the course has ' +
+        "already taught you, and there are not enough of them yet.</p>" +
+        '<div class="btn-row"><button class="btn" data-go="home">Back to the lessons</button></div>';
+    }
+    var a = answers;
+    var heard = canSpeak();
+    var opts = '<div class="options">' + SIDES.map(function (side, i) {
+      var cls = "option";
+      var state = "";
+      if (a.checked) {
+        if (side.key === a.r.side) { cls += " is-right"; state = "Correct answer"; }
+        else if (side.key === a.chosen) { cls += " is-wrong"; state = "Your answer, incorrect"; }
+        else cls += " is-dim";
+      }
+      return '<button class="' + cls + '" data-act="answers-pick" data-value="' + side.key + '"' +
+        (a.checked ? " disabled" : "") + ">" +
+        '<span class="option-key">' + (i + 1) + "</span><span>" + esc(side.en) + "</span>" +
+        (state ? '<span class="sr-only">, ' + state + "</span>" : "") + "</button>";
+    }).join("") + "</div>";
+
+    var stage = heard
+      ? '<div class="listen-stage">' +
+        '<button class="say say-lg" data-act="say" data-say="' + esc(a.r.ar) + '"' +
+        ' aria-label="Play the answer again">' + SPEAKER_SVG + "</button></div>" +
+        '<div class="prompt-sub">' +
+        (a.checked ? '<span class="ar">' + esc(disp(a.r.ar)) + "</span>" : "tap to hear it again") + "</div>"
+      : '<div class="prompt-main ar">' + esc(disp(a.r.ar)) + "</div>" +
+        '<div class="prompt-sub">no Arabic voice on this device, so you get it in writing</div>';
+
+    return topbarHTML("Was that a yes?", null, a.run ? a.got + "/" + a.run : "") +
+      '<p class="pb-lead">You asked. This is the answer. Not what the words mean - only whether you are ' +
+      "being said yes to, put off, or turned down, which is the one thing you have to get right.</p>" +
+      '<div class="prompt"><div class="prompt-label">' +
+      (heard ? "Listen to the answer" : "Read the answer") + "</div>" + stage + "</div>" +
+      opts +
+      (a.checked
+        ? '<div class="verdict" tabindex="-1">' +
+          (a.right
+            ? '<div class="verdict-msg ok"><b>Yes, that is ' + esc(sideByKey(a.r.side).en.toLowerCase()) + ".</b></div>"
+            : '<div class="verdict-msg no"><b>That was ' + esc(sideByKey(a.r.side).en.toLowerCase()) + ".</b></div>") +
+          '<div class="why"><div class="pb-row">' + sayBtn(a.r.ar, true) +
+          '<span class="pb-text"><span class="ar">' + esc(disp(a.r.ar)) + "</span>" +
+          '<span class="pb-en">' + esc(englishFor(a.r.ar) || "") + "</span></span></div>" +
+          (a.r.note ? '<p class="pair-note">' + a.r.note + "</p>" : "") + "</div>" +
+          '<button class="btn btn-wide" data-act="answers-next">Another answer</button></div>'
+        : "");
   }
 
   function newAsked(prev) {
@@ -12151,6 +12859,71 @@
   // A phrase that does the same job as one you have already met is
   // introduced next to it, with the difference named. Confusions are
   // cheaper to prevent at the first meeting than to unpick later.
+  // Most phrases carry no risk at all and get no label. The ones that
+  // do get one because there is something to say, not because a scheme
+  // demanded a value for every row.
+  var HOW = {
+    safe: { label: "Safe with anyone",
+      why: "Works with a stranger, a colleague or a shopkeeper. Nothing in it commits you." },
+    direct: { label: "This one commits you",
+      why: "Not rude and not wrong, but it will be read as interest, a claim or an intrusion. Say it when you mean it." }
+  };
+
+  function howOf(ar) {
+    var out = null;
+    LESSONS.forEach(function (l) {
+      l.phrases.forEach(function (p) { if (!out && p.ar === ar && p.how) out = p.how; });
+    });
+    return out;
+  }
+
+  function howTag(ar) {
+    var k = howOf(ar);
+    if (!k || !HOW[k]) return "";
+    return '<span class="pill pill--tag how-tag is-' + k + '">' + esc(HOW[k].label) + "</span>";
+  }
+
+  function howNote(ar) {
+    var k = howOf(ar);
+    if (!k || !HOW[k]) return "";
+    return '<div class="flash-note"><span><b>' + esc(HOW[k].label) + ".</b> " +
+      esc(HOW[k].why) + "</span></div>";
+  }
+
+  function twinGroupOf(ar) {
+    var group = null;
+    TWINS.forEach(function (t) { if (!group && t.members.indexOf(ar) !== -1) group = t; });
+    return group;
+  }
+
+  // The choice between two ways of saying one thing belongs in the round
+  // where the second way just came up, not on a screen you have to
+  // remember to visit. It recommends; it does not decide.
+  function twinPickHTML(t) {
+    if (!session.lastRight || session.twinAsked) return "";
+    var ph = t.phrase || (t.exchange ? { ar: t.exchange.reply } : t.turn ? { ar: t.turn.reply } : null);
+    if (!ph || !ph.ar) return "";
+    var g = twinGroupOf(ph.ar);
+    if (!g) return "";
+    var reached = twinReached(g).filter(function (ar) {
+      var lid = lessonTeaching(ar);
+      return lid && !isHidden(lid, ar);
+    });
+    var live = reached.filter(function (ar) { return !isPassive(ar); });
+    if (live.length < 2) return "";
+    var pick = live.indexOf(g.keep) !== -1 ? g.keep : live[0];
+    return '<div class="twin-inline"><p class="twin-inline-head">' +
+      "You have " + live.length + " ways to say this. Keeping one and putting the rest on " +
+      "recognise only is less to carry.</p>" +
+      '<div class="twin-inline-row">' + live.map(function (ar) {
+        return '<button class="pill pill--md chip' + (ar === pick ? " is-on" : "") +
+          '" data-act="twin-keep" data-id="' + esc(g.id) + '" data-value="' + esc(ar) + '">' +
+          '<span class="ar">' + esc(disp(ar)) + "</span>" +
+          (ar === pick ? " &#183; said most" : "") + "</button>";
+      }).join("") +
+      '<button class="link-btn" data-act="twin-later">Not now</button></div></div>';
+  }
+
   function twinNote(ar) {
     var group = null;
     TWINS.forEach(function (t) { if (!group && t.members.indexOf(ar) !== -1) group = t; });
@@ -12162,9 +12935,84 @@
       if (lid && strengthOf(lid, other) !== null) met = other;
     });
     if (!met) return "";
+    var pick = group.keep;
     return '<div class="flash-note"><span>Not the same as <b class="ar">' + esc(disp(met)) +
-      "</b>, which is <b>" + esc(englishFor(met) || "") + "</b>. " + esc(group.why) + "</span>" +
-      sayBtn(met, true) + "</div>";
+      "</b>, which is <b>" + esc(englishFor(met) || "") + "</b>. " + esc(group.why) +
+      (pick
+        ? " Of these, <b class=\"ar\">" + esc(disp(pick)) + "</b> is the one said most" +
+          (pick === ar ? ", and it is this one." : "; you can put the others on recognise only.")
+        : "") + "</span>" + sayBtn(met, true) + "</div>";
+  }
+
+  // Walking back through the pile used to hand you every card again as
+  // if you had never seen it, guess and all. What you did on a card
+  // belongs to the card.
+  // Who a phrase is aimed at lives in its last syllable, and that is
+  // exactly the syllable a beginner drops. If the phrase carries one,
+  // say what it is while the phrase is on the screen.
+  function endingHint(shown) {
+    var w = String(shown || "").toLowerCase().replace(/[?!.,;:]/g, "").split(/\s+/);
+    var last = w[w.length - 1] || "";
+    var out = null;
+    if (/(ik|ki)$/.test(last)) out = "woman";
+    else if (/(ak|uk|ka)$/.test(last)) out = "man";
+    // A verb said to a woman takes its own ending, and it is a different
+    // rule from the one above.
+    var verbFem = w.some(function (x) { return /(ìn|ìna)$/.test(x) && x.length > 4; });
+    if (!out && !verbFem) return "";
+    return '<div class="flash-ending">' +
+      (out === "woman"
+        ? "That <b>-ik</b> on the end is <i>you</i>, said to a woman. To a man it is <b>-ak</b>, and in fus&#183;ha <b>-uki</b> and <b>-uka</b>."
+        : out === "man"
+          ? "That <b>-ak</b> on the end is <i>you</i>, said to a man. To a woman it is <b>-ik</b>, and in fus&#183;ha <b>-uka</b> and <b>-uki</b>."
+          : "The <b>-ìn</b> on the verb is what makes it addressed to a woman. To a man the verb ends there.") +
+      "</div>";
+  }
+
+  function keepCard() {
+    if (!learn) return;
+    if (!learn.at) learn.at = {};
+    if (!learn.shown && !learn.guessed) return;
+    learn.at[learn.i] = {
+      shown: !!learn.shown,
+      guessed: learn.guessed || null,
+      guessOpts: learn.guessOpts || null
+    };
+  }
+
+  function restoreCard() {
+    var was = (learn.at || {})[learn.i];
+    learn.shown = !!(was && was.shown);
+    learn.guessed = (was && was.guessed) || null;
+    learn.guessOpts = (was && was.guessOpts) || null;
+  }
+
+  // How much of the pile you have actually looked at, and how much you
+  // have walked past. Skipping is allowed; pretending you did not is
+  // what the count is for.
+  function cardsDone() {
+    var at = learn.at || {};
+    var guessed = 0, shown = 0;
+    Object.keys(at).forEach(function (k) {
+      if (at[k].guessed) guessed++;
+      else if (at[k].shown) shown++;
+    });
+    // the card you are on counts as soon as you do something with it
+    if (learn.guessed && !at[learn.i]) guessed++;
+    else if (learn.shown && !at[learn.i]) shown++;
+    return { guessed: guessed, shown: shown, total: learn.lesson.phrases.length };
+  }
+
+  function cardsLine() {
+    var c = cardsDone();
+    var left = c.total - c.guessed - c.shown;
+    if (!c.guessed && !c.shown) return "";
+    return '<p class="learn-count">' +
+      (c.guessed ? c.guessed + " guessed" : "") +
+      (c.guessed && c.shown ? " &#183; " : "") +
+      (c.shown ? c.shown + " just read" : "") +
+      (left ? " &#183; " + left + " not looked at yet" : " &#183; that is all of them") +
+      "</p>";
   }
 
   function guessHTML(p) {
@@ -12195,11 +13043,8 @@
     var last = learn.i + 1 === l.phrases.length;
 
     var note = "";
-    if (p.f) {
-      note += '<div class="flash-note"><span>' + esc(p.fLabel || "Speaking to a woman") +
-        ': <b class="ar">' + esc(p.f) + "</b></span>" + sayBtn(p.f, true) + "</div>";
-    }
     if (p.note) note += '<div class="flash-note"><span>' + p.note + "</span></div>";
+    note += howNote(p.ar);
     note += twinNote(p.ar);
 
     var known = !!knownRec(l.id, p.ar);
@@ -12224,12 +13069,22 @@
         ? '<span class="aside-note">Hidden for good. It will not come up anywhere.</span>'
         : only ? '<span class="aside-note">You are asked to understand this one, never to produce it.</span>'
         : known ? '<span class="aside-note">Out of rotation. It will come back once for a check.</span>' : "") +
+      asideKey() +
       "</div>";
 
     return topbarHTML(l.title + " &#183; study", pct, (learn.i + 1) + " / " + l.phrases.length) +
       '<div class="card flashcard fade-in" tabindex="-1">' +
-      (p.core ? '<div><span class="pill pill--tag core-tag">Core phrase</span></div>' : "") +
+      (p.core || p.how
+        ? '<div class="flash-tags">' +
+          (p.core ? '<span class="pill pill--tag core-tag">Core phrase</span>' : "") +
+          howTag(p.ar) + "</div>"
+        : "") +
       '<div class="say-row"><div class="flash-ar ar">' + esc(disp(p.ar)) + "</div>" + sayBtn(p.ar) + "</div>" +
+      (p.f
+        ? '<div class="flash-alt">' + esc(p.fLabel || "Speaking to a woman") + ': <span class="ar">' +
+          esc(disp(p.f)) + "</span>" + sayBtn(p.f, true) + "</div>"
+        : "") +
+      endingHint(disp(p.ar)) +
       // Silence here was making fus-ha look like the dialect you chose.
       (variety() === "msa" ? ""
         : isDialectForm(p.ar)
@@ -12255,6 +13110,7 @@
       "</div>" +
       // Reading the cards is not learning them. This is the way out of
       // the pile at any point, not only at the last card.
+      cardsLine() +
       '<div class="learn-jump"><button class="link-btn" data-go="play" data-id="' + l.id +
       '">Enough reading, play lesson ' + lessonNo(l) + "</button></div>";
   }
@@ -12576,7 +13432,9 @@
     var cls = "type-in" + (checked ? (session.lastRight ? " is-right" : " is-wrong") : "");
     var lines = "";
     for (var i = 0; i < t.idx; i++) {
-      var past = t.convo.turns[i];
+      // what you actually said, which in a branching conversation is not
+      // always what the script had first
+      var past = (session.tasks[i] && session.tasks[i].turn) || t.convo.turns[i];
       lines += bubble("them", past.say, past.sayEn) + bubble("you", past.reply, past.replyEn);
     }
     lines += bubble("them", t.turn.say, t.turn.sayEn, !checked && !t.peeked);
@@ -12586,7 +13444,8 @@
       '<div class="transcript">' + lines + "</div>" +
       (checked ? "" :
         '<div class="prompt-label" style="margin:20px 0 12px">' +
-        (t.produce ? "How do you reply? No options this time." : "How do you reply?") + "</div>" +
+        (t.alts ? "Both of these are real answers. What happens next depends on which one you give."
+          : t.produce ? "How do you reply? No options this time." : "How do you reply?") + "</div>" +
         (canHear() ? '<div class="mic-row">' + micBtn("Answer out loud", ears.busy) + "</div>" : micNote()) +
         heardHTML(t, t.answer, convoHeardPick(t)) +
         (t.produce
@@ -12700,6 +13559,15 @@
       "</div>";
   }
 
+  // Three buttons that all mean roughly "less of this one" and none of
+  // which said what it actually did.
+  function asideKey() {
+    return '<p class="aside-key"><b>I know this one</b> takes it out of rotation and brings it back once, ' +
+      "much later, for a check. <b>I will not say this one</b> keeps it in the games that test whether you " +
+      "understood and stops asking you to produce it - the right choice when two phrases do the same job. " +
+      "<b>Not for me</b> is for good: it never comes up anywhere again. All three are undone in Your words.</p>";
+  }
+
   function roundControls(t) {
     var ph = t.phrase || (t.exchange ? { ar: t.exchange.reply } : null);
     if (!ph || !ph.ar) return "";
@@ -12723,7 +13591,7 @@
       (onlyR ? "Recognise only" : "I will not say this one") + "</button>";
     bits += '<button class="pill pill--md aside aside-hide" data-act="hide" data-id="' + esc(ph.ar) +
       '" data-lesson="' + lsn.id + '">Not for me</button>';
-    return '<div class="round-controls">' + bits + "</div>";
+    return '<div class="round-controls">' + bits + asideKey() + "</div>";
   }
 
   // What you picked, and what it actually is. "Wrong" teaches nothing;
@@ -12754,11 +13622,18 @@
     if (session.lastRight) {
       // Getting it right is the honest moment to say you have it, and
       // getting it on the second go is the honest moment to say that.
-      msg = t.slow
-        ? '<div class="verdict-msg ok"><b>Right, but slowly.</b>&nbsp;<span>In a conversation that pause is a gap.</span></div>'
-        : t.secondTry
-          ? '<div class="verdict-msg ok"><b>Right, second time.</b>&nbsp;<span>It will come round again.</span></div>'
-          : '<div class="verdict-msg ok"><b>Correct.</b></div>';
+      msg = t.otherForm
+        ? '<div class="verdict-msg ok"><b>Right, in ' + esc(t.otherForm === "fusha" ? "fus·ha" : t.otherForm) +
+          '.</b>&nbsp;<span>Here it is as you are studying it: </span><span class="ar">' +
+          esc(t.answer) + "</span>" + sayBtn(t.phrase ? t.phrase.ar : t.answer, true) + "</div>"
+        : t.loose
+          ? '<div class="verdict-msg ok"><b>Correct.</b>&nbsp;<span>Written out it is </span><span class="ar">' +
+            esc(t.answer) + "</span></div>"
+          : t.slow
+            ? '<div class="verdict-msg ok"><b>Right, but slowly.</b>&nbsp;<span>In a conversation that pause is a gap.</span></div>'
+            : t.secondTry
+              ? '<div class="verdict-msg ok"><b>Right, second time.</b>&nbsp;<span>It will come round again.</span></div>'
+              : '<div class="verdict-msg ok"><b>Correct.</b></div>';
     } else {
       var answer = t.type === "build" ? t.target.join(" ") : (arabicAnswerFor(t) ? disp(t.answer) : t.answer);
       var arabicAnswer = arabicAnswerFor(t);
@@ -12777,7 +13652,7 @@
     }
     return '<div class="verdict" tabindex="-1">' + msg +
       (session.lastRight ? "" : confusedWith(t)) + leechOut(t) +
-      (session.lastRight ? "" : whyHTML(t)) + roundControls(t) +
+      (session.lastRight ? "" : whyHTML(t)) + twinPickHTML(t) + roundControls(t) +
       '<button class="btn btn-wide" data-act="next">' +
       (session.isOne ? "Another one" : ending ? "See your score" : "Continue") + "</button>" +
       (session.isOne
@@ -12880,6 +13755,18 @@
         : '<button class="btn btn-ghost" data-go="play" data-id="' + lesson.id + '">Play again</button>';
     // Today does not end with the review: it hands you on to whichever
     // of the producing screens is next in the circuit.
+    // Before the onward step, the honest one: something you passed is
+    // slipping, and it has a name.
+    var weak = weakestLesson(session.lesson || null);
+    var back = weak
+      ? '<div class="circuit"><button class="btn btn-ghost btn-wide" data-go="play" data-id="' +
+        weak.lesson.id + '">Before you go on: lesson ' + lessonNo(weak.lesson) + " again</button>" +
+        '<span class="circuit-why">' + weak.n + " phrases there are slipping &#183; " +
+        esc(weak.lesson.title.toLowerCase()) + "</span>" +
+        '<button class="link-btn" data-go="choose">or pick the lessons yourself</button></div>'
+      : '<div class="circuit"><button class="link-btn" data-go="choose">' +
+        "Take me to a lesson of my choosing</button></div>";
+
     var circuit = "";
     if (session.isToday || session.isReview) {
       var step = circuitNext();
@@ -12908,7 +13795,7 @@
       '<div class="result-score mono ' + tone + '">' + score + "%</div>" +
       (session.isTest ? "" : '<p class="result-delta">' + esc(deltaLine(sessionDelta())) + "</p>") +
       '<p class="result-line">' + esc(line) + "</p>" +
-      misses + circuit + "</div>" +
+      misses + (session.isTest ? "" : back) + circuit + "</div>" +
       '<div class="btn-row">' + again + onward + "</div>";
   }
 
@@ -12984,7 +13871,10 @@
     // One wrong answer is not the end of the question. The one you chose
     // is struck out and you go again: a second try is retrieval, reading
     // the answer is not. The second one settles it either way.
-    if (value !== t.answer && !t.tried && t.options && t.options.length > 2 &&
+    // A fork has more than one right answer, and striking one of them
+    // out as a wrong first try would be exactly backwards.
+    var onFork = t.answers && t.answers.indexOf(value) !== -1;
+    if (value !== t.answer && !onFork && !t.tried && t.options && t.options.length > 2 &&
       !t.isRetry && !t.isTest) {
       t.tried = value;
       render();
@@ -12992,6 +13882,17 @@
     }
 
     t.chosen = value;
+    if (t.alts) {
+      var picked = null;
+      t.alts.forEach(function (a) { if (a.reply === value) picked = a; });
+      if (picked) {
+        t.answer = picked.reply;
+        t.turn = { say: t.turn.say, sayEn: t.turn.sayEn, reply: picked.reply, replyEn: picked.replyEn };
+        rebuildTail(picked.next);
+      }
+      settle(t, !!picked, picked ? { ar: picked.reply, en: picked.replyEn } : phraseOfTask(t), !!t.tried);
+      return;
+    }
     settle(t, value === t.answer, phraseOfTask(t), !!t.tried);
   }
 
@@ -13001,13 +13902,41 @@
       t.phrase;
   }
 
+  // The last turn of a branching conversation is whichever one your
+  // answer led to, so it is built again the moment you answer.
+  function rebuildTail(turn) {
+    if (!turn || !session) return;
+    var tail = session.tasks[session.tasks.length - 1];
+    if (!tail || tail.type !== "convoturn") return;
+    var wrong = [];
+    CONVOS.forEach(function (c) {
+      c.turns.forEach(function (t) {
+        if (wrong.length >= 2 || t.reply === turn.reply || wrong.indexOf(t.reply) !== -1) return;
+        if (sameJob(t.reply, turn.reply)) return;
+        wrong.push(t.reply);
+      });
+    });
+    tail.turn = turn;
+    tail.answer = turn.reply;
+    tail.chosen = null;
+    tail.tried = null;
+    tail.typed = "";
+    tail.srcLesson = lessonById(lessonTeaching(turn.reply));
+    tail.options = shuffle(wrong.slice(0, 2).concat([turn.reply]));
+  }
+
   function checkWrite() {
     var t = session.tasks[session.i];
     if (session.state === "checked") return;
     var field = app.querySelector('[data-act="typing"]');
     if (field) t.typed = field.value;
     if (!normalise(t.typed)) return;
-    settle(t, sameSaid(t.typed, t.answer), phraseOfTask(t));
+    var ph = phraseOfTask(t);
+    var verdict = ph ? judgeTyped(t.typed, ph.ar) : { right: sameSaid(t.typed, t.answer) };
+    if (!verdict) return;
+    t.loose = !!verdict.loose;
+    t.otherForm = verdict.other || null;
+    settle(t, verdict.right, ph);
   }
 
   function checkBuild() {
@@ -13186,8 +14115,10 @@
     if (view.name === "mine") return mineHTML();
     if (view.name === "now") return nowHTML();
     if (view.name === "street") return streetHTML();
+    if (view.name === "choose") return chooseHTML();
     if (view.name === "sounds") return soundsHTML();
     if (view.name === "frame") return frameRunHTML();
+    if (view.name === "answers") return answersHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -13405,7 +14336,7 @@
       if (dest === "talk") { talk = newTalk(); go({ name: "talk" }); return; }
       if (dest === "lesson") { go({ name: "lesson", lesson: lessonById(el.getAttribute("data-id")) }); return; }
       if (dest === "learn") {
-        learn = { lesson: lessonById(el.getAttribute("data-id")), i: 0, shown: false };
+        learn = { lesson: lessonById(el.getAttribute("data-id")), i: 0, shown: false, at: {} };
         go({ name: "learn" });
         return;
       }
@@ -13424,7 +14355,14 @@
       if (dest === "mine") { session = null; go({ name: "mine" }); return; }
       if (dest === "now") { session = null; go({ name: "now" }); return; }
       if (dest === "street") { session = null; go({ name: "street" }); return; }
+      if (dest === "choose") { session = null; go({ name: "choose" }); return; }
       if (dest === "sounds") { session = null; sounds = null; go({ name: "sounds" }); return; }
+      if (dest === "answers") {
+        session = null;
+        answers = newAnswers(answers);
+        go({ name: "answers" });
+        return;
+      }
       if (dest === "frame") {
         session = null;
         frameRun = newFrameRun(frameRun);
@@ -13584,6 +14522,40 @@
       render();
       return;
     }
+    if (act === "twin-later") { if (session) session.twinAsked = true; render(); return; }
+    if (act === "chose") {
+      var cid = Number(el.getAttribute("data-id"));
+      var list = chosenLessons();
+      var at = list.indexOf(cid);
+      if (at === -1) list.push(cid); else list.splice(at, 1);
+      store.chosen = list;
+      save();
+      render();
+      return;
+    }
+    if (act === "chose-all") {
+      store.chosen = finishedLessons().map(function (l) { return l.id; });
+      save();
+      render();
+      return;
+    }
+    if (act === "chose-none") { store.chosen = []; save(); render(); return; }
+    if (act === "chose-play") {
+      var picked = chosenLessons();
+      var cs = buildReview(picked.length ? { only: picked } : {});
+      if (cs) { session = cs; go({ name: "play" }); }
+      return;
+    }
+    if (act === "answers-pick") { answersPick(el.getAttribute("data-value")); return; }
+    if (act === "answers-next") {
+      stopSpeech();
+      rotateVoice();
+      speech.lastSaid = null;
+      answers = newAnswers(answers);
+      render();
+      if (answers && canSpeak()) speak(answers.r.ar);
+      return;
+    }
     if (act === "frame-show") {
       if (!frameRun) return;
       if (!frameRun.startedAt) frameRun.startedAt = Date.now();
@@ -13696,19 +14668,19 @@
     if (act === "learn-guess") {
       learn.guessed = el.getAttribute("data-value");
       learn.shown = true;
+      keepCard();
       render();
       return;
     }
-    if (act === "learn-reveal") { learn.shown = true; render(); return; }
+    if (act === "learn-reveal") { learn.shown = true; keepCard(); render(); return; }
     if (act === "learn-prev" || act === "learn-fwd") {
       var step = act === "learn-fwd" ? 1 : -1;
       var to = learn.i + step;
       if (to < 0 || to >= learn.lesson.phrases.length) return;
       stopSpeech();
+      keepCard();
       learn.i = to;
-      learn.shown = false;
-      learn.guessed = null;
-      learn.guessOpts = null;
+      restoreCard();
       go({ name: "learn" });
       return;
     }
@@ -13750,6 +14722,17 @@
       return;
     }
     if (act === "mic-stop") { stopListening(); return; }
+    if (act === "heard-drop") {
+      if (session && session.tasks[session.i]) {
+        session.tasks[session.i].heard = null;
+        session.tasks[session.i].produce = session.tasks[session.i].produce || false;
+      }
+      if (moment) { moment.heard = null; moment.spoken = false; }
+      if (talk) { talk.heard = null; talk.options = []; }
+      if (numbers) numbers.heard = null;
+      render();
+      return;
+    }
     if (act === "tape") {
       if (tape.on) stopTape();
       else startTape(el.getAttribute("data-id") ||
@@ -13946,7 +14929,12 @@
     if (act === "twin-keep") {
       var tw = null, tid = el.getAttribute("data-id");
       TWINS.forEach(function (x) { if (x.id === tid) tw = x; });
-      if (tw) { keepOnly(tw, el.getAttribute("data-value")); render(); }
+      if (tw) {
+        keepOnly(tw, el.getAttribute("data-value"));
+        // asked and answered: the round should not keep asking
+        if (session) session.twinAsked = true;
+        render();
+      }
       return;
     }
     if (act === "unpassive-all") {

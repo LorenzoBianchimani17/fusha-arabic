@@ -13,7 +13,7 @@ js = re.search(r"<script>(.*)</script>", src, re.S).group(1)
 HOOKS = (
     '\n  global.__peek = function () { return { session: session, view: view, store: store,'
     ' learn: learn, talk: talk, ears: ears, navOpen: navOpen, people: people, made: made,'
-    ' moment: moment, asked: asked, numbers: numbers, loud: loud, sounds: sounds,'
+    ' moment: moment, asked: asked, numbers: numbers, loud: loud, sounds: sounds, answers: answers,'
     ' frameRun: frameRun }; };'
     '\n  global.__data = { LESSONS: LESSONS, SCRIPT: SCRIPT, CONVOS: CONVOS,'
     ' PHRASEBOOK: PHRASEBOOK, GAMES: GAMES, VARIETIES: VARIETIES, DIALECT: DIALECT,'
@@ -36,6 +36,9 @@ HOOKS = (
     ' modes: modes, modePct: modePct, earGap: earGap, earBehind: earBehind, byEar: byEar,'
     ' noteMode: noteMode, MODE_WINDOW: MODE_WINDOW, MINIMAL: MINIMAL,'
     ' frameRunnable: frameRunnable, newFrameRun: newFrameRun, MASTERED: MASTERED,'
+    ' REPLIES: REPLIES, SIDES: SIDES, replyPool: replyPool, HOW: HOW, howOf: howOf,'
+    ' judgeTyped: judgeTyped, sameSaidLoose: sameSaidLoose, endingHint: endingHint,'
+    ' sameJob: sameJob, weakestLesson: weakestLesson, chosenLessons: chosenLessons,'
     ' englishFor: englishFor, courseIndex: courseIndex, normalise: normalise,'
     ' sameSaid: sameSaid, tokens: tokens, canMake: canMake, coreCounts: coreCounts,'
     ' lessonNo: lessonNo, RECHECK_AFTER: RECHECK_AFTER, HOLDS: HOLDS, today: today,'

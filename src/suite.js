@@ -809,7 +809,10 @@ section("conversations");
     click({ "data-go": "home" });
     click({ "data-go": "convo", "data-id": c.id });
     const s = peek().session;
-    if (!s || !s.isConvo || s.tasks.length !== c.turns.length) { bad.push(c.id + " (bad session)"); continue; }
+    // a conversation with a branch has one more turn than it has scripted
+    // ones: the last is whichever way you send it
+    const want = c.turns.length + (c.turns[c.turns.length - 1].alts ? 1 : 0);
+    if (!s || !s.isConvo || s.tasks.length !== want) { bad.push(c.id + " (bad session)"); continue; }
     if (!s.tasks.every(t => t.options.length === 3 && t.options.includes(t.answer) && new Set(t.options).size === 3)) {
       bad.push(c.id + " (bad options)");
       continue;
@@ -3299,7 +3302,7 @@ section("the curious questions");
   const touch = LESSONS.find(l => l.id === 33);
   check("there is a lesson for keeping in touch", !!touch && touch.phrases.length >= 10);
   check("it follows the other two", LESSONS.indexOf(touch) === LESSONS.indexOf(think) + 1);
-  ["Hàdha raqmi", "Ìbʿathi li risàla", "Hal ànti hùrra ghàdan?", "Àina naltàqi?",
+  ["Hàdha ràqmi", "Ìbʿathi li risàla", "Hal ànti hùrra ghàdan?", "Àina nàltaqi?",
     "Urìd an àraki màrra ùkhra"]
     .forEach(ar => check("it can say " + ar, touch.phrases.some(p => p.ar === ar)));
   check("all of it speakable and Levantine",
@@ -3315,6 +3318,342 @@ section("the curious questions");
   check("and this or that is a choice", D.askKind("Hal taʿmalìn àm tadrusìn?") === "choice");
   check("even when the dialect drops the hal",
     D.askKind("Bitìshtighli willa bitìdrusi?") === "choice");
+}
+
+section("the rest of the conversation");
+{
+  const D = global.__data;
+  const react = LESSONS.find(l => l.id === 34);
+  const life = LESSONS.find(l => l.id === 35);
+  const table = LESSONS.find(l => l.id === 36);
+  check("there is a lesson of reactions", !!react && react.phrases.length >= 12);
+  check("one about who you live with", !!life && life.phrases.length >= 12);
+  check("and one for the table", !!table && table.phrases.length >= 12);
+  check("all three sit with the others about people",
+    [react, life, table].every(l => LESSONS.indexOf(l) > LESSONS.findIndex(x => x.id === 18)));
+
+  ["Tàbʿan", "Hàddithini àkthar", "Wa baʿd?", "Yà salàm!", "Miskìn", "Wa ànti?"]
+    .forEach(ar => check("it can react with " + ar, react.phrases.some(p => p.ar === ar)));
+  check("and ask a name again without shame",
+    react.phrases.some(p => p.ar === "Àsif, mà ìsmuki màrra ùkhra?"));
+
+  ["Hal ànti mutazàwwija?", "Lastu mutazàwwij", "Hal ʿìndaki àtfal?", "Aʿìsh wàhdi"]
+    .forEach(ar => check("it can say " + ar, life.phrases.some(p => p.ar === ar)));
+  check("and the question that lands differently there is flagged",
+    /proposition/.test(life.phrases.find(p => p.ar === "Hal ànti mutazàwwija?").note || ""));
+
+  ["Màdha tànsahìn?", "Anà nabàti", "Là àshrab al-kùhul", "Ladhìdh!", "Hal nàqsim al-hisàb?"]
+    .forEach(ar => check("at the table it can say " + ar, table.phrases.some(p => p.ar === ar)));
+  check("and warns you that the tea is already sweet",
+    /sweet by default/.test(table.phrases.find(p => p.ar === "Bidùn sùkkar, min fàdlik").note || ""));
+
+  const all = react.phrases.concat(life.phrases, table.phrases);
+  check("every phrase is speakable", all.every(p => !!SCRIPT[p.ar]));
+  check("and so is every alternative form", all.every(p => !p.f || !!SCRIPT[p.f]));
+  check("and all of it exists in Levantine",
+    all.every(p => (D.DIALECT[p.ar] || {}).lev || (D.SAME.lev || {})[p.ar]));
+  check("the dialogue too",
+    react.dialogue.concat(life.dialogue, table.dialogue).every(d =>
+      !!SCRIPT[d.ask] && !!SCRIPT[d.reply] &&
+      ((D.DIALECT[d.ask] || {}).lev || (D.SAME.lev || {})[d.ask]) &&
+      ((D.DIALECT[d.reply] || {}).lev || (D.SAME.lev || {})[d.reply])));
+  check("and then is heard as a when-question", D.askKind("Wa baʿd?") === "when");
+  check("in Levantine as well", D.askKind("W baʿdèin?") === "when");
+  check("an apology in front of a question does not hide it",
+    D.askKind("Àsif, mà ìsmuki màrra ùkhra?") === "what" &&
+    D.askKind("Àsef, shu ìsmik kamàn màrra?") === "what");
+}
+
+section("how a phrase lands");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {};
+
+  const tagged = LESSONS.flatMap(l => l.phrases).filter(p => p.how);
+  check("some phrases carry a register tag", tagged.length >= 12);
+  check("and only two kinds of it",
+    tagged.every(p => p.how === "safe" || p.how === "direct"));
+  check("most phrases carry none, which is the honest default",
+    tagged.length < LESSONS.flatMap(l => l.phrases).length / 10);
+  check("you are beautiful is one that commits you", D.howOf("Ànti jamìla") === "direct");
+  check("you are kind is not", D.howOf("Ànti latìfa") === "safe");
+  check("nor is a plain hello", D.howOf("Marhàban") === null);
+
+  click({ "data-go": "learn", "data-id": "18" });
+  let g8 = 0;
+  while (g8++ < 20 && peek().learn.lesson.phrases[peek().learn.i].ar !== "Ànti jamìla") {
+    click({ "data-act": "learn-fwd" });
+  }
+  check("the card shows the tag", /class="pill pill--tag how-tag is-direct"/.test(h));
+  click({ "data-act": "learn-reveal" });
+  check("and once revealed it says what that means", /read as interest/.test(h));
+
+  // the situation drill has a third outcome now
+  const misfires = D.MOMENTS.filter(m => m.no);
+  check("some situations have an answer that is right and lands badly", misfires.length >= 3);
+  check("each one says why", misfires.every(m => !!m.why));
+  check("and none of them lists the same phrase as both",
+    misfires.every(m => m.no.every(ar => m.ok.indexOf(ar) === -1)));
+  check("every misfire is a phrase the course teaches",
+    misfires.every(m => m.no.every(ar => LESSONS.some(l => l.phrases.some(p => p.ar === ar)))));
+
+  click({ "data-go": "home" });
+  click({ "data-go": "moment" });
+  let g9 = 0;
+  while (g9++ < 120 && !peek().moment.m.no) click({ "data-act": "moment-next" });
+  if (peek().moment.m.no) {
+    const mo = peek().moment;
+    const before = JSON.stringify(st.str);
+    type("moment-typing", D.disp(mo.m.no[0]));
+    peek().moment.typed = D.disp(mo.m.no[0]);
+    click({ "data-act": "moment-check" });
+    check("saying it gets a third verdict, not a wrong one",
+      peek().moment.misfire === mo.m.no[0]);
+    check("it is not marked right either", peek().moment.right === false);
+    check("it says what went wrong", /lands badly/.test(h));
+    check("and it does not count for the phrase", JSON.stringify(st.str) === before);
+  } else {
+    check("a situation with a misfire could be reached", false);
+  }
+  st.str = {};
+  click({ "data-go": "home" });
+}
+
+section("what you asked for while it was being built");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.variety = undefined;
+
+  // the pile remembers what you did on each card
+  click({ "data-go": "learn", "data-id": "1" });
+  const first = peek().learn.lesson.phrases[0];
+  if (/class="options guess"/.test(h)) {
+    const opts = [...h.matchAll(/data-act="learn-guess" data-value="([^"]+)"/g)].map(m => m[1]);
+    click({ "data-act": "learn-guess", "data-value": opts[0] });
+    check("guessing reveals the card", peek().learn.shown === true);
+    click({ "data-act": "learn-fwd" });
+    check("the next card is fresh", peek().learn.shown === false);
+    click({ "data-act": "learn-prev" });
+    check("coming back keeps the card revealed", peek().learn.shown === true);
+    check("and keeps the guess you made", peek().learn.guessed === opts[0]);
+    check("and does not ask you to guess again", !/class="options guess"/.test(h));
+    check("it counts what you have done", /1 guessed/.test(h));
+    click({ "data-act": "learn-fwd" });
+    click({ "data-act": "learn-fwd" });
+    check("and counts what you walked past", /not looked at yet/.test(h));
+  } else {
+    check("a guessable card could be reached", false);
+  }
+
+  // the other gender, under the phrase, and what the ending means
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "18" });
+  let g10 = 0;
+  while (g10++ < 20 && !peek().learn.lesson.phrases[peek().learn.i].f) click({ "data-act": "learn-fwd" });
+  check("a phrase with two forms shows the other one under it", /class="flash-alt"/.test(h));
+  check("before you reveal anything", peek().learn.shown === false);
+  check("and it can be heard", /class="flash-alt"[\s\S]*?class="say say-sm"/.test(h));
+  check("the ending is explained where there is one",
+    D.endingHint("Kìfak?").includes("-ak") && D.endingHint("Kìfik?").includes("-ik"));
+  check("and nothing is claimed where there is no ending", D.endingHint("Marhàban") === "");
+
+  // typing: the fus-ha you know, the spelling you use
+  st.variety = "lev";
+  check("the dialect form is right", D.judgeTyped("Kìfak?", "Kèifa hàluk?").right);
+  const viaMsa = D.judgeTyped("keifa haluk", "Kèifa hàluk?");
+  check("so is the fus-ha behind it", viaMsa.right && viaMsa.other === "fusha");
+  const loose = D.judgeTyped("alhamdulilah", "Al-hàmdu lillàh");
+  check("a doubled letter left out is not an error", loose.right && loose.loose);
+  check("but a missing word still is", !D.judgeTyped("hamdulillah", "Al-hàmdu lillàh").right);
+  check("and something else entirely certainly is",
+    !D.judgeTyped("shùkran", "Qàhwa").right);
+  st.variety = undefined;
+
+  // the microphone's guess is a guess
+  check("there is always a way to say it heard wrong",
+    require("fs").readFileSync("fusha.html", "utf8").includes('data-act="heard-drop"'));
+
+  // choosing which lessons to draw from
+  click({ "data-go": "home" });
+  check("the review offers a narrower draw", /data-go="choose"/.test(h));
+  click({ "data-go": "choose" });
+  check("the picker has a screen", peek().view.name === "choose");
+  check("with a cell per finished lesson",
+    (h.match(/data-act="chose" data-id=/g) || []).length === LESSONS.length);
+  click({ "data-act": "chose-none" });
+  click({ "data-act": "chose", "data-id": "9" });
+  click({ "data-act": "chose", "data-id": "10" });
+  check("ticking two keeps two", peek().store.chosen.length === 2);
+  click({ "data-act": "chose-play" });
+  const only = peek().session;
+  check("and the session is built from those two alone",
+    !!only && only.tasks.every(t => !t.phrase || !t.srcLesson || [9, 10].indexOf(t.srcLesson.id) !== -1));
+  click({ "data-go": "home" });
+  click({ "data-go": "review" });
+  check("while the mixed review still draws from everything",
+    peek().session.tasks.some(t => t.srcLesson && [9, 10].indexOf(t.srcLesson.id) === -1));
+  peek().store.chosen = undefined;
+
+  // the score screen points at the lesson that is coming apart
+  st.str = {};
+  const weakL = LESSONS.find(l => l.id === 9);
+  weakL.phrases.forEach(p => { st.str[weakL.id + "|" + p.ar] = { s: 0, n: 4, day: D.today() }; });
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+  let g14 = 0;
+  while (g14++ < 60 && peek().view.name !== "result") playRound(true);
+  check("the score screen names a lesson that is slipping",
+    new RegExp("Before you go on: lesson " + D.lessonNo(weakL)).test(h));
+  check("and says how many phrases it is about", /phrases there are slipping/.test(h));
+  check("with a way to pick a lesson yourself", /data-go="choose"/.test(h));
+  st.str = {};
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+  let g15 = 0;
+  while (g15++ < 60 && peek().view.name !== "result") playRound(true);
+  check("and with nothing slipping it does not invent one",
+    !/Before you go on/.test(h) && /Take me to a lesson of my choosing/.test(h));
+
+  // a wrong answer has to be actually wrong
+  check("two ways of saying one thing are known to do the same job",
+    D.sameJob("Marhàban", "Àhlan") && D.sameJob("Anà bikhèir", "Al-hàmdu lillàh"));
+  check("and two different things are not",
+    !D.sameJob("Marhàban", "Shùkran") && !D.sameJob("Qàhwa", "Shày"));
+
+  st.str = {};
+  st.games = { dialog: true };
+  let twinAsOption = 0, rounds = 0;
+  for (let i = 0; i < 40; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    peek().session.tasks.forEach(t => {
+      if (!t.options || !t.answer) return;
+      rounds++;
+      const answerAr = (t.phrase && t.phrase.ar) || (t.exchange && t.exchange.reply) ||
+        (t.turn && t.turn.reply);
+      if (!answerAr) return;
+      t.options.forEach(o => {
+        if (o === t.answer) return;
+        // the option may be an English gloss or an Arabic phrase
+        const asAr = LESSONS.flatMap(l => l.phrases).find(p => p.en === o || p.ar === o);
+        const other = asAr ? asAr.ar : o;
+        if (D.sameJob(other, answerAr)) twinAsOption++;
+      });
+    });
+  }
+  console.log(`    ${rounds} rounds checked, ${twinAsOption} offered a second right answer`);
+  check("no round offers another right answer as the mistake", twinAsOption === 0);
+  st.games = undefined;
+
+  // the three ways of saying "less of this one" now say what they do
+  check("the buttons are explained where they appear",
+    require("fs").readFileSync("fusha.html", "utf8").includes("class=\"aside-key\""));
+
+  st.str = {};
+  click({ "data-go": "home" });
+}
+
+section("a conversation that goes two ways");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {};
+  const branch = CONVOS.find(c => c.turns.some(t => t.alts));
+  check("one conversation has a fork in it", !!branch);
+  const fork = branch.turns[branch.turns.length - 1];
+  check("with two real answers", fork.alts.length === 2);
+  check("each one leading somewhere else",
+    fork.alts[0].next.say !== fork.alts[1].next.say);
+  check("and every line of both taught by the course",
+    fork.alts.every(a => !!SCRIPT[a.reply] && !!SCRIPT[a.next.say] && !!SCRIPT[a.next.reply]));
+
+  click({ "data-go": "convo", "data-id": branch.id });
+  check("it plays like any other", peek().session.isConvo === true);
+  check("with one turn more than the script", peek().session.tasks.length === branch.turns.length + 1);
+  let g11 = 0;
+  while (g11++ < 10 && !peek().session.tasks[peek().session.i].alts) playRound(true);
+  const at = peek().session.tasks[peek().session.i];
+  check("the fork is reached", !!at.alts);
+  check("and both answers are on offer",
+    at.alts.every(a => at.options.indexOf(a.reply) !== -1));
+  check("and it says the choice matters", /depends on which one you give/.test(h));
+
+  // take the second way
+  click({ "data-act": "answer", "data-value": at.alts[1].reply });
+  check("the second answer is right too", peek().session.lastRight === true);
+  const tail = peek().session.tasks[peek().session.tasks.length - 1];
+  check("and it changes what she says next", tail.turn.say === at.alts[1].next.say);
+  check("and what you say back", tail.answer === at.alts[1].next.reply);
+  click({ "data-act": "next" });
+  check("the transcript shows the answer you gave",
+    h.includes(D.disp(at.alts[1].reply)));
+
+  // and the other way round
+  click({ "data-go": "home" });
+  click({ "data-go": "convo", "data-id": branch.id });
+  let g12 = 0;
+  while (g12++ < 10 && !peek().session.tasks[peek().session.i].alts) playRound(true);
+  const at2 = peek().session.tasks[peek().session.i];
+  click({ "data-act": "answer", "data-value": at2.alts[0].reply });
+  const tail2 = peek().session.tasks[peek().session.tasks.length - 1];
+  check("the first answer leads the other way", tail2.turn.say === at2.alts[0].next.say);
+  click({ "data-act": "next" });
+  let g13 = 0;
+  while (g13++ < 8 && peek().view.name !== "result") playRound(true);
+  check("and it finishes either way", peek().view.name === "result");
+
+  st.str = {};
+  click({ "data-go": "home" });
+}
+
+section("was that a yes?");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {};
+
+  check("every answer in the table is a phrase the course teaches",
+    D.REPLIES.every(r => LESSONS.some(l => l.phrases.some(p => p.ar === r.ar))));
+  check("and each one is sorted into yes, maybe or no",
+    D.REPLIES.every(r => ["yes", "maybe", "no"].indexOf(r.side) !== -1));
+  check("with all three sides well represented",
+    ["yes", "maybe", "no"].every(k => D.REPLIES.filter(r => r.side === k).length >= 5));
+  check("inshallah is filed as a maybe and explained",
+    D.REPLIES.some(r => r.ar === "Inshàallah" && r.side === "maybe" && /polite no/.test(r.note || "")));
+  check("and the polite refusal is filed as a no",
+    D.REPLIES.some(r => r.ar === "Àsifa, anà mashghùla" && r.side === "no"));
+
+  click({ "data-go": "answers" });
+  check("the drill has a screen", peek().view.name === "answers");
+  check("three choices, not four", (h.match(/data-act="answers-pick"/g) || []).length === 3);
+  check("and it says what it is for", /soft no|turned down/.test(screenOnly()));
+
+  const a0 = peek().answers;
+  click({ "data-act": "answers-pick", "data-value": a0.r.side });
+  check("getting it right is right", peek().answers.right === true);
+  check("and it is counted", peek().answers.run === 1 && peek().answers.got === 1);
+  check("the phrase is shown with its meaning", /class="pb-en"/.test(h));
+  check("nothing about it touches memory", Object.keys(st.str).length === 0);
+
+  click({ "data-act": "answers-next" });
+  check("another answer follows", peek().answers.checked === false);
+  const a1 = peek().answers;
+  const wrong = a1.r.side === "yes" ? "no" : "yes";
+  click({ "data-act": "answers-pick", "data-value": wrong });
+  check("and getting it wrong says which it was", peek().answers.right === false &&
+    /That was a (yes|maybe|no)/.test(h));
+
+  // a phrase from a lesson you have not passed is not asked about
+  st.lessons = {};
+  check("with nothing passed there is nothing to hear", D.replyPool().length === 0);
+  unlockAll();
+  click({ "data-go": "home" });
 }
 
 section("the sounds you cannot hear yet");
