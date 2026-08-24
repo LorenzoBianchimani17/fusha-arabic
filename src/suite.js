@@ -81,7 +81,12 @@ global.window = {
 };
 if (withVoice) {
   global.window.speechSynthesis = {
-    getVoices: () => [{ name: "Maged", lang: "ar-SA" }],
+    getVoices: () => [
+      { name: "Maged", lang: "ar-SA" },
+      { name: "Tarik", lang: "ar-001" },
+      { name: "Laila", lang: "ar-SA" },
+      { name: "Daniel", lang: "en-GB" }
+    ],
     cancel() {}, speak(u) { spoken.push(u); }, onvoiceschanged: null
   };
   global.window.SpeechSynthesisUtterance = function (t) { this.text = t; };
@@ -1276,11 +1281,19 @@ section("audio speed");
   const st = peek().store;
   st.str = {}; st.speed = undefined;
   const ar = LESSONS[0].phrases[0].ar;
-  check("a phrase you have not learned is slowed", rateFor(ar) === 0.75);
+  const speech = global.__data.speech;
+  // full speed first, however new the phrase is: the slow one is the
+  // crutch you reach for, not the one you are handed
+  speech.lastSaid = null; speech.repeats = 0;
+  check("the first play is at full speed, new phrase or not", rateFor(ar) === 1);
   st.str["1|" + ar] = { s: 4, n: 6, day: today() };
-  check("one you know comes at natural speed", rateFor(ar) === 1);
-  st.str["1|" + ar] = { s: 1, n: 6, day: today() };
-  check("a shaky one goes back to slow", rateFor(ar) === 0.75);
+  check("and for one you know too", rateFor(ar) === 1);
+  speech.lastSaid = ar; speech.repeats = 1;
+  check("asking for it again slows it down", rateFor(ar) === 0.75);
+  speech.lastSaid = "something else"; speech.repeats = 3;
+  check("a different phrase starts at full speed again", rateFor(ar) === 1);
+  speech.lastSaid = null; speech.repeats = 0;
+  speech.lastSaid = ar; speech.repeats = 2;
   st.speed = "normal";
   check("always-natural overrides that", rateFor(ar) === 1);
   st.speed = "slow";
@@ -3174,6 +3187,250 @@ section("fus·ha and the street");
   click({ "data-go": "home" });
 }
 
+section("the ear against the eye");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.modes = undefined;
+
+  check("nothing is claimed before there is evidence", D.modePct("ear") === null);
+  check("and no gap either", D.earGap() === null);
+
+  // a listening round is by ear; a written one is not
+  check("listening counts as by ear", D.byEar({ type: "listen" }));
+  check("so does dictation", D.byEar({ type: "dictate" }));
+  check("typing does not", !D.byEar({ type: "write" }));
+
+  // twenty rounds of each, right on the page and wrong by ear
+  for (let i = 0; i < 20; i++) {
+    st.modes = st.modes || { ear: { n: 0, ok: 0 }, eye: { n: 0, ok: 0 } };
+  }
+  st.modes = { ear: { n: 20, ok: 8 }, eye: { n: 20, ok: 18 } };
+  check("it can say how each one is doing",
+    D.modePct("eye") === 90 && D.modePct("ear") === 40);
+  check("and which is behind", D.earGap() === 50 && D.earBehind());
+
+  click({ "data-go": "diary" });
+  check("the diary says it in words", /right when the phrase was on the page/.test(h));
+  check("and draws it", /class="mode-bar is-ear"/.test(h));
+  check("and says what it is doing about it", /twice as often until it closes/.test(h));
+
+  // the correction: listening rounds get drawn more while the gap is open
+  st.games = undefined;
+  let earRounds = 0, total = 0;
+  for (let i = 0; i < 30; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    peek().session.tasks.forEach(t => {
+      total++;
+      if (t.type === "listen" || t.type === "dictate") earRounds++;
+    });
+  }
+  const leaning = earRounds / total;
+
+  st.modes = { ear: { n: 20, ok: 18 }, eye: { n: 20, ok: 18 } };
+  check("with the gap closed it stops leaning", !D.earBehind());
+  let evenEar = 0, evenTotal = 0;
+  for (let i = 0; i < 30; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    peek().session.tasks.forEach(t => {
+      evenTotal++;
+      if (t.type === "listen" || t.type === "dictate") evenEar++;
+    });
+  }
+  const level = evenEar / evenTotal;
+  console.log(`    ear rounds: ${Math.round(leaning * 100)}% while behind, ${Math.round(level * 100)}% when level`);
+  // without a voice there are no listening rounds at all to lean on
+  check("which really does mean more listening while it is open",
+    withVoice ? leaning > level : leaning === 0 && level === 0);
+
+  // the window keeps it recent
+  st.modes = { ear: { n: D.MODE_WINDOW, ok: 120 }, eye: { n: 10, ok: 10 } };
+  D.noteMode({ type: "listen" }, true);
+  check("the count is halved rather than grown for ever",
+    st.modes.ear.n === Math.round((D.MODE_WINDOW + 1) / 2));
+  check("and the hits are halved with it", st.modes.ear.ok === Math.round(121 / 2));
+  check("so the percentage barely moves", D.modePct("ear") === 50);
+
+  st.modes = undefined; st.str = {};
+  click({ "data-go": "home" });
+}
+
+section("the curious questions");
+{
+  const D = global.__data;
+  const know = LESSONS.find(l => l.id === 31);
+  const think = LESSONS.find(l => l.id === 32);
+  check("there is a lesson for getting to know someone", !!know && know.phrases.length >= 14);
+  check("and one for saying what you think", !!think && think.phrases.length >= 14);
+  check("they come straight after meeting someone",
+    LESSONS.indexOf(know) === LESSONS.findIndex(l => l.id === 18) + 1 &&
+    LESSONS.indexOf(think) === LESSONS.indexOf(know) + 1);
+
+  ["Mà tùhibbìn an tafʿalì?", "Hal ʿìndaki hiwayàt?", "Ày nàuʿ min al-mùsiqa?",
+    "Mà fìlmuki al-mufàddal?", "Mùndhu matà ànti hùna?", "Hal taʿmalìn àm tadrusìn?"]
+    .forEach(ar => check("it can ask " + ar, know.phrases.some(p => p.ar === ar)));
+  check("and answer with something you actually do",
+    ["Ùhib al-mùsiqa", "Ùhib al-aflàm", "Ùhib as-sàfar", "Ùhib at-tabkh", "Àlʿab kùrat al-qàdam"]
+      .every(ar => know.phrases.some(p => p.ar === ar)));
+  check("the whole lesson is addressed to a woman, with the man on the card",
+    know.phrases.filter(p => p.f).length >= 5 &&
+    know.phrases.filter(p => p.f).every(p => /Speaking to a man/.test(p.fLabel)));
+
+  ["Mumtàz", "Mùmill", "Haqqan?", "Nàuʿan mà", "Hàsab", "Dà'iman", "Àhyanan", "Àbadan"]
+    .forEach(ar => check("an opinion can be " + ar, think.phrases.some(p => p.ar === ar)));
+  check("liking something has both ways round",
+    think.phrases.some(p => p.ar === "Yùʿjibuni") && think.phrases.some(p => p.ar === "Lam yùʿjibni"));
+
+  const all = know.phrases.concat(think.phrases);
+  check("every one of them can be spoken", all.every(p => !!SCRIPT[p.ar]));
+  check("and the masculine forms too", all.every(p => !p.f || !!SCRIPT[p.f]));
+  check("and every one exists in Levantine",
+    all.every(p => (D.DIALECT[p.ar] || {}).lev || (D.SAME.lev || {})[p.ar]));
+  check("the dialogue lines too",
+    know.dialogue.concat(think.dialogue).every(d =>
+      !!SCRIPT[d.ask] && !!SCRIPT[d.reply] &&
+      ((D.DIALECT[d.ask] || {}).lev || (D.SAME.lev || {})[d.ask]) &&
+      ((D.DIALECT[d.reply] || {}).lev || (D.SAME.lev || {})[d.reply])));
+
+  // the number, the message and the next time
+  const touch = LESSONS.find(l => l.id === 33);
+  check("there is a lesson for keeping in touch", !!touch && touch.phrases.length >= 10);
+  check("it follows the other two", LESSONS.indexOf(touch) === LESSONS.indexOf(think) + 1);
+  ["Hàdha raqmi", "Ìbʿathi li risàla", "Hal ànti hùrra ghàdan?", "Àina naltàqi?",
+    "Urìd an àraki màrra ùkhra"]
+    .forEach(ar => check("it can say " + ar, touch.phrases.some(p => p.ar === ar)));
+  check("all of it speakable and Levantine",
+    touch.phrases.every(p => !!SCRIPT[p.ar] &&
+      ((D.DIALECT[p.ar] || {}).lev || (D.SAME.lev || {})[p.ar])));
+  check("with the masculine on the card where it differs",
+    touch.phrases.filter(p => p.f).length >= 4 &&
+    touch.phrases.filter(p => p.f).every(p => !!SCRIPT[p.f]));
+
+  // and the ear drill can classify what they ask
+  check("since when is a when-question", D.askKind("Mùndhu matà ànti hùna?") === "when");
+  check("in Levantine too", D.askKind("Min èmta ìnti hòn?") === "when");
+  check("and this or that is a choice", D.askKind("Hal taʿmalìn àm tadrusìn?") === "choice");
+  check("even when the dialect drops the hal",
+    D.askKind("Bitìshtighli willa bitìdrusi?") === "choice");
+}
+
+section("the sounds you cannot hear yet");
+{
+  const D = global.__data;
+  unlockAll();
+  click({ "data-go": "sounds" });
+  check("the pairs have a screen", peek().view.name === "sounds");
+  check("all ten are on it", D.MINIMAL.length === 10 &&
+    D.MINIMAL.every(p => h.includes(p.a.ar) && h.includes(p.b.ar)));
+  check("each pair says what the difference is",
+    D.MINIMAL.every(p => h.includes(p.sound.replace(/&/g, "&amp;"))));
+  check("with both words sayable", (h.match(/data-script="/g) || []).length >= 20);
+  check("and it admits the Latin spelling cannot show it",
+    /honest limit of writing Arabic in Latin letters/.test(h));
+
+  check("every pair is a real minimal pair, not the same word twice",
+    D.MINIMAL.every(p => p.a.ar !== p.b.ar && p.a.en !== p.b.en));
+  check("and the two sides differ by one letter or one vowel",
+    D.MINIMAL.every(p => Math.abs(p.a.ar.length - p.b.ar.length) <= 3));
+
+  if (withVoice) {
+    click({ "data-act": "sounds-start" });
+    const s0 = peek().sounds;
+    check("the drill starts", !!s0 && s0.checked === false);
+    check("it plays one of the two", s0.said === "a" || s0.said === "b");
+    check("and shows both to choose from", (h.match(/data-act="sounds-pick"/g) || []).length === 2);
+
+    click({ "data-act": "sounds-pick", "data-id": s0.said });
+    check("choosing the one it said is right", peek().sounds.right === true);
+    check("and it explains the difference either way",
+      h.includes(D.MINIMAL[peek().sounds.i].note.replace(/&/g, "&amp;")));
+    check("the score is kept for the screen only", peek().sounds.n === 1 && peek().sounds.ok === 1);
+    check("and nothing went into memory", !peek().store.str || !Object.keys(peek().store.str).length);
+
+    click({ "data-act": "sounds-next" });
+    check("another pair follows", peek().sounds.n === 1 && peek().sounds.checked === false);
+    const wrong = peek().sounds.said === "a" ? "b" : "a";
+    click({ "data-act": "sounds-pick", "data-id": wrong });
+    check("getting it wrong is marked as wrong", peek().sounds.right === false);
+    check("and counted", peek().sounds.n === 2 && peek().sounds.ok === 1);
+  } else {
+    check("without a voice it says the drill needs one", /drill needs a voice|needs an Arabic voice/.test(h));
+    check("but the pairs are still readable", /class="pair-row"/.test(h));
+  }
+  click({ "data-go": "home" });
+}
+
+section("the mouth: no options, and one pattern five times");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {};
+
+  // a conversation you half know still gives you the three options
+  const convo = CONVOS.find(c => D.talkScope || true);
+  click({ "data-go": "home" });
+  click({ "data-go": "convo", "data-id": CONVOS[0].id });
+  check("a conversation you do not know gives you the options",
+    peek().session.tasks.every(t => !t.produce) && /class="options"/.test(h));
+
+  // once every reply is solid, it asks you to produce them
+  CONVOS[0].turns.forEach(t => {
+    const lid = D.lessonTeaching(t.reply);
+    if (lid) st.str[lid + "|" + t.reply] = { s: 5, n: 9, day: D.today() };
+  });
+  click({ "data-go": "home" });
+  click({ "data-go": "convo", "data-id": CONVOS[0].id });
+  check("once you know them, there are no options",
+    peek().session.tasks.every(t => t.produce));
+  check("and it says so", /No options this time/.test(h));
+  check("there is a box to type into", /data-act="typing"/.test(h));
+  check("and a way out that is honest about itself", /data-act="convo-options"/.test(h));
+
+  const t0 = peek().session.tasks[0];
+  t0.typed = t0.answer;
+  click({ "data-act": "check-write" });
+  check("typing the reply is answering", peek().session.state === "checked");
+  check("and it counts for the phrase it belongs to",
+    (st.str[D.lessonTeaching(t0.turn.reply) + "|" + t0.turn.reply] || {}).n > 9);
+
+  click({ "data-go": "home" });
+  click({ "data-go": "convo", "data-id": CONVOS[0].id });
+  click({ "data-act": "convo-options" });
+  check("asking for the options brings them back", /class="options"/.test(h));
+  const t1 = peek().session.tasks[peek().session.i];
+  const before = (st.str[D.lessonTeaching(t1.turn.reply) + "|" + t1.turn.reply] || {}).s;
+  click({ "data-act": "answer", "data-value": t1.answer });
+  check("but getting it right that way does not climb",
+    (st.str[D.lessonTeaching(t1.turn.reply) + "|" + t1.turn.reply] || {}).s <= before);
+
+  // one pattern, five words
+  st.str = {};
+  click({ "data-go": "home" });
+  check("there are patterns to run", D.frameRunnable().length > 0);
+  click({ "data-go": "frame" });
+  check("the drill opens", peek().view.name === "frame");
+  const run = global.__peek().session === null;
+  check("it is not a session", run);
+  check("five words", /1 \/ 5/.test(h));
+  check("all of them through one frame", /class="prompt-label"/.test(h));
+
+  click({ "data-act": "frame-show" });
+  check("showing gives you the whole sentence", /class="verdict-msg ok/.test(h));
+  for (let i = 0; i < 5; i++) {
+    if (!/data-act="frame-next"/.test(h)) click({ "data-act": "frame-show" });
+    click({ "data-act": "frame-next" });
+  }
+  check("five and it is over", /Run over/.test(h));
+  check("and nothing was marked", /Nothing was marked/.test(h));
+  check("no memory was touched", Object.keys(st.str).length === 0);
+
+  click({ "data-go": "home" });
+}
+
 section("the games got harder in the right places");
 {
   const D = global.__data;
@@ -3410,6 +3667,14 @@ section("the warmer light theme");
     !/(background|color):\s*#[0-9A-Fa-f]{3,6}/.test(css.split(':root[data-theme="light"]')[1] || ""));
   const head = require("fs").readFileSync("build.py", "utf8");
   check("the browser bar matches the page", head.includes('content="#F3F0E8"'));
+
+  // every colour in the CSS is a token, and every rule closes
+  check("the style block is balanced",
+    (css.match(/\{/g) || []).length === (css.match(/\}/g) || []).length);
+  const declared = new Set([...css.matchAll(/^\s+(--[a-z0-9-]+):/gm)].map(m => m[1]));
+  const used = new Set([...css.matchAll(/var\((--[a-z0-9-]+)\)/g)].map(m => m[1]));
+  check("no rule uses a token that does not exist",
+    [...used].every(v => declared.has(v)));
 }
 
 section("the look of it");
@@ -3594,6 +3859,27 @@ section("backup to a file");
   check("the backup offers a file, not only a code", /data-act="save-file"/.test(h));
   check("and a way to read one back", /data-act="restore-file"/.test(h));
 
+  // a finished test has an address, and it should come back to the score
+  unlockAll();
+  peek().store.str = {};
+  click({ "data-go": "test" });
+  let gt = 0;
+  while (gt++ < 60 && peek().view.name !== "result") playRound(true);
+  if (peek().view.name === "result") {
+    const back = location.hash;
+    check("the score screen has its own address", back === "#/test/score");
+    const scored = peek().session;
+    location.hash = "#/test";
+    check("stepping back starts the test over, like every other review",
+      peek().view.name === "play" && peek().session !== scored);
+    location.hash = back;
+    check("and the score of a test you have not finished is not a screen",
+      peek().view.name === "home");
+    peek().store.exams = undefined;
+    peek().store.str = {};
+    click({ "data-go": "home" });
+  }
+
   // no createElement in this harness, so it must say so rather than throw
   click({ "data-act": "save-file" });
   check("where the browser will not do it, it says so, and changes nothing",
@@ -3690,15 +3976,33 @@ if (withVoice) {
   {
     unlockAll();
     click({ "data-go": "home" });
-    check("home names the detected voice", /Maged/.test(h));
+    check("home says how many voices it found", /There are 3 of them/.test(h));
+    check("and offers another one", /data-act="voice-next"/.test(h));
+    check("and a way to stop it changing", /data-act="voice-one"/.test(h));
     click({ "data-go": "learn", "data-id": "1" });
     const btn = h.match(/<button class="say"[^>]*>/);
     check("speaker enabled on the flashcard", btn && !/\sdisabled/.test(btn[0]));
     spoken.length = 0;
     click({ "data-act": "say", "data-say": "Sabàh al-khèir" });
     check("it speaks Arabic script", spoken.length === 1 && /[؀-ۿ]/.test(spoken[0].text));
-    check("with the Arabic voice", spoken[0].voice.name === "Maged");
-    check("slowed down for a phrase you have not learned", spoken[0].rate === 0.75);
+    check("with an Arabic voice, never the English one",
+      ["Maged", "Tarik", "Laila"].indexOf(spoken[0].voice.name) !== -1);
+    check("at full speed the first time", spoken[0].rate === 1);
+    click({ "data-act": "say", "data-say": "Sabàh al-khèir" });
+    check("and slowed down when you ask again", spoken[1].rate === 0.75);
+
+    // a different speaker on the next round, without being asked
+    const seen = {};
+    for (let i = 0; i < 12; i++) {
+      global.__data.rotateVoice();
+      seen[global.__data.speech.voice.name] = true;
+    }
+    check("the voice moves around by itself", Object.keys(seen).length > 1);
+    peek().store.oneVoice = true;
+    const stuck = global.__data.speech.voice.name;
+    for (let i = 0; i < 6; i++) global.__data.rotateVoice();
+    check("unless you have said to keep one", global.__data.speech.voice.name === stuck);
+    peek().store.oneVoice = undefined;
 
     // listening game. Start from the defaults rather than from whatever
     // an earlier section left behind.
@@ -3939,6 +4243,9 @@ if (withMic) {
 
   section("when the microphone is refused");
   {
+    // an earlier section leaves this conversation's replies solid, which
+    // now means it asks you to produce them instead of offering options
+    peek().store.str = {};
     click({ "data-go": "home" });
     click({ "data-go": "convo", "data-id": CONVOS[0].id });
     micErrored = "not-allowed";

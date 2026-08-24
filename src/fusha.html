@@ -402,22 +402,6 @@
 
   /* ---------- lesson track ---------- */
 
-  .section-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--s-4);
-    margin-bottom: var(--s-5);
-  }
-
-  .section-head h2 {
-    font-size: var(--t-3);
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--ink-2);
-    font-weight: 600;
-  }
-
   .track { display: flex; flex-direction: column; gap: var(--s-3); }
 
   .lesson {
@@ -527,6 +511,29 @@
   .key-cold { color: var(--amber); }
   .key-unmet { color: var(--ink-3); }
   .talk-repair { margin: 2px 0 10px 6px; color: var(--ink-3); font-size: var(--t-1); }
+  .pair-row { padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .pair-head { color: var(--ink-3); font-size: var(--t-1); letter-spacing: .08em;
+    text-transform: uppercase; margin-bottom: 8px; }
+  .pair-two { display: flex; flex-wrap: wrap; gap: var(--s-4); }
+  .pair-side { display: flex; align-items: center; gap: var(--s-3); flex: 1 1 40%; min-width: 0; }
+  .pair-word { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .pair-word .ar { font-size: var(--t-7); }
+  .pair-tr { font-size: var(--t-3); }
+  .pair-en { color: var(--ink-3); font-size: var(--t-1); }
+  .pair-note { margin: 8px 0 0; color: var(--ink-3); font-size: var(--t-2); line-height: 1.5; }
+  .sounds-card { padding: 22px 20px; margin: 0 0 22px; }
+  .sounds-pick { display: flex; gap: var(--s-3); margin: 18px 0 0; }
+  .sounds-opt { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 14px 10px; border: 1px solid var(--line); border-radius: var(--r-md);
+    background: var(--surface); color: inherit; font: inherit; cursor: pointer; }
+  .sounds-opt .ar { font-size: var(--t-6); }
+  .sounds-en { font-size: var(--t-3); }
+  .sounds-opt.is-right { border-color: var(--good); background: var(--good-soft); }
+  .sounds-opt.is-wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .sounds-verdict { margin: 16px 0 0; font-size: var(--t-3); line-height: 1.5; }
+  .sounds-verdict.ok { color: var(--good); }
+  .sounds-verdict.no { color: var(--bad); }
+  .sounds-score { margin: 14px 0 0; color: var(--ink-3); font-size: var(--t-1); }
   .street-group { margin: 0 0 var(--s-6); }
   .street-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3);
     padding: 10px 0; border-bottom: 1px solid var(--line); }
@@ -549,6 +556,14 @@
     margin: var(--s-5) 0 0; }
   .tape-btn.is-live { border-color: var(--bad); color: var(--bad); }
   .tape-note { flex: 1 0 100%; color: var(--ink-3); font-size: var(--t-1); line-height: 1.45; }
+  .mode-bars { display: flex; flex-direction: column; gap: var(--s-3); margin: 4px 0 0; }
+  .mode-bar { position: relative; height: 26px; border-radius: var(--r-sm);
+    background: var(--surface-2); overflow: hidden; }
+  .mode-bar > i { display: block; height: 100%; background: var(--accent-soft); }
+  .mode-bar.is-ear > i { background: var(--good-soft); }
+  .mode-bar > span { position: absolute; inset: 0; display: flex; align-items: center;
+    padding: 0 10px; font-size: var(--t-1); color: var(--ink-2); letter-spacing: .04em;
+    text-transform: uppercase; }
   .diary-row { display: flex; align-items: baseline; gap: var(--s-4); padding: 10px 0;
     border-bottom: 1px solid var(--line); }
   .diary-when { flex: 0 0 84px; color: var(--ink-3); font-size: var(--t-1); }
@@ -566,6 +581,8 @@
     border: 1px solid var(--line); border-radius: var(--r-md); margin-bottom: 8px;
     background: var(--surface); }
   .can-row.is-yes { border-color: var(--good); }
+  .can-row.is-nearly { border-color: var(--accent); }
+  .can-row.is-nearly .can-tick { color: var(--accent); }
   .can-row.is-no { opacity: .72; }
   .can-tick { width: 20px; text-align: center; color: var(--ink-3); font-size: var(--t-5); }
   .can-row.is-yes .can-tick { color: var(--good); }
@@ -760,6 +777,7 @@
   }
 
   .pb-link:hover { filter: brightness(.95); }
+  .now-link { color: var(--on-accent); background: var(--accent); }
   .pb-lead { margin: var(--s-2) 0 var(--s-6); color: var(--ink-2); font-size: var(--t-4); line-height: 1.5; max-width: 62ch; }
 
   .pb-search {
@@ -1202,17 +1220,6 @@
   .aside:hover { color: var(--ink-2); border-color: var(--line-strong); }
   .aside.is-on { color: var(--good); background: var(--good-soft); border-color: transparent; font-weight: 600; }
 
-  .aside-inline {
-    margin-left: auto;
-    padding: var(--s-2) var(--s-4) var(--s-2) var(--s-3);
-    font-size: var(--t-2);
-    background: transparent;
-    border-color: currentColor;
-    color: inherit;
-    opacity: .75;
-  }
-
-  .aside-inline:hover { opacity: 1; color: inherit; }
 
 
 
@@ -1294,7 +1301,6 @@
 
   /* ---------- free talk ---------- */
 
-  .talk-link { right: auto; left: 0; }
   .talk-log { max-height: 46vh; overflow-y: auto; padding-right: var(--s-1); margin-bottom: var(--s-6); }
 
   .understood {
@@ -2404,6 +2410,84 @@
       ]
     },
     {
+      id: 31,
+      title: "Getting to know someone",
+      intro: "The questions after the first two minutes: what you do, what you like, how long you have been here.",
+      phrases: [
+        { ar: "Mà tùhibbìn an tafʿalì?", en: "What do you like to do?", f: "Mà tùhib an tàfʿal?", fLabel: "Speaking to a man", core: true, note: "Like lesson 19, this one is written for speaking to a woman; the flashcard shows the form for a man." },
+        { ar: "Hal ʿìndaki hiwayàt?", en: "Do you have any hobbies?", f: "Hal ʿìndak hiwayàt?", fLabel: "Speaking to a man" },
+        { ar: "Ùhib al-mùsiqa", en: "I like music", core: true },
+        { ar: "Ày nàuʿ min al-mùsiqa?", en: "What kind of music?", note: "<b>Ày nàuʿ</b>, what kind, works on anything: music, food, films. It is the question that keeps a conversation going after a one-word answer." },
+        { ar: "Ùhib al-aflàm", en: "I like films" },
+        { ar: "Mà fìlmuki al-mufàddal?", en: "What is your favourite film?", f: "Mà fìlmuk al-mufàddal?", fLabel: "Speaking to a man" },
+        { ar: "Ùhib as-sàfar", en: "I like travelling" },
+        { ar: "Ùhib at-tabkh", en: "I like cooking" },
+        { ar: "Àlʿab kùrat al-qàdam", en: "I play football" },
+        { ar: "Fi wàqt al-faràgh", en: "In my free time" },
+        { ar: "Mùndhu matà ànti hùna?", en: "How long have you been here?", f: "Mùndhu matà ànta hùna?", fLabel: "Speaking to a man", core: true },
+        { ar: "Anà hùna mùndhu sàna", en: "I have been here a year" },
+        { ar: "Hal taʿmalìn àm tadrusìn?", en: "Do you work or study?", f: "Hal tàʿmal àm tàdrus?", fLabel: "Speaking to a man" },
+        { ar: "Ùhibbu jìddan", en: "I like it a lot", core: true },
+        { ar: "Là ùhibbu kathìran", en: "I do not like it much", note: "Softer than a flat no, and it invites the next question instead of ending the exchange." }
+      ],
+      dialogue: [
+        { ask: "Mà tùhibbìn an tafʿalì?", askEn: "What do you like to do?", reply: "Ùhib al-mùsiqa", en: "I like music" },
+        { ask: "Hal ʿìndaki hiwayàt?", askEn: "Do you have any hobbies?", reply: "Ùhib as-sàfar", en: "I like travelling" },
+        { ask: "Mùndhu matà ànti hùna?", askEn: "How long have you been here?", reply: "Anà hùna mùndhu sàna", en: "I have been here a year" },
+        { ask: "Hal taʿmalìn àm tadrusìn?", askEn: "Do you work or study?", reply: "Àʿmal hùna", en: "I work here" }
+      ]
+    },
+    {
+      id: 32,
+      title: "Saying what you think",
+      intro: "An opinion, and the words that carry one: good, boring, really, it depends, sometimes.",
+      phrases: [
+        { ar: "Mà rà'yuki?", en: "What do you think?", f: "Mà rà'yuk?", fLabel: "Speaking to a man", core: true },
+        { ar: "Yùʿjibuni", en: "I like it", note: "Literally <i>it pleases me</i>. Arabic says liking this way round more often than with <b>ùhib</b>." },
+        { ar: "Lam yùʿjibni", en: "I did not like it" },
+        { ar: "Mumtàz", en: "Excellent", core: true },
+        { ar: "Mumtìʿ", en: "Enjoyable, fun" },
+        { ar: "Mùmill", en: "Boring" },
+        { ar: "Sàʿb", en: "Difficult" },
+        { ar: "Sàhl", en: "Easy" },
+        { ar: "Nàuʿan mà", en: "Sort of, so-so" },
+        { ar: "Hàsab", en: "It depends" },
+        { ar: "Haqqan?", en: "Really?", core: true, note: "The one-word way of staying in a conversation while the other person keeps talking." },
+        { ar: "Dà'iman", en: "Always" },
+        { ar: "Àhyanan", en: "Sometimes" },
+        { ar: "Àbadan", en: "Never" }
+      ],
+      dialogue: [
+        { ask: "Mà rà'yuki?", askEn: "What do you think?", reply: "Mumtàz", en: "Excellent" },
+        { ask: "Al-fìlm mumtìʿ", askEn: "The film is fun", reply: "Anà muwàfiq", en: "I agree" },
+        { ask: "Hal ta'tìn hùna dà'iman?", askEn: "Do you always come here?", reply: "Àhyanan", en: "Sometimes" },
+        { ask: "Kèifa kàna?", askEn: "How was it?", reply: "Lam yùʿjibni", en: "I did not like it" }
+      ]
+    },
+    {
+      id: 33,
+      title: "Keeping in touch",
+      intro: "The end of a good conversation: a number, a message, and a time to meet again.",
+      phrases: [
+        { ar: "Hàdha raqmi", en: "This is my number", core: true },
+        { ar: "Sa'attàsil biki", en: "I will call you", f: "Sa'attàsil bik", fLabel: "Speaking to a man", note: "Like lesson 19, written for speaking to a woman." },
+        { ar: "Ìttasili bi", en: "Call me", f: "Ìttasil bi", fLabel: "Speaking to a man" },
+        { ar: "Ìbʿathi li risàla", en: "Send me a message", f: "Ìbʿath li risàla", fLabel: "Speaking to a man", core: true },
+        { ar: "Hal ànti hùrra ghàdan?", en: "Are you free tomorrow?", f: "Hal ànta hùrr ghàdan?", fLabel: "Speaking to a man" },
+        { ar: "Anà hùrr al-làila", en: "I am free tonight" },
+        { ar: "Àina naltàqi?", en: "Where shall we meet?", core: true },
+        { ar: "Naltàqi hunàk", en: "Let us meet there" },
+        { ar: "Urìd an àraki màrra ùkhra", en: "I would like to see you again", f: "Urìd an aràk màrra ùkhra", fLabel: "Speaking to a man", note: "Direct, and none the worse for it. Said at the end of an evening that went well, it is understood everywhere." },
+        { ar: "Kàna màsa'an jamìlan", en: "It was a lovely evening" }
+      ],
+      dialogue: [
+        { ask: "Hal ànti hùrra ghàdan?", askEn: "Are you free tomorrow?", reply: "Naʿam, anà hùrra", en: "Yes, I am free" },
+        { ask: "Àina naltàqi?", askEn: "Where shall we meet?", reply: "Naltàqi hunàk", en: "Let us meet there" },
+        { ask: "Sa'attàsil biki", askEn: "I will call you", reply: "Hàdha raqmi", en: "This is my number" },
+        { ask: "Kàna màsa'an jamìlan", askEn: "It was a lovely evening", reply: "Urìd an aràk màrra ùkhra", en: "I would like to see you again" }
+      ]
+    },
+    {
       id: 19,
       title: "Numbers to 100",
       intro: "The tens, and the trick for everything in between.",
@@ -3175,6 +3259,60 @@
 
     "Maʿa salàma": "مَعَ السَّلَامَة",
     "Ilà al-liqà": "إِلَى اللِّقَاء",
+    "Mà tùhibbìn an tafʿalì?": "مَا تُحِبِّينَ أَنْ تَفْعَلِي؟",
+    "Mà tùhib an tàfʿal?": "مَا تُحِبُّ أَنْ تَفْعَلَ؟",
+    "Hal ʿìndaki hiwayàt?": "هَلْ عِنْدَكِ هِوَايَات؟",
+    "Hal ʿìndak hiwayàt?": "هَلْ عِنْدَكَ هِوَايَات؟",
+    "Ùhib al-mùsiqa": "أُحِبُّ الْمُوسِيقَى",
+    "Ày nàuʿ min al-mùsiqa?": "أَيُّ نَوْعٍ مِنَ الْمُوسِيقَى؟",
+    "Ùhib al-aflàm": "أُحِبُّ الْأَفْلَام",
+    "Mà fìlmuki al-mufàddal?": "مَا فِيلْمُكِ الْمُفَضَّل؟",
+    "Mà fìlmuk al-mufàddal?": "مَا فِيلْمُكَ الْمُفَضَّل؟",
+    "Ùhib as-sàfar": "أُحِبُّ السَّفَر",
+    "Ùhib at-tabkh": "أُحِبُّ الطَّبْخ",
+    "Àlʿab kùrat al-qàdam": "أَلْعَبُ كُرَةَ الْقَدَم",
+    "Fi wàqt al-faràgh": "فِي وَقْتِ الْفَرَاغ",
+    "Mùndhu matà ànti hùna?": "مُنْذُ مَتَى أَنْتِ هُنَا؟",
+    "Mùndhu matà ànta hùna?": "مُنْذُ مَتَى أَنْتَ هُنَا؟",
+    "Anà hùna mùndhu sàna": "أَنَا هُنَا مُنْذُ سَنَة",
+    "Hal taʿmalìn àm tadrusìn?": "هَلْ تَعْمَلِينَ أَمْ تَدْرُسِينَ؟",
+    "Hal tàʿmal àm tàdrus?": "هَلْ تَعْمَلُ أَمْ تَدْرُس؟",
+    "Àʿmal hùna": "أَعْمَلُ هُنَا",
+    "Ùhibbu jìddan": "أُحِبُّهُ جِدًّا",
+    "Là ùhibbu kathìran": "لَا أُحِبُّهُ كَثِيرًا",
+    "Mà rà'yuki?": "مَا رَأْيُكِ؟",
+    "Mà rà'yuk?": "مَا رَأْيُكَ؟",
+    "Yùʿjibuni": "يُعْجِبُنِي",
+    "Lam yùʿjibni": "لَمْ يُعْجِبْنِي",
+    "Mumtàz": "مُمْتَاز",
+    "Mumtìʿ": "مُمْتِع",
+    "Mùmill": "مُمِلّ",
+    "Sàʿb": "صَعْب",
+    "Sàhl": "سَهْل",
+    "Nàuʿan mà": "نَوْعًا مَا",
+    "Hàsab": "حَسَب",
+    "Haqqan?": "حَقًّا؟",
+    "Dà'iman": "دَائِمًا",
+    "Àhyanan": "أَحْيَانًا",
+    "Àbadan": "أَبَدًا",
+    "Al-fìlm mumtìʿ": "الْفِيلْمُ مُمْتِع",
+    "Hal ta'tìn hùna dà'iman?": "هَلْ تَأْتِينَ هُنَا دَائِمًا؟",
+    "Hàdha raqmi": "هَذَا رَقْمِي",
+    "Sa'attàsil biki": "سَأَتَّصِلُ بِكِ",
+    "Sa'attàsil bik": "سَأَتَّصِلُ بِكَ",
+    "Ìttasili bi": "اِتَّصِلِي بِي",
+    "Ìttasil bi": "اِتَّصِلْ بِي",
+    "Ìbʿathi li risàla": "اِبْعَثِي لِي رِسَالَة",
+    "Ìbʿath li risàla": "اِبْعَثْ لِي رِسَالَة",
+    "Hal ànti hùrra ghàdan?": "هَلْ أَنْتِ حُرَّةٌ غَدًا؟",
+    "Hal ànta hùrr ghàdan?": "هَلْ أَنْتَ حُرٌّ غَدًا؟",
+    "Anà hùrr al-làila": "أَنَا حُرٌّ اللَّيْلَة",
+    "Naʿam, anà hùrra": "نَعَمْ، أَنَا حُرَّة",
+    "Àina naltàqi?": "أَيْنَ نَلْتَقِي؟",
+    "Naltàqi hunàk": "نَلْتَقِي هُنَاك",
+    "Urìd an àraki màrra ùkhra": "أُرِيدُ أَنْ أَرَاكِ مَرَّةً أُخْرَى",
+    "Urìd an aràk màrra ùkhra": "أُرِيدُ أَنْ أَرَاكَ مَرَّةً أُخْرَى",
+    "Kàna màsa'an jamìlan": "كَانَ مَسَاءً جَمِيلًا",
     "Ilà al-liqà qarìban": "إِلَى اللِّقَاءِ قَرِيبًا",
     "Ilà al-ghad": "إِلَى الْغَد",
     "Tùsbih ʿalà khèir": "تُصْبِحُ عَلَى خَيْرٍ",
@@ -3614,6 +3752,74 @@
   // Levantine because that is the variety this course finished. Each
   // rule cites real phrases and the screen renders the pair live from
   // the table below, so an example can never drift from the data.
+  // The sounds Italian does not have are not hard to say. They are hard
+  // to HEAR: qalb and kalb are one word to an Italian ear, and until the
+  // ear separates them the mouth never will. Ten real pairs, each one a
+  // single consonant or a single vowel length apart. Half of the words
+  // are already in the course.
+  var MINIMAL = [
+    {
+      sound: "ق against ك",
+      note: "ق is a k made much further back, where you would gag; ك is the ordinary Italian c in cane.",
+      a: { tr: "Qalb", ar: "قَلْب", en: "Heart" },
+      b: { tr: "Kalb", ar: "كَلْب", en: "A dog" }
+    },
+    {
+      sound: "ع against أ",
+      note: "ع tightens the throat and keeps the voice on; أ is the clean stop in the middle of co-operate.",
+      a: { tr: "ʿAin", ar: "عَيْن", en: "An eye" },
+      b: { tr: "Àin", ar: "أَيْن", en: "Where" }
+    },
+    {
+      sound: "ح against ه",
+      note: "ح is a breath forced through a narrowed throat; ه is the soft h of English hat.",
+      a: { tr: "Hàram", ar: "حَرَم", en: "A sanctuary" },
+      b: { tr: "Hàram", ar: "هَرَم", en: "A pyramid" }
+    },
+    {
+      sound: "خ against ح",
+      note: "خ rasps like Scottish loch; ح has no rasp at all, only a squeezed breath.",
+      a: { tr: "Khalq", ar: "خَلْق", en: "Creation" },
+      b: { tr: "Hàlq", ar: "حَلْق", en: "Throat" }
+    },
+    {
+      sound: "ص against س",
+      note: "ص is an s said with the tongue flat and the mouth dark; the vowel after it turns towards o.",
+      a: { tr: "Sàif", ar: "سَيْف", en: "A sword" },
+      b: { tr: "Sàif", ar: "صَيْف", en: "Summer" }
+    },
+    {
+      sound: "ط against ت",
+      note: "ط is a t with the same dark, flat tongue. Italians hear both as t and say both as t.",
+      a: { tr: "Tin", ar: "تِين", en: "Figs" },
+      b: { tr: "Tin", ar: "طِين", en: "Mud" }
+    },
+    {
+      sound: "ض against د",
+      note: "ض is the dark d. Arabic calls itself the language of ض because nobody else has it.",
+      a: { tr: "Darb", ar: "دَرْب", en: "A path" },
+      b: { tr: "Darb", ar: "ضَرْب", en: "A blow" }
+    },
+    {
+      sound: "a short vowel against a long one",
+      note: "Length is meaning, not style. Holding the i for two beats changes the word.",
+      a: { tr: "Jàmal", ar: "جَمَل", en: "A camel" },
+      b: { tr: "Jamìl", ar: "جَميل", en: "Beautiful" }
+    },
+    {
+      sound: "one consonant against two",
+      note: "The doubled letter is held, not repeated. It is the difference between studying and teaching.",
+      a: { tr: "Dàrasa", ar: "دَرَسَ", en: "He studied" },
+      b: { tr: "Dàrrasa", ar: "دَرَّسَ", en: "He taught" }
+    },
+    {
+      sound: "where the length falls",
+      note: "Same letters, same order; the long a moves and the word changes.",
+      a: { tr: "ʿÀlam", ar: "عَلَم", en: "A flag" },
+      b: { tr: "ʿAlàm", ar: "عالَم", en: "A world" }
+    }
+  ];
+
   var STREET = [
     {
       rule: "The question words are the giveaway",
@@ -4530,6 +4736,150 @@
     "Là bà's, maʿa salàma": {
       lev: ["Maʿlèsh, maʿ as-salàme", "معليش مع السلامة"]
     },
+    "Mà tùhibbìn an tafʿalì?": {
+      lev: ["Shu bithìbbi tìʿmali?", "شو بتحبي تعملي؟"]
+    },
+    "Mà tùhib an tàfʿal?": {
+      lev: ["Shu bithìbb tìʿmal?", "شو بتحب تعمل؟"]
+    },
+    "Hal ʿìndaki hiwayàt?": {
+      lev: ["ʿÀndik hiwayàt?", "عندك هوايات؟"]
+    },
+    "Hal ʿìndak hiwayàt?": {
+      lev: ["ʿÀndak hiwayàt?", "عندك هوايات؟"]
+    },
+    "Ùhib al-mùsiqa": {
+      lev: ["Bhìb al-mùsiqa", "بحب الموسيقى"]
+    },
+    "Ày nàuʿ min al-mùsiqa?": {
+      lev: ["Shu nàuʿ al-mùsiqa?", "شو نوع الموسيقى؟"]
+    },
+    "Ùhib al-aflàm": {
+      lev: ["Bhìb al-aflàm", "بحب الأفلام"]
+    },
+    "Mà fìlmuki al-mufàddal?": {
+      lev: ["Shu àhla fìlm ʿàndik?", "شو أحلى فيلم عندك؟"]
+    },
+    "Mà fìlmuk al-mufàddal?": {
+      lev: ["Shu àhla fìlm ʿàndak?", "شو أحلى فيلم عندك؟"]
+    },
+    "Ùhib as-sàfar": {
+      lev: ["Bhìb as-sàfar", "بحب السفر"]
+    },
+    "Ùhib at-tabkh": {
+      lev: ["Bhìb at-tàbekh", "بحب الطبخ"]
+    },
+    "Àlʿab kùrat al-qàdam": {
+      lev: ["Bìlʿab kùra", "بلعب كرة"]
+    },
+    "Fi wàqt al-faràgh": {
+      lev: ["Bi wàʾt al-fàdi", "بوقت الفاضي"]
+    },
+    "Mùndhu matà ànti hùna?": {
+      lev: ["Min èmta ìnti hòn?", "من إيمتى إنتي هون؟"]
+    },
+    "Mùndhu matà ànta hùna?": {
+      lev: ["Min èmta ìnta hòn?", "من إيمتى إنتَ هون؟"]
+    },
+    "Anà hùna mùndhu sàna": {
+      lev: ["Anà hòn min sàne", "أنا هون من سنة"]
+    },
+    "Hal taʿmalìn àm tadrusìn?": {
+      lev: ["Bitìshtighli willa bitìdrusi?", "بتشتغلي ولا بتدرسي؟"]
+    },
+    "Hal tàʿmal àm tàdrus?": {
+      lev: ["Bitìshtighel willa bitìdrus?", "بتشتغل ولا بتدرس؟"]
+    },
+    "Àʿmal hùna": {
+      lev: ["Bìshtighel hòn", "بشتغل هون"]
+    },
+    "Ùhibbu jìddan": {
+      lev: ["Bhìbbo ktìr", "بحبه كتير"]
+    },
+    "Là ùhibbu kathìran": {
+      lev: ["Mà bhìbbo ktìr", "ما بحبه كتير"]
+    },
+    "Mà rà'yuki?": {
+      lev: ["Shu rà'yik?", "شو رأيك؟"]
+    },
+    "Mà rà'yuk?": {
+      lev: ["Shu rà'yak?", "شو رأيك؟"]
+    },
+    "Yùʿjibuni": {
+      lev: ["Byìʿjibni", "بيعجبني"]
+    },
+    "Lam yùʿjibni": {
+      lev: ["Mà ʿàjabni", "ما عجبني"]
+    },
+    "Sàhl": {
+      lev: ["Sàhel", "سهل"]
+    },
+    "Nàuʿan mà": {
+      lev: ["Nùss nùss", "نص نص"]
+    },
+    "Haqqan?": {
+      lev: ["Wàllah?", "والله؟"]
+    },
+    "Dà'iman": {
+      lev: ["Dàyman", "دايما"]
+    },
+    "Àhyanan": {
+      lev: ["Marràt", "مرات"]
+    },
+    "Al-fìlm mumtìʿ": {
+      lev: ["Al-fìlm hìlu", "الفيلم حلو"]
+    },
+    "Hal ta'tìn hùna dà'iman?": {
+      lev: ["Bìtiji hòn dàyman?", "بتيجي هون دايما؟"]
+    },
+    "Hàdha raqmi": {
+      lev: ["Hàda nìmerti", "هدا نمرتي"]
+    },
+    "Sa'attàsil biki": {
+      lev: ["Rah ittàsel fìki", "رح اتصل فيكي"]
+    },
+    "Sa'attàsil bik": {
+      lev: ["Rah ittàsel fìk", "رح اتصل فيك"]
+    },
+    "Ìttasili bi": {
+      lev: ["Ittàsli fìyyi", "اتصلي فيي"]
+    },
+    "Ìttasil bi": {
+      lev: ["Ittàsel fìyyi", "اتصل فيي"]
+    },
+    "Ìbʿathi li risàla": {
+      lev: ["Ìbʿatili rasàle", "ابعتيلي رسالة"]
+    },
+    "Ìbʿath li risàla": {
+      lev: ["Ìbʿatli rasàle", "ابعتلي رسالة"]
+    },
+    "Hal ànti hùrra ghàdan?": {
+      lev: ["Fàdye bùkra?", "فاضية بكرا؟"]
+    },
+    "Hal ànta hùrr ghàdan?": {
+      lev: ["Fàdi bùkra?", "فاضي بكرا؟"]
+    },
+    "Anà hùrr al-làila": {
+      lev: ["Anà fàdi al-lèile", "أنا فاضي الليلة"]
+    },
+    "Naʿam, anà hùrra": {
+      lev: ["Èh, anà fàdye", "إيه أنا فاضية"]
+    },
+    "Àina naltàqi?": {
+      lev: ["Wèin bnìtlaʾa?", "وين بنتلاقى؟"]
+    },
+    "Naltàqi hunàk": {
+      lev: ["Bnìtlaʾa hunìk", "بنتلاقى هنيك"]
+    },
+    "Urìd an àraki màrra ùkhra": {
+      lev: ["Bìddi shùfik màrra tànye", "بدي شوفك مرة تانية"]
+    },
+    "Urìd an aràk màrra ùkhra": {
+      lev: ["Bìddi shùfak màrra tànye", "بدي شوفك مرة تانية"]
+    },
+    "Kàna màsa'an jamìlan": {
+      lev: ["Kàn màsa hìlu", "كان مسا حلو"]
+    },
     "Ilà al-liqà qarìban": {
       lev: ["Bshùfik arìb", "بشوفكِ قريب"]
     },
@@ -4939,6 +5289,7 @@
     egy: {},
     gulf: {},
     lev: {
+      "Mumtàz": 1, "Mumtìʿ": 1, "Mùmill": 1, "Sàʿb": 1, "Hàsab": 1, "Àbadan": 1,
       "Tàyyib": 1, "Tamàm": 1, "Khalàs": 1, "Yàʿni": 1, "Inshàallah": 1, "Yaʿni shùkran": 1,
       "Àhlan": 1, "Àhlan wa sàhlan": 1, "As-salàmu ʿaláikum": 1, "Wa ʿaláikum as-salàm": 1,
       "Sabàh al-khèir": 1, "Sabàh an-nùr": 1, "Masà al-khèir": 1, "Masà an-nùr": 1,
@@ -5091,6 +5442,25 @@
   // Every word below appears in a Levantine line somewhere in the course;
   // anything the two varieties share falls through to the fus-ha table.
   var GLOSS_LEV = {
+    "nìmerti": "my number", "rah": "going to, will", "ittàsel": "I call, call",
+    "ittàsli": "call (to a woman)", "fìki": "you (to a woman)", "fìk": "you",
+    "fìyyi": "me", "ìbʿatili": "send me (to a woman)", "ìbʿatli": "send me",
+    "rasàle": "a message", "fàdye": "free (a woman)", "fàdi": "free",
+    "al-lèile": "tonight", "bnìtlaʾa": "we meet", "shùfik": "see you (to a woman)",
+    "shùfak": "see you", "màsa": "evening", "kàn": "it was",
+    "bithìbbi": "you like (to a woman)", "bithìbb": "you like",
+    "tìʿmali": "you do (to a woman)", "tìʿmal": "you do",
+    "ʿàndik": "you have (to a woman)", "hiwayàt": "hobbies",
+    "bhìb": "I like", "al-mùsiqa": "the music", "nàuʿ": "kind, sort",
+    "al-aflàm": "the films", "àhla": "nicest, best", "fìlm": "film",
+    "at-tàbekh": "the cooking", "bìlʿab": "I play", "kùra": "ball, football",
+    "wàʾt": "time", "al-fàdi": "the free, the empty", "sàne": "year",
+    "bitìshtighli": "you work (to a woman)", "bitìdrusi": "you study (to a woman)",
+    "bitìshtighel": "you work", "bitìdrus": "you study",
+    "bhìbbo": "I like it", "rà'yik": "your opinion (to a woman)", "rà'yak": "your opinion",
+    "byìʿjibni": "I like it, it pleases me",
+    "sàhel": "easy", "wàllah": "really?, honestly", "dàyman": "always",
+    "marràt": "sometimes", "al-fìlm": "the film", "bìtiji": "you come",
     "shu": "what", "wèin": "where", "èmta": "when", "addèsh": "how much, how many",
     "mìn": "who", "kìf": "how", "willa": "or", "èh": "yes",
     "làʾ": "no, not", "mà": "not", "w": "and", "bas": "only, just",
@@ -5431,19 +5801,45 @@
     supported: typeof window.speechSynthesis !== "undefined" &&
                typeof window.SpeechSynthesisUtterance !== "undefined",
     voice: null,
-    playing: null
+    voices: [],
+    at: 0,
+    playing: null,
+    lastSaid: null,
+    repeats: 0
   };
 
+  // It took the first Arabic voice on the device and used it for ever,
+  // so you learned to understand one person. Most phones have three or
+  // four. Understanding a language is understanding strangers.
   function findArabicVoice() {
     if (!speech.supported) return;
     var list = window.speechSynthesis.getVoices() || [];
-    var found = null;
+    var found = [];
     for (var i = 0; i < list.length; i++) {
-      if (/^ar\b|^ar[-_]/i.test(list[i].lang || "")) { found = list[i]; break; }
+      if (/^ar\b|^ar[-_]/i.test(list[i].lang || "")) found.push(list[i]);
     }
-    var changed = (found && found.name) !== (speech.voice && speech.voice.name);
-    speech.voice = found;
-    return changed;
+    var was = speech.voices.map(function (v) { return v.name; }).join("|");
+    speech.voices = found;
+    if (speech.at >= found.length) speech.at = 0;
+    speech.voice = found.length ? found[speech.at] : null;
+    return was !== found.map(function (v) { return v.name; }).join("|");
+  }
+
+  function manyVoices() { return speech.voices.length > 1; }
+
+  function oneVoiceOnly() { return store.oneVoice === true; }
+
+  // A new round is a new speaker, unless you have asked for one voice.
+  function rotateVoice() {
+    if (!manyVoices() || oneVoiceOnly()) return;
+    speech.at = (speech.at + 1 + Math.floor(Math.random() * (speech.voices.length - 1))) % speech.voices.length;
+    speech.voice = speech.voices[speech.at];
+  }
+
+  function nextVoice() {
+    if (!manyVoices()) return;
+    speech.at = (speech.at + 1) % speech.voices.length;
+    speech.voice = speech.voices[speech.at];
   }
 
   function canSpeak() { return speech.supported && !!speech.voice; }
@@ -5453,21 +5849,23 @@
     return "No Arabic voice is installed on this device.";
   }
 
-  // Slow is a crutch worth having for a new phrase and worth dropping
-  // for a familiar one, because natural speed is what you will meet.
+  // It used to play slowly until a phrase was strong, which trains the
+  // phrase and not the ear: you never meet the speed you will actually
+  // hear until you no longer need to. Now the first play is full speed
+  // and asking again is what slows it down. The crutch is still there;
+  // you have to reach for it.
   function rateFor(translit) {
     if (store.speed === "slow") return 0.75;
     if (store.speed === "normal") return 1;
-    var lid = lessonTeaching(translit);
-    if (!lid) return 0.75;
-    var s = strengthOf(lid, translit);
-    return s !== null && s >= 3 ? 1 : 0.75;
+    return speech.lastSaid === translit && speech.repeats > 0 ? 0.75 : 1;
   }
 
-  function speak(translit, bookForm) {
+  function speak(translit, bookForm, override) {
     if (!canSpeak()) return;
-    var text = bookForm ? (SCRIPT[translit] || spk(translit)) : spk(translit);
+    var text = override || (bookForm ? (SCRIPT[translit] || spk(translit)) : spk(translit));
     if (!text) return;
+    if (speech.lastSaid === translit) speech.repeats += 1;
+    else { speech.lastSaid = translit; speech.repeats = 0; }
     window.speechSynthesis.cancel();
     var u = new window.SpeechSynthesisUtterance(text);
     u.voice = speech.voice;
@@ -6304,6 +6702,72 @@
     store.str[k] = rec;
   }
 
+  /* ---------- the ear against the eye ---------- */
+
+  // Two different skills wear the same score. A phrase you get right
+  // every time it is on the page and miss every time it is only said to
+  // you is not a phrase you know, and until now nothing in the app could
+  // see the difference, let alone correct it.
+  var MODE_WINDOW = 240;
+  var MODE_MIN = 12;
+  var GAP_AT = 15;
+
+  function byEar(task) {
+    if (!task) return false;
+    if (task.type === "listen" || task.type === "dictate") return true;
+    // A reply is spoken to you and not written down wherever there is a
+    // voice; without one it is a reading exercise.
+    if (task.type === "dialog" && canSpeak()) return true;
+    return false;
+  }
+
+  function onThePage(task) {
+    if (!task) return false;
+    return task.type === "quiz" || task.type === "write" ||
+      task.type === "build" || task.type === "say" ||
+      (task.type === "dialog" && !canSpeak());
+  }
+
+  function modes() {
+    var m = store.modes || {};
+    return {
+      ear: { n: (m.ear && m.ear.n) || 0, ok: (m.ear && m.ear.ok) || 0 },
+      eye: { n: (m.eye && m.eye.n) || 0, ok: (m.eye && m.eye.ok) || 0 }
+    };
+  }
+
+  function noteMode(task, right) {
+    var which = byEar(task) ? "ear" : onThePage(task) ? "eye" : null;
+    if (!which) return;
+    var m = modes();
+    m[which].n += 1;
+    if (right) m[which].ok += 1;
+    // A window, not a lifetime: what your ear did in March should not
+    // still be holding the average down in June.
+    if (m[which].n > MODE_WINDOW) {
+      m[which].n = Math.round(m[which].n / 2);
+      m[which].ok = Math.round(m[which].ok / 2);
+    }
+    store.modes = m;
+  }
+
+  function modePct(side) {
+    var m = modes()[side];
+    return m.n >= MODE_MIN ? Math.round(m.ok / m.n * 100) : null;
+  }
+
+  // Positive when the ear is the one behind.
+  function earGap() {
+    var e = modePct("ear"), p = modePct("eye");
+    if (e === null || p === null) return null;
+    return p - e;
+  }
+
+  function earBehind() {
+    var g = earGap();
+    return g !== null && g >= GAP_AT;
+  }
+
   /* ---------- phrases you have set aside ---------- */
 
   // Marking a phrase as known takes it out of rotation straight away,
@@ -7084,8 +7548,11 @@
     if (!usable.length) return [];
 
     var bag = [];
+    var lean = earBehind();
     usable.forEach(function (t) {
       var w = TYPE_WEIGHT[t] || 1;
+      // The correction is the whole point of measuring it.
+      if (lean && (t === "listen" || t === "dictate")) w *= 2;
       for (var i = 0; i < w; i++) bag.push(t);
     });
     var order = [], seen = {};
@@ -8150,7 +8617,15 @@
         if (wrong.length >= 2 || r === turn.reply || wrong.indexOf(r) !== -1) return;
         wrong.push(r);
       });
+      // Support fades everywhere else once a phrase is solid, and a
+      // conversation is exactly where picking from three is least like
+      // the thing you are training for.
+      var lid = lessonTeaching(turn.reply);
+      var st = lid ? strengthOf(lid, turn.reply) : null;
+      var produce = st !== null && st >= MASTERED;
       return {
+        produce: produce,
+        typed: "",
         type: "convoturn",
         points: 1,
         srcLesson: lessonById(lessonTeaching(turn.reply)),
@@ -8205,13 +8680,14 @@
     if (v.name === "numbers") return "#/numbers";
     if (v.name === "loud") return "#/loud/" + (loud ? loud.mode : "shadow");
     if (v.name === "one") return "#/one";
-    if (v.name === "test") return "#/test";
     if (v.name === "can") return "#/can";
     if (v.name === "play" && session && session.aimed) return "#/ready/" + session.aimed.id;
     if (v.name === "diary") return "#/diary";
     if (v.name === "mine") return "#/mine";
     if (v.name === "now") return "#/now";
     if (v.name === "street") return "#/street";
+    if (v.name === "sounds") return "#/sounds";
+    if (v.name === "frame") return "#/frame";
     if (v.name === "words") return "#/words";
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -8295,6 +8771,21 @@
       return;
     }
 
+    if (parts[0] === "frame") {
+      session = null;
+      frameRun = newFrameRun(null);
+      view = { name: "frame" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "sounds") {
+      session = null;
+      view = { name: "sounds" };
+      render();
+      return;
+    }
+
     if (parts[0] === "street") {
       session = null;
       view = { name: "street" };
@@ -8339,6 +8830,12 @@
     }
 
     if (parts[0] === "test") {
+      if (parts[1] === "score" && session && session.isTest && session.finished) {
+        view = { name: "result" };
+        render();
+        return;
+      }
+      if (parts[1] === "score") { setHash("#/", true); session = null; view = { name: "home" }; render(); return; }
       session = buildExam();
       view = session ? { name: "play" } : { name: "home" };
       render();
@@ -8860,6 +9357,21 @@
           (w.down ? ", " + w.down + " slipped" : "") +
           (w.fresh ? ", " + w.fresh + " met for the first time" : "") + ".</p>"
         : '<p class="pb-lead">Nothing yet. Finish a session and it will start keeping count.</p>') +
+      (modePct("ear") !== null && modePct("eye") !== null
+        ? '<div class="can-group"><h2 class="can-head">Your ear and your eye</h2>' +
+          '<p class="can-note">' + modePct("eye") + "% right when the phrase was on the page, " +
+          modePct("ear") + "% when it was only said to you" +
+          (earBehind()
+            ? ". That is the gap that decides whether you can hold a conversation, so listening and" +
+              " dictation are coming up twice as often until it closes."
+            : earGap() !== null && earGap() <= -GAP_AT
+              ? ". Your ear is ahead of your eye, which is unusual and worth nothing but a mention."
+              : ". Close enough that neither one is holding the other back.") + "</p>" +
+          '<div class="mode-bars">' +
+          '<div class="mode-bar"><span>On the page</span><i style="width:' + modePct("eye") + '%"></i></div>' +
+          '<div class="mode-bar is-ear"><span>By ear</span><i style="width:' + modePct("ear") + '%"></i></div>' +
+          "</div></div>"
+        : "") +
       (w.tests.length
         ? '<p class="can-lead">The test, this week: ' +
           w.tests.map(function (t) { return t.score + "%"; }).join(", then ") + '.</p>'
@@ -8901,6 +9413,114 @@
       }).join("") +
       '<div class="btn-row"><button class="btn btn-ghost" data-go="phrasebook">The whole phrasebook</button>' +
       '<button class="btn" data-go="home">Back</button></div>';
+  }
+
+  /* ---------- the sounds, and telling them apart ---------- */
+
+  var sounds = null;
+
+  function newSounds(prev) {
+    var i = Math.floor(Math.random() * MINIMAL.length);
+    if (prev && MINIMAL.length > 1) {
+      while (i === prev.i) i = Math.floor(Math.random() * MINIMAL.length);
+    }
+    return {
+      i: i,
+      said: Math.random() < 0.5 ? "a" : "b",
+      checked: false,
+      right: false,
+      chose: null,
+      n: prev ? prev.n : 0,
+      ok: prev ? prev.ok : 0
+    };
+  }
+
+  function soundsSay() {
+    if (!sounds) return;
+    var p = MINIMAL[sounds.i];
+    var w = p[sounds.said];
+    speak(w.tr, false, w.ar);
+  }
+
+  function soundsAnswer(which) {
+    if (!sounds || sounds.checked) return;
+    sounds.chose = which;
+    sounds.checked = true;
+    sounds.right = which === sounds.said;
+    sounds.n += 1;
+    if (sounds.right) sounds.ok += 1;
+    render();
+  }
+
+  function pairWord(w, taught) {
+    return '<span class="pair-word"><span class="ar">' + esc(w.ar) + "</span>" +
+      '<span class="pair-tr">' + esc(w.tr) + "</span>" +
+      '<span class="pair-en">' + esc(w.en) + (taught ? " &#183; in the course" : "") + "</span></span>";
+  }
+
+  function sayScript(w) {
+    return '<button class="say say-sm" data-act="say" data-say="' + esc(w.tr) +
+      '" data-script="' + esc(w.ar) + '"' + (canSpeak() ? "" : " disabled") +
+      ' aria-label="Hear ' + esc(w.tr) + '">' + SPEAKER_SVG + "</button>";
+  }
+
+  function soundsDrillHTML() {
+    if (!canSpeak()) {
+      return '<p class="can-note">The drill needs an Arabic voice on this device. ' +
+        "The pairs above are still worth reading.</p>";
+    }
+    var p = MINIMAL[sounds.i];
+    var said = p[sounds.said];
+    return '<div class="card sounds-card">' +
+      '<div class="eyebrow">Which did you hear?</div>' +
+      '<div class="listen-stage">' +
+      '<button class="say say-lg" data-act="say" data-say="' + esc(said.tr) +
+      '" data-script="' + esc(said.ar) + '" aria-label="Play it again">' + SPEAKER_SVG + "</button></div>" +
+      '<div class="sounds-pick">' + ["a", "b"].map(function (k) {
+        var w = p[k];
+        var cls = "sounds-opt";
+        if (sounds.checked) {
+          if (k === sounds.said) cls += " is-right";
+          else if (k === sounds.chose) cls += " is-wrong";
+        }
+        return '<button class="' + cls + '" data-act="sounds-pick" data-id="' + k + '"' +
+          (sounds.checked ? " disabled" : "") + ">" +
+          '<span class="sounds-en">' + esc(w.en) + "</span>" +
+          '<span class="ar">' + esc(w.ar) + "</span></button>";
+      }).join("") + "</div>" +
+      (sounds.checked
+        ? '<p class="sounds-verdict ' + (sounds.right ? "ok" : "no") + '">' +
+          (sounds.right ? "Yes, that was " : "No, that was ") + esc(said.en.toLowerCase()) +
+          ". " + esc(p.note) + "</p>" +
+          '<div class="btn-row">' +
+          '<button class="btn btn-ghost" data-act="sounds-again">Hear both</button>' +
+          '<button class="btn" data-act="sounds-next">Another</button></div>'
+        : '<p class="can-note">Nothing is scored beyond this screen. If the two sound identical, ' +
+          "that is the whole problem; if they sound identical on this device, try another voice " +
+          "under About the audio.</p>") +
+      '<p class="sounds-score">' + sounds.ok + " of " + sounds.n + " so far</p>" +
+      "</div>";
+  }
+
+  function soundsHTML() {
+    return topbarHTML("The sounds you cannot hear yet") +
+      '<p class="pb-lead">Six of these consonants do not exist in Italian, and the trouble is not saying ' +
+      "them: it is that two different words arrive at your ear as one. Every pair below is one letter or " +
+      "one vowel length apart, and half the words are already in the course.</p>" +
+      (sounds ? soundsDrillHTML() : '<div class="btn-row"><button class="btn btn-wide" data-act="sounds-start">' +
+        (canSpeak() ? "Start the drill" : "The drill needs a voice") + "</button></div>") +
+      MINIMAL.map(function (p) {
+        return '<div class="pair-row"><div class="pair-head">' + esc(p.sound) + "</div>" +
+          '<div class="pair-two">' +
+          '<div class="pair-side">' + pairWord(p.a, !!SCRIPT[p.a.tr]) + sayScript(p.a) + "</div>" +
+          '<div class="pair-side">' + pairWord(p.b, !!SCRIPT[p.b.tr]) + sayScript(p.b) + "</div>" +
+          "</div>" +
+          '<p class="pair-note">' + esc(p.note) + "</p></div>";
+      }).join("") +
+      '<p class="can-lead">The spelling in this course cannot show the difference in some of these pairs - ' +
+      "har&#224;m and har&#224;m are written the same way - which is the honest limit of writing Arabic in " +
+      "Latin letters. The Arabic script above each word is where the difference actually lives.</p>" +
+      '<div class="btn-row"><button class="btn" data-go="home">Back</button></div>';
   }
 
   function streetHTML() {
@@ -9147,6 +9767,11 @@
         : "Name, country, job and age, in your words") + "</span></button>" +
 
       '<div class="nav-group">Which Arabic</div>' +
+      '<button class="nav-item' + (canSpeak() ? "" : " is-off") + '" data-go="sounds">' +
+      '<span class="nav-label">The sounds you cannot hear yet</span>' +
+      '<span class="nav-note">' + (canSpeak()
+        ? "Ten pairs one letter apart: which did you hear?"
+        : "Readable without a voice; the drill needs one") + "</span></button>" +
       '<button class="nav-item" data-go="street"><span class="nav-label">Fus&#183;ha and the street</span>' +
       '<span class="nav-note">' + (variety() === "msa"
         ? "What changes once you pick a dialect"
@@ -9215,6 +9840,11 @@
       '<span class="nav-note">' + (canHear() && canSpeak()
         ? "Hear it, say it straight back"
         : "Needs a voice and a microphone") + "</span></button>" +
+      '<button class="nav-item' + (frameRunnable().length ? "" : " is-off") + '" data-go="frame"' +
+      (frameRunnable().length ? "" : " disabled") + '><span class="nav-label">One pattern, five words</span>' +
+      '<span class="nav-note">' + (frameRunnable().length
+        ? "The same frame five times, out loud, unmarked"
+        : "Pass a couple of lessons to open this") + "</span></button>" +
       '<button class="nav-item' + (openSits ? "" : " is-off") + '" data-go="run"' +
       (openSits ? "" : " disabled") + '><span class="nav-label">At a run</span>' +
       '<span class="nav-note">Ten you know, out loud, without stopping</span></button>' +
@@ -9378,6 +10008,8 @@
 
       '<details class="guide" data-fold="spelling"><summary>How to read the spelling</summary><div class="guide-body">' +
       '<p>Every phrase is written in the Latin alphabet. The accent marks the syllable you lean on: <span class="ar">Sab&agrave;h al-kh&egrave;ir</span> is <i>sa-BAAH al-KHAYR</i>.</p>' +
+      '<p><button class="link-btn" data-go="sounds">The sounds you cannot hear yet</button>' +
+      " goes through the six consonants Italian does not have, in pairs, with a drill.</p>" +
       "<p><b>kh</b> is the rasp in Scottish <i>loch</i> or German <i>Bach</i>. <b>th</b> is the soft one in <i>three</i>. <b>&#703;</b> is <i>ayn</i>, a tightening deep in the throat with no English equivalent; getting close is fine.</p>" +
       '<p>Arabic has no word for <b>is</b> or <b>are</b> in the present tense. <span class="ar">An&agrave; bikh&egrave;ir</span> is literally <i>I in-goodness</i>, and that is already a complete sentence.</p>' +
       "<p>Arabic marks gender in places English does not: who you are speaking to, and what a colour or a job title is attached to. The lessons teach one form and the flashcard shows the other, labelled with which is which.</p>" +
@@ -9385,13 +10017,30 @@
 
       '<details class="guide" data-fold="audio"><summary>About the audio</summary><div class="guide-body">' +
       (canSpeak()
-        ? "<p>The speaker button uses the Arabic voice installed on this device (<b>" + esc(speech.voice.name) + "</b>), slowed down a little. Nothing is sent anywhere.</p>"
+        ? "<p>The speaker button uses the Arabic voices installed on this device. " +
+          (manyVoices()
+            ? "There are " + speech.voices.length + " of them, and unless you say otherwise a new round is a new one" +
+              " - understanding a language means understanding strangers, not one narrator."
+            : "There is one: <b>" + esc(speech.voice.name) + "</b>.") +
+          " Nothing is sent anywhere.</p>" +
+          (manyVoices()
+            ? '<div class="picker" style="margin:14px 0"><div class="picker-head"><span>Voices</span>' +
+              '<span class="picker-note">' + esc(speech.voice.name) + " is speaking now</span></div>" +
+              '<div class="chips">' +
+              '<button class="pill pill--md chip" data-act="voice-next">Try another voice</button>' +
+              '<button class="pill pill--md chip' + (oneVoiceOnly() ? " is-on" : "") +
+              '" data-act="voice-one" aria-pressed="' + (oneVoiceOnly() ? "true" : "false") +
+              '"><span class="tick" aria-hidden="true"></span>Keep this one</button>' +
+              "</div></div>"
+            : "")
         : "<p><b>" + esc(speakWhy()) + "</b> The speaker buttons stay switched off rather than mispronouncing the phrases with an English voice.</p>" +
           "<p>On Windows: Settings &rsaquo; Time &amp; language &rsaquo; Speech, add an Arabic voice. On iOS and macOS: Settings &rsaquo; Accessibility &rsaquo; Spoken Content &rsaquo; Voices. Chrome on Linux generally ships no Arabic voice at all.</p>") +
       "<p>It is a synthesizer, not a native speaker. Treat it as a guide to the shape of the word, not as the last word on pronunciation.</p>" +
+      "<p>On <b>Automatic</b> the first play is at full speed, whatever the phrase; tap the speaker again and it slows down. " +
+      "The slow one is a crutch worth having and worth reaching for, which is not the same as being handed it.</p>" +
       '<div class="picker" style="margin:14px 0 0"><div class="picker-head"><span>Speed</span></div>' +
       '<div class="chips">' + [
-        { k: "auto", l: "Automatic", t: "Slow while a phrase is new, natural once you know it" },
+        { k: "auto", l: "Automatic", t: "Full speed first; ask again and it slows down" },
         { k: "slow", l: "Always slow", t: "Every phrase slowed down" },
         { k: "normal", l: "Always natural", t: "Full speed, the way you will hear it" }
       ].map(function (o2) {
@@ -9882,6 +10531,79 @@
       patternEn: f.en.replace("___", "…"),
       msa: !both
     };
+  }
+
+  // Make a sentence gives you a different pattern every time, which is
+  // the opposite of how a structure becomes automatic. This is the drill
+  // that does the other thing: one frame, five words through it, out
+  // loud, unmarked, as fast as you can say them.
+  var RUN_WORDS = 5;
+  var frameRun = null;
+
+  function frameRunnable() {
+    var by = {};
+    combos().forEach(function (c) {
+      if (!by[c.frame.stem]) by[c.frame.stem] = [];
+      by[c.frame.stem].push(c);
+    });
+    return Object.keys(by).filter(function (k) { return by[k].length >= RUN_WORDS; })
+      .map(function (k) { return by[k]; });
+  }
+
+  function newFrameRun(prev) {
+    var pools = frameRunnable();
+    if (!pools.length) return null;
+    var pool = shuffle(pools)[0];
+    if (prev && pools.length > 1) {
+      var g = 0;
+      while (g++ < 6 && pool[0].frame === prev.frame) pool = shuffle(pools)[0];
+    }
+    return {
+      frame: pool[0].frame,
+      list: shuffle(pool).slice(0, RUN_WORDS).map(compose),
+      i: 0,
+      shown: false,
+      done: false,
+      startedAt: null
+    };
+  }
+
+  function frameRunHTML() {
+    if (!frameRun) {
+      return topbarHTML("One pattern, five words") +
+        '<p class="pb-lead">Pass a couple of lessons first: this needs a pattern and five words ' +
+        "you have both met.</p>" +
+        '<div class="btn-row"><button class="btn" data-go="home">Back to the lessons</button></div>';
+    }
+    var r = frameRun;
+    var f = r.frame;
+
+    if (r.done) {
+      var secs = r.startedAt ? Math.round((Date.now() - r.startedAt) / 1000) : null;
+      return topbarHTML("One pattern, five words") +
+        '<div class="card result fade-in"><div class="eyebrow">Run over</div>' +
+        '<div class="result-score mono review">' + r.list.length + "</div>" +
+        '<p class="result-line">' + (secs !== null ? "Five in " + secs + " seconds. " : "") +
+        "Nothing was marked. A pattern is automatic when you stop assembling it.</p></div>" +
+        '<div class="btn-row"><button class="btn btn-ghost" data-go="home">Home</button>' +
+        '<button class="btn" data-act="frame-again">Another pattern</button></div>';
+    }
+
+    var s2 = r.list[r.i];
+    return topbarHTML("One pattern, five words", Math.round(r.i / r.list.length * 100),
+      (r.i + 1) + " / " + r.list.length) +
+      '<div class="prompt">' +
+      '<div class="prompt-label">' + esc(f.en.replace("___", "…")) + "</div>" +
+      '<div class="prompt-main">' + esc(s2.en) + "</div>" +
+      '<div class="prompt-sub">say the whole thing out loud, then check yourself</div>' +
+      "</div>" +
+      (r.shown
+        ? '<div class="verdict" tabindex="-1"><div class="verdict-msg ok">' +
+          '<span class="ar">' + esc(s2.ar) + "</span>" + sayBtn(s2.ar, true) + "</div>" +
+          '<button class="btn btn-wide" data-act="frame-next">' +
+          (r.i === r.list.length - 1 ? "That is five" : "Next word") + "</button></div>"
+        : '<div class="btn-row"><button class="btn btn-wide" data-act="frame-show">Say it, then show me</button></div>') +
+      '<p class="one-note">Same pattern all five times. Nothing here is scored.</p>';
   }
 
   function newMake(prev) {
@@ -10936,6 +11658,8 @@
     if ((w[0] === "ʿa" || w[0] === "la") && w[1] === "wein") return "whereto";
     if (w[0] === "wein") return "where";
     if (w[0] === "emta") return "when";
+    if (w[0] === "min" && w[1] === "emta") return "when";
+    if (w[0] === "wallah") return "yesno";
     if (w[0] === "addesh" || w[0] === "kam") return "howmuch";
     // In Levantine "mìn" is who and "min" is from; only "min wèin" is
     // the second one, and that is caught above.
@@ -10949,6 +11673,7 @@
     // People put the polite opener in front of the question all the
     // time, and the ear has to look past it.
     if (w[0] === "lau" && (w[1] === "samaht" || w[1] === "samahti")) w = w.slice(2);
+    if (w.indexOf("am") > 0) return "choice";
     if (w[0] === "hal") return "yesno";
     // "at what time" is a when-question wearing which's clothes
     // normalise() drops the ayn, so the hour comes through as "saa"
@@ -10959,6 +11684,8 @@
     if (w[0] === "min" && w[1] === "aina") return "wherefrom";
     if (w[0] === "ila" && w[1] === "aina") return "whereto";
     if (w[0] === "mata") return "when";
+    if (w[0] === "mundhu" && w[1] === "mata") return "when";
+    if (w[0] === "haqqan") return "yesno";
     if (w[0] === "kam" || w[0] === "bikam") return "howmuch";
     if (w[0] === "ma" || w[0] === "madha") return "what";
     if (w[0] === "man") return "who";
@@ -11834,6 +12561,7 @@
 
   function convoTurnHTML(t) {
     var checked = session.state === "checked";
+    var cls = "type-in" + (checked ? (session.lastRight ? " is-right" : " is-wrong") : "");
     var lines = "";
     for (var i = 0; i < t.idx; i++) {
       var past = t.convo.turns[i];
@@ -11845,10 +12573,17 @@
     return (t.idx === 0 ? '<p class="convo-setting">' + esc(t.convo.setting) + "</p>" : "") +
       '<div class="transcript">' + lines + "</div>" +
       (checked ? "" :
-        '<div class="prompt-label" style="margin:20px 0 12px">How do you reply?</div>' +
+        '<div class="prompt-label" style="margin:20px 0 12px">' +
+        (t.produce ? "How do you reply? No options this time." : "How do you reply?") + "</div>" +
         (canHear() ? '<div class="mic-row">' + micBtn("Answer out loud", ears.busy) + "</div>" : micNote()) +
         heardHTML(t, t.answer, convoHeardPick(t)) +
-        optionsHTML(t.options, true, t));
+        (t.produce
+          ? '<input class="' + cls + '" data-act="typing" type="text" value="' + esc(t.typed || "") + '"' +
+            ' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"' +
+            ' aria-label="Type your reply">' +
+            '<div class="btn-row"><button class="btn btn-wide" data-act="check-write">Check</button></div>' +
+            '<button class="link-btn" data-act="convo-options">Give me the three options</button>'
+          : optionsHTML(t.options, true, t)));
   }
 
   function buildHTML(t) {
@@ -12200,6 +12935,9 @@
   }
 
   function settle(task, right, phrase, secondTry) {
+    // Reaching for the three options after being asked to produce it is
+    // the same admission as getting it on the second try.
+    if (right && task.gaveUp) secondTry = true;
     if (right && !secondTry && tookTooLong(task)) {
       task.slow = true;
       secondTry = true;   // right, but not ready: hold it where it is
@@ -12210,6 +12948,7 @@
     task.wasRight = right;
     task.secondTry = !!secondTry;
     if (right && !secondTry && task.points > 0) session.earned += 1;
+    if (!task.isRetry && !task.noMemory) noteMode(task, right && !secondTry);
     if (!right && phrase && !task.isRetry) noteMiss(task, phrase);
     // Getting there on the second go is not knowing it: the round moves
     // on, but the phrase does not climb for it.
@@ -12241,11 +12980,13 @@
     }
 
     t.chosen = value;
-    var phrase =
-      t.type === "dialog" ? { ar: t.exchange.reply, en: t.exchange.en } :
+    settle(t, value === t.answer, phraseOfTask(t), !!t.tried);
+  }
+
+  function phraseOfTask(t) {
+    return t.type === "dialog" ? { ar: t.exchange.reply, en: t.exchange.en } :
       t.type === "convoturn" ? { ar: t.turn.reply, en: t.turn.replyEn } :
       t.phrase;
-    settle(t, value === t.answer, phrase, !!t.tried);
   }
 
   function checkWrite() {
@@ -12254,7 +12995,7 @@
     var field = app.querySelector('[data-act="typing"]');
     if (field) t.typed = field.value;
     if (!normalise(t.typed)) return;
-    settle(t, sameSaid(t.typed, t.answer), t.phrase);
+    settle(t, sameSaid(t.typed, t.answer), phraseOfTask(t));
   }
 
   function checkBuild() {
@@ -12378,6 +13119,8 @@
   function advance() {
     stopTape();
     dropTape();
+    rotateVoice();
+    speech.lastSaid = null;
     // A single question has no next round and no end: either another
     // one, drawn fresh, or you put the phone away.
     if (session.isOne) {
@@ -12431,6 +13174,8 @@
     if (view.name === "mine") return mineHTML();
     if (view.name === "now") return nowHTML();
     if (view.name === "street") return streetHTML();
+    if (view.name === "sounds") return soundsHTML();
+    if (view.name === "frame") return frameRunHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -12620,7 +13365,8 @@
 
     var act = el.getAttribute("data-act");
     if (act === "say") {
-      speak(el.getAttribute("data-say"), el.getAttribute("data-book") === "1");
+      speak(el.getAttribute("data-say"), el.getAttribute("data-book") === "1",
+        el.getAttribute("data-script"));
       return;
     }
 
@@ -12666,6 +13412,13 @@
       if (dest === "mine") { session = null; go({ name: "mine" }); return; }
       if (dest === "now") { session = null; go({ name: "now" }); return; }
       if (dest === "street") { session = null; go({ name: "street" }); return; }
+      if (dest === "sounds") { session = null; sounds = null; go({ name: "sounds" }); return; }
+      if (dest === "frame") {
+        session = null;
+        frameRun = newFrameRun(frameRun);
+        if (frameRun) go({ name: "frame" });
+        return;
+      }
       if (dest === "test") {
         var ex = buildExam();
         if (ex) { session = ex; go({ name: "play" }); }
@@ -12810,6 +13563,74 @@
         forgetAllKnown();
         render();
       }
+      return;
+    }
+    if (act === "convo-options") {
+      var ct = session.tasks[session.i];
+      ct.produce = false;
+      ct.gaveUp = true;
+      render();
+      return;
+    }
+    if (act === "frame-show") {
+      if (!frameRun) return;
+      if (!frameRun.startedAt) frameRun.startedAt = Date.now();
+      frameRun.shown = true;
+      render();
+      speak(frameRun.list[frameRun.i].ar);
+      return;
+    }
+    if (act === "frame-next") {
+      if (!frameRun) return;
+      stopSpeech();
+      rotateVoice();
+      speech.lastSaid = null;
+      if (frameRun.i >= frameRun.list.length - 1) frameRun.done = true;
+      else { frameRun.i += 1; frameRun.shown = false; }
+      render();
+      return;
+    }
+    if (act === "frame-again") {
+      frameRun = newFrameRun(frameRun);
+      render();
+      return;
+    }
+    if (act === "sounds-start") {
+      if (!canSpeak()) return;
+      sounds = newSounds(null);
+      render();
+      soundsSay();
+      return;
+    }
+    if (act === "sounds-pick") { soundsAnswer(el.getAttribute("data-id")); return; }
+    if (act === "sounds-next") {
+      rotateVoice();
+      speech.lastSaid = null;
+      sounds = newSounds(sounds);
+      render();
+      soundsSay();
+      return;
+    }
+    if (act === "sounds-again") {
+      var pr = MINIMAL[sounds.i];
+      speak(pr.a.tr, false, pr.a.ar);
+      if (typeof window.setTimeout === "function") {
+        window.setTimeout(function () { speak(pr.b.tr, false, pr.b.ar); }, 1100);
+      }
+      return;
+    }
+    if (act === "voice-next") {
+      nextVoice();
+      speech.lastSaid = null;
+      render();
+      var t = session && session.tasks ? session.tasks[session.i] : null;
+      if (t && t.phrase) speak(t.phrase.ar);
+      return;
+    }
+    if (act === "voice-one") {
+      store.oneVoice = !oneVoiceOnly();
+      save();
+      render();
       return;
     }
     if (act === "speed") {
@@ -13132,7 +13953,10 @@
       render();
       return;
     }
-    if (act === "loud-next") { stopSpeech(); loudNext(); return; }
+    if (act === "loud-next") {
+      rotateVoice();
+      speech.lastSaid = null;
+      stopSpeech(); loudNext(); return; }
     if (act === "loud-again") {
       loud = newLoud(loud ? loud.mode : "run", null);
       if (loud && loud.mode === "run") loud.startedAt = Date.now();
@@ -13140,9 +13964,15 @@
       return;
     }
     if (act === "numbers-check") { checkNumbers(); return; }
-    if (act === "numbers-next") { stopSpeech(); numbers = newNumbers(numbers); render(); return; }
+    if (act === "numbers-next") {
+      rotateVoice();
+      speech.lastSaid = null;
+      stopSpeech(); numbers = newNumbers(numbers); render(); return; }
     if (act === "asked-answer") { answerAsked(el.getAttribute("data-value")); return; }
-    if (act === "asked-next") { stopSpeech(); asked = newAsked(asked); render(); return; }
+    if (act === "asked-next") {
+      rotateVoice();
+      speech.lastSaid = null;
+      stopSpeech(); asked = newAsked(asked); render(); return; }
     if (act === "moment-check") { checkMoment(); return; }
     if (act === "moment-use") {
       if (moment && !moment.checked) { moment.typed = el.getAttribute("data-id") || ""; moment.heard = null; }
@@ -13150,7 +13980,10 @@
       return;
     }
     if (act === "moment-show") { showMoment(); return; }
-    if (act === "moment-next") { stopSpeech(); moment = newMoment(moment); render(); return; }
+    if (act === "moment-next") {
+      rotateVoice();
+      speech.lastSaid = null;
+      stopSpeech(); moment = newMoment(moment); render(); return; }
     if (act === "you-name") {
       var yn = window.prompt("What is your name?", you().name || "");
       if (yn === null) return;
