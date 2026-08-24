@@ -1918,7 +1918,7 @@
         { ar: "Al-hàmdu lillàh", en: "Praise be to God", note: "Tacked onto almost any answer about how you are. Expected, not solemn." },
         { ar: "Shùkran", en: "Thank you", core: true },
         { ar: "ʿÀfwan", en: "You are welcome", core: true },
-        { ar: "Wa ànta?", en: "And you?", f: "Wa ànti?" },
+        { ar: "Wa ànta?", en: "And you?", f: "Wa ànti?", fLabel: "Speaking to a woman", core: true, note: "The cheapest way to keep a conversation level: answer, then hand it straight back." },
         { ar: "Anà àidan", en: "Me too" },
         { ar: "Là bà's", en: "Not bad" },
         { ar: "Anà taʿbàn", en: "I am tired", f: "Anà taʿbàna" }
@@ -2516,14 +2516,13 @@
       phrases: [
         { ar: "Tàbʿan", en: "Of course", core: true },
         { ar: "Sahìh", en: "True, right" },
-        { ar: "Hàddithini àkthar", en: "Tell me more", core: true, how: "safe" },
+        { ar: "Hàddithini àkthar", en: "Tell me more", f: "Hàddithni àkthar", fLabel: "Speaking to a man", core: true, how: "safe" },
         { ar: "Wa baʿd?", en: "And then?", note: "Two syllables that buy you another minute of listening, which is what you want at this stage." },
         { ar: "Yà salàm!", en: "How lovely!" },
         { ar: "Mà shà' Allàh", en: "Said on hearing something good", note: "Said when something good is reported: a new job, a child, a fine house. Leaving it out where it is expected is more noticeable than getting it slightly wrong." },
         { ar: "Miskìn", en: "Poor thing" },
         { ar: "Àsif ʿalà dhàlik", en: "I am sorry to hear that" },
         { ar: "Kèifa dhàlik?", en: "How come?" },
-        { ar: "Wa ànti?", en: "And you?", f: "Wa ànta?", fLabel: "Speaking to a man", core: true, note: "The cheapest way to keep a conversation level: answer, then hand it straight back." },
         { ar: "Àsif, mà ìsmuki màrra ùkhra?", en: "Sorry, your name again?", f: "Àsif, mà ìsmuk màrra ùkhra?", fLabel: "Speaking to a man", note: "Asking once, early, is nothing. Asking on the third meeting is something else." },
         { ar: "Hal qùltu sahìh?", en: "Did I say it right?" }
       ],
@@ -3439,15 +3438,14 @@
     "Kàna màsa'an jamìlan": "كَانَ مَسَاءً جَمِيلًا",
     "Tàbʿan": "طَبْعًا",
     "Sahìh": "صَحِيح",
-    "Hàddithini àkthar": "حَدِّثْنِي أَكْثَر",
+    "Hàddithini àkthar": "حَدِّثِينِي أَكْثَر",
+    "Hàddithni àkthar": "حَدِّثْنِي أَكْثَر",
     "Wa baʿd?": "وَبَعْد؟",
     "Yà salàm!": "يَا سَلَام!",
     "Mà shà' Allàh": "مَا شَاءَ اللَّه",
     "Miskìn": "مِسْكِين",
     "Àsif ʿalà dhàlik": "آسِفٌ عَلَى ذَلِك",
     "Kèifa dhàlik?": "كَيْفَ ذَلِك؟",
-    "Wa ànti?": "وَأَنْتِ؟",
-    "Wa ànta?": "وَأَنْتَ؟",
     "Àsif, mà ìsmuki màrra ùkhra?": "آسِفٌ، مَا اسْمُكِ مَرَّةً أُخْرَى؟",
     "Àsif, mà ìsmuk màrra ùkhra?": "آسِفٌ، مَا اسْمُكَ مَرَّةً أُخْرَى؟",
     "Hal qùltu sahìh?": "هَلْ قُلْتُ صَحِيح؟",
@@ -3476,7 +3474,7 @@
     "Là àkul làhm": "لَا آكُلُ لَحْم",
     "Là àshrab al-kùhul": "لَا أَشْرَبُ الْكُحُول",
     "Hal fìhi làhm khinzìr?": "هَلْ فِيهِ لَحْمُ خِنْزِير؟",
-    "Bidùn sùkkar, min fàdlik": "بِدُونِ سُكَّر، مِنْ فَضْلِك",
+    "Bidùn sùkkar, min fàdlik": "بِدُونِ سُكَّر، مِنْ فَضْلِكَ",
     "Ladhìdh!": "لَذِيذ!",
     "Shabìʿt, shùkran": "شَبِعْتُ، شُكْرًا",
     "Àkthar min al-làzim": "أَكْثَرُ مِنَ اللَّازِم",
@@ -5058,7 +5056,10 @@
       lev: ["Sahh", "صح"]
     },
     "Hàddithini àkthar": {
-      lev: ["Ihkìli aktàr", "احكيلي أكتر"]
+      lev: ["Ihkìli àktar", "احكيلي أكتر"]
+    },
+    "Hàddithni àkthar": {
+      lev: ["Ihkìli àktar", "احكيلي أكتر"]
     },
     "Wa baʿd?": {
       lev: ["W baʿdèin?", "وبعدين؟"]
@@ -5068,12 +5069,6 @@
     },
     "Kèifa dhàlik?": {
       lev: ["Kìf hèik?", "كيف هيك؟"]
-    },
-    "Wa ànti?": {
-      lev: ["W ìnti?", "وإنتي؟"]
-    },
-    "Wa ànta?": {
-      lev: ["W ìnta?", "وإنتَ؟"]
     },
     "Àsif, mà ìsmuki màrra ùkhra?": {
       lev: ["Àsef, shu ìsmik kamàn màrra?", "آسف شو اسمك كمان مرة؟"]
@@ -5166,7 +5161,7 @@
       lev: ["Shbìʿt, shùkran", "شبعت شكرا"]
     },
     "Àkthar min al-làzim": {
-      lev: ["Aktàr min al-làzem", "أكتر من اللازم"]
+      lev: ["Àktar min al-làzem", "أكتر من اللازم"]
     },
     "Anà àdʿuki": {
       lev: ["Anà ʿàzemtik", "أنا عازمتك"]
@@ -5761,10 +5756,10 @@
     "siyàha": "tourism", "bitìnsahi": "you recommend (to a woman)", "bitìnsah": "you recommend",
     "nabàti": "vegetarian", "nabatìyye": "vegetarian (a woman)", "kuhùl": "alcohol",
     "khanzìr": "pork, pig", "làhem": "meat", "bidùn": "without", "sùkkar": "sugar",
-    "shbìʿt": "I am full", "aktàr": "more", "al-làzem": "what is needed",
+    "shbìʿt": "I am full", "àktar": "more", "al-làzem": "what is needed",
     "ʿàzemtik": "I am inviting you (to a woman)", "ʿàzemak": "I am inviting you",
     "nìʾsem": "we split", "ʿalàyyi": "on me", "tàyyeb": "good, tasty",
-    "sahh": "right, true", "ihkìli": "tell me", "aktàr": "more",
+    "sahh": "right, true", "ihkìli": "tell me", "àktar": "more",
     "hèik": "like this, so", "ìsmak": "your name", "ʾìlt": "I said",
     "nìmerti": "my number", "rah": "going to, will", "ittàsel": "I call, call",
     "ittàsli": "call (to a woman)", "fìki": "you (to a woman)", "fìk": "you",

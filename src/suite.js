@@ -3326,14 +3326,29 @@ section("the rest of the conversation");
   const react = LESSONS.find(l => l.id === 34);
   const life = LESSONS.find(l => l.id === 35);
   const table = LESSONS.find(l => l.id === 36);
-  check("there is a lesson of reactions", !!react && react.phrases.length >= 12);
+  check("there is a lesson of reactions", !!react && react.phrases.length >= 11);
   check("one about who you live with", !!life && life.phrases.length >= 12);
   check("and one for the table", !!table && table.phrases.length >= 12);
   check("all three sit with the others about people",
     [react, life, table].every(l => LESSONS.indexOf(l) > LESSONS.findIndex(x => x.id === 18)));
 
-  ["Tàbʿan", "Hàddithini àkthar", "Wa baʿd?", "Yà salàm!", "Miskìn", "Wa ànti?"]
+  ["Tàbʿan", "Hàddithini àkthar", "Wa baʿd?", "Yà salàm!", "Miskìn"]
     .forEach(ar => check("it can react with " + ar, react.phrases.some(p => p.ar === ar)));
+  check("and hand the question back, from where the course already taught it",
+    LESSONS.some(l => l.phrases.some(p => p.ar === "Wa ànta?" && p.f === "Wa ànti?" && p.core)));
+  // Teaching the same pair twice, once from each side, is how lesson 18
+  // teaches speaking to a woman. Teaching it a third time is a duplicate.
+  check("no gendered pair is taught more than twice", (function () {
+    const seen = {};
+    LESSONS.forEach(l => l.phrases.forEach(p => {
+      if (!p.f) return;
+      const key = [p.ar, p.f].sort().join(" | ");
+      seen[key] = (seen[key] || 0) + 1;
+    }));
+    const over = Object.keys(seen).filter(k => seen[k] > 2);
+    if (over.length) console.log("   ", over);
+    return over.length === 0;
+  })());
   check("and ask a name again without shame",
     react.phrases.some(p => p.ar === "Àsif, mà ìsmuki màrra ùkhra?"));
 
