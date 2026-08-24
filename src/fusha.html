@@ -548,6 +548,21 @@
   .flash-ending { margin-top: var(--s-3); color: var(--ink-3); font-size: var(--t-1);
     line-height: 1.5; }
   .flash-ending b { color: var(--ink-2); }
+  .pace-real { display: block; margin-top: var(--s-3); color: var(--ink-3); font-size: var(--t-1); }
+  .notice-open { border-color: var(--accent); }
+  .lesson-past { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2);
+    margin: var(--s-5) 0 0; }
+  .today-peek { margin: calc(var(--s-4) * -1) 0 var(--s-5); color: var(--ink-3);
+    font-size: var(--t-1); text-align: right; }
+  .standing { flex: 0 0 auto; font-size: var(--t-1); color: var(--ink-3); white-space: nowrap; }
+  .standing.is-solid { color: var(--good); }
+  .standing.is-fade { color: var(--amber); }
+  .mynote { margin-top: var(--s-4); display: flex; flex-wrap: wrap; align-items: baseline;
+    gap: var(--s-3); }
+  .mynote.is-set { padding: 10px 12px; border-left: 2px solid var(--accent);
+    background: var(--surface-2); border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+  .mynote-text { flex: 1 0 100%; color: var(--ink-2); font-size: var(--t-3); line-height: 1.5; }
+  .dunno-row { margin-top: var(--s-4); text-align: center; }
   .aside-key { flex: 1 0 100%; margin: var(--s-3) 0 0; color: var(--ink-3);
     font-size: var(--t-1); line-height: 1.55; }
   .aside-key b { color: var(--ink-2); font-weight: 600; }
@@ -5950,6 +5965,18 @@
     return PACES[1];
   }
 
+  // The three lengths are round counts wearing minutes. Once there is
+  // evidence, say what they really take you.
+  function paceReally() {
+    var runs = diary().filter(function (d) {
+      return d.secs && (d.kind === "review" || d.kind === "today" || d.kind === "back");
+    }).slice(-8);
+    if (runs.length < 3) return null;
+    var total = 0;
+    runs.forEach(function (d) { total += d.secs; });
+    return Math.round(total / runs.length / 60);
+  }
+
   function reviewRounds() { return pace().rounds; }
   var MATCH_PAIRS = 5;
   var RETRY_MAX = 4;
@@ -6272,7 +6299,7 @@
   }
 
   // What the recogniser made of you, shown plainly and without a verdict.
-  function heardHTML(t, expectedTranslit, confirm) {
+  function heardHTML(t, expectedTranslit, confirm, canType) {
     if (!t.heard) return "";
     if (!t.heard.text) {
       return '<div class="heard is-none">Nothing came through. Try again, or just mark yourself.</div>';
@@ -6293,8 +6320,10 @@
       (close ? "" : '<span class="heard-note">Recognisers are shaky on Modern Standard Arabic. You decide.</span>') +
       yes +
       // What it heard is a guess and yours is not. Saying so should not
-      // cost you the round.
-      '<button class="pill pill--md heard-no" data-act="heard-drop">No, I will type it</button>' +
+      // cost you the round - and the button only offers typing on a
+      // screen that has somewhere to type.
+      '<button class="pill pill--md heard-no" data-act="heard-drop">' +
+      (canType ? "No, I will type it" : "No, that is not what I said") + "</button>" +
       "</div>";
   }
 
@@ -7175,6 +7204,57 @@
   // comes back for a check. "Hidden" means it is not your problem:
   // a job title you will never claim, a colour you do not care about.
   // It never comes back, and it stops counting toward anything.
+  // The course tells you what a phrase means. Nothing until now let you
+  // tell yourself: a hook to remember it by, the Italian that comes more
+  // naturally, where you heard it.
+  function myNote(ar) {
+    return (store.mynotes || {})[ar] || "";
+  }
+
+  function setMyNote(ar, text) {
+    if (!store.mynotes) store.mynotes = {};
+    var clean = String(text || "").trim().slice(0, 200);
+    if (clean) store.mynotes[ar] = clean;
+    else delete store.mynotes[ar];
+    save();
+  }
+
+  function myNoteHTML(ar) {
+    var mine = myNote(ar);
+    return '<div class="mynote' + (mine ? " is-set" : "") + '">' +
+      (mine ? '<span class="mynote-text">' + esc(mine) + "</span>" : "") +
+      '<button class="link-btn" data-act="mynote" data-id="' + esc(ar) + '">' +
+      (mine ? "Change my note" : "Add a note of my own") + "</button></div>";
+  }
+
+  // The app knows a phrase's strength, whether it is fading and how long
+  // its hold is. It has never told you any of it.
+  function standing(ar) {
+    var lid = lessonTeaching(ar);
+    if (!lid) return null;
+    var r = recordOf(lid);
+    if (!(r && r.done)) return { text: "not started", cls: "cold" };
+    if (knownRec(lid, ar)) return { text: "set aside", cls: "aside" };
+    var st = strengthOf(lid, ar);
+    if (st === null) return { text: "not asked yet", cls: "cold" };
+    var rec = rawStrength(lid, ar);
+    var since = rec ? daysSince(rec.day) : null;
+    var hold = holdFor(st);
+    var left = (since === null) ? null : Math.max(0, hold - since);
+    var word = st >= MASTERED ? "solid" : st >= 2 ? "holding" : "weak";
+    if (isFading(lid, ar)) return { text: word + " · slipping", cls: "fade" };
+    return {
+      text: word + (left === null ? "" : left === 0 ? " · due now" : " · about " + left + (left === 1 ? " day" : " days")),
+      cls: st >= MASTERED ? "solid" : st >= 2 ? "warm" : "cold"
+    };
+  }
+
+  function standingHTML(ar) {
+    var st = standing(ar);
+    if (!st) return "";
+    return '<span class="standing is-' + st.cls + '">' + esc(st.text) + "</span>";
+  }
+
   function isHidden(lessonId, ar) {
     return !!(store.hidden || {})[phraseKey(lessonId, ar)];
   }
@@ -7391,6 +7471,36 @@
   // What you typed against every form of the phrase this app knows: the
   // one on screen, the fus-ha behind it, and the other dialects. Choosing
   // Levantine should not make the fus-ha you already know into an error.
+  // One letter out on a long word is a slip of the thumb, not a phrase
+  // you do not know. Two letters out is a different word.
+  function oneOut(a, b) {
+    if (Math.abs(a.length - b.length) > 1) return false;
+    if (a.length < 6 && b.length < 6) return false;
+    var i = 0, j = 0, slips = 0;
+    while (i < a.length && j < b.length) {
+      if (a.charAt(i) === b.charAt(j)) { i++; j++; continue; }
+      if (++slips > 1) return false;
+      if (a.length > b.length) i++;
+      else if (b.length > a.length) j++;
+      else { i++; j++; }
+    }
+    return slips + (a.length - i) + (b.length - j) <= 1;
+  }
+
+  // If what you wrote is another phrase the course teaches, that is worth
+  // knowing: "not quite" tells you nothing, "that is tea" tells you what
+  // happened.
+  function phraseTyped(typed, notThis) {
+    var hit = null;
+    LESSONS.forEach(function (l) {
+      l.phrases.forEach(function (p) {
+        if (hit || p.ar === notThis) return;
+        if (sameSaid(typed, p.ar) || sameSaid(typed, disp(p.ar))) hit = p;
+      });
+    });
+    return hit;
+  }
+
   function judgeTyped(typed, ar) {
     if (!normalise(typed)) return null;
     var shown = disp(ar);
@@ -7405,7 +7515,12 @@
       if (d && (sameSaid(typed, d[0]) || sameSaidLoose(typed, d[0]))) found = v.label;
     });
     if (found) return { right: true, other: found };
-    return { right: false };
+    var flat = function (x) { return normalise(x).replace(/ /g, ""); };
+    if (oneOut(flat(typed), flat(shown)) || oneOut(flat(typed), flat(ar))) {
+      return { right: true, typo: true };
+    }
+    var was = phraseTyped(typed, ar);
+    return { right: false, instead: was ? { ar: was.ar, en: was.en } : null };
   }
 
   // What counts as the same typed answer: accents, case, the ayn mark,
@@ -7843,6 +7958,7 @@
       isBack: !!fields.isBack,
       isOne: !!fields.isOne,
       isTest: !!fields.isTest,
+      isTestOut: !!fields.isTestOut,
       only: fields.only || null,
       aimed: fields.aimed || null,
       extended: false,
@@ -7852,6 +7968,7 @@
       todayNext: fields.todayNext || null,
       tasks: all,
       i: 0,
+      startedAt: Date.now(),
       earned: 0,
       max: all.reduce(function (s, t) { return s + t.points; }, 0),
       missed: [],
@@ -8888,6 +9005,7 @@
 
   function noteDiary(score) {
     var d = sessionDelta();
+    if (session.startedAt) d.secs = Math.round((Date.now() - session.startedAt) / 1000);
     d.day = today();
     d.kind = sessionKind();
     d.score = score;
@@ -9625,6 +9743,33 @@
      HOME
      ============================================================ */
 
+  // Pressing Start and finding out afterwards is fine once. A line
+  // saying what is in there lets you decide whether now is the moment.
+  function sessionPeek() {
+    var pool = finishedLessons();
+    if (!pool.length) return "";
+    var open = studied().filter(function (it) { return !it.known; });
+    if (!open.length) return "";
+    var core = 0, missed = 0, fresh = 0, fading = 0;
+    open.forEach(function (it) {
+      if (it.core) core++;
+      if (missedEarlier(it.lesson.id, it.ar)) missed++;
+      if (it.s === null) fresh++;
+      else if (it.fading) fading++;
+    });
+    // What can honestly be said in advance: the length, what is seeded
+    // by hand at the front, and how big the bag behind it is.
+    var lead = Math.min(missed, MISSES_FIRST);
+    var checks = studied().filter(function (it) { return it.known && it.dueCheck; }).length;
+    var bits = [reviewRounds() + " rounds from " + open.length + " phrases"];
+    if (lead) bits.push(lead + " you missed recently lead");
+    if (checks) bits.push(Math.min(checks, CHECKS_PER_SESSION) + " due a check");
+    if (backAfterBreak()) bits.push("core and the most faded first");
+    else if (core) bits.push("core comes up most");
+    if (earBehind()) bits.push("leaning on listening");
+    return '<p class="today-peek">' + esc(bits.join(" · ")) + "</p>";
+  }
+
   function todayHTML() {
     var copy = todayCopy(todayPlan());
     var now = pace();
@@ -9632,6 +9777,10 @@
       '<div class="today-body">' +
       '<span class="eyebrow">Today</span>' +
       '<span class="today-line">' + esc(copy.line) + "</span>" +
+      (paceReally()
+        ? '<span class="pace-real">your sessions take about ' + paceReally() +
+          (paceReally() === 1 ? " minute" : " minutes") + "</span>"
+        : "") +
       '<span class="today-pace">' + PACES.map(function (p) {
         var on = p.key === now.key;
         return '<button class="pill pill--md chip pchip' + (on ? " is-on" : "") +
@@ -9640,7 +9789,7 @@
       }).join("") + "</span>" +
       "</div>" +
       '<button class="btn today-go" data-act="today">' + esc(copy.cta) + "</button>" +
-      "</div>";
+      "</div>" + sessionPeek();
   }
 
   function coreHTML() {
@@ -9810,6 +9959,22 @@
       '<span class="diary-delta">' + esc(deltaLine(d)) + "</span></span></div>";
   }
 
+  // A session lists what you missed and then loses it. The one list you
+  // actually want is the one that spans sessions.
+  function stuckList(limit) {
+    var out = [];
+    finishedLessons().forEach(function (l) {
+      visiblePhrases(l).forEach(function (p) {
+        if (knownRec(l.id, p.ar)) return;
+        var n = missCount(l.id, p.ar);
+        if (!n) return;
+        out.push({ lesson: l, ar: p.ar, en: p.en, misses: n, s: strengthOf(l.id, p.ar) });
+      });
+    });
+    out.sort(function (a, b) { return b.misses - a.misses; });
+    return limit ? out.slice(0, limit) : out;
+  }
+
   function diaryHTML() {
     var log = diary().slice().reverse();
     var w = weekSummary();
@@ -9844,6 +10009,20 @@
       (log.length ? '<div class="can-group"><h2 class="can-head">Session by session' +
         '<span class="fold-count">' + log.length + "</span></h2>" +
         log.map(diaryRow).join("") + "</div>" : "") +
+      (stuckList().length
+        ? '<div class="can-group"><h2 class="can-head">What you keep getting wrong' +
+          '<span class="fold-count">' + stuckList().length + "</span></h2>" +
+          '<p class="can-note">Ordered by how many times each one has gone. This is the list a session ' +
+          "shows you at the end and then forgets.</p>" +
+          stuckList(12).map(function (u) {
+            return '<div class="diary-row"><span class="diary-when">' + u.misses + "&#215;</span>" +
+              '<span class="diary-body"><span class="ar">' + esc(disp(u.ar)) + "</span>" +
+              '<span class="diary-delta">' + esc(u.en) + "</span></span>" +
+              standingHTML(u.ar) + sayBtn(u.ar, true) + "</div>";
+          }).join("") +
+          '<div class="btn-row" style="margin-top:12px">' +
+          '<button class="btn btn-wide" data-act="stuck-play">Do these now</button></div></div>'
+        : "") +
       (cold.length
         ? '<div class="can-group"><h2 class="can-head">Not seen in a while' +
           '<span class="fold-count">' + unseen().length + "</span></h2>" +
@@ -10489,6 +10668,12 @@
       (counts.fading ? '<small> +' + counts.fading + " fading</small>" : "") + "</dd></div>" +
       "</dl>" +
 
+      (openSession()
+        ? '<div class="notice notice-open">You left a session at round ' + openSession().i +
+          " of " + openSession().of + " today. " +
+          '<button class="link-btn" data-act="resume">Carry on</button> or ' +
+          '<button class="link-btn" data-act="drop-open">start fresh</button>.</div>'
+        : "") +
       todayHTML() +
       coreHTML() +
       reviewHTML() +
@@ -10510,7 +10695,13 @@
       '<p class="fold-lead strip-key">Each strip is that lesson\'s phrases by strength: ' +
       '<b class="key-solid">solid</b>, <b class="key-warm">holding</b>, ' +
       '<b class="key-cold">weak</b>, <b class="key-unmet">not met yet</b>.</p>' +
-      '<div class="track">' + rows + "</div></div></details>" +
+      '<div class="track">' + rows + "</div>" +
+      (finishedLessons().length > 1
+        ? '<div class="btn-row" style="margin-top:14px">' +
+          '<button class="btn btn-ghost btn-wide" data-go="choose">' +
+          "Practise several of these together</button></div>"
+        : "") +
+      "</div></details>" +
 
       '<details class="guide fold" data-fold="convos"' + foldAttr("convos") + '><summary>Conversations' +
       '<span class="fold-count">' + CONVOS.length + "</span></summary>" +
@@ -10632,6 +10823,7 @@
         '<div class="understood-head">Nothing I know sounds like that</div>' +
         (talk.heard ? '<div class="heard-text ar">' + esc(nearestTranslit(talk.heard).text || talk.heard) + "</div>" : "") +
         '<div class="understood-note">Try again, or type it below. It only knows the phrases in the lessons.</div>' +
+        '<button class="pill pill--md heard-no" data-act="heard-drop">Clear that and let me type</button>' +
         "</div>";
     }
 
@@ -10833,7 +11025,7 @@
         hits++;
         rows += '<div class="pb-row">' + sayBtn(ar, true) +
           '<span class="pb-text"><span class="ar">' + esc(disp(ar)) + "</span>" +
-          '<span class="pb-en">' + esc(en) + "</span></span></div>";
+          '<span class="pb-en">' + esc(en) + "</span></span>" + standingHTML(ar) + "</div>";
       });
       if (rows) groups += '<div class="pb-group"><h3>' + esc(group.title) + "</h3>" + rows + "</div>";
     });
@@ -11685,15 +11877,15 @@
     { en: "You have a time but not a place.", ok: ["Àina nàltaqi?"] },
     { en: "A shopkeeper looks up as you walk in.", ok: ["Marhàban", "As-salàmu ʿaláikum", "Àhlan"] },
     { en: "He says as-salàmu ʿaláikum first.", ok: ["Wa ʿaláikum as-salàm"] },
-    { en: "Nine in the morning, and you pass a neighbour.", ok: ["Sabàh al-khèir", "Marhàban"] },
+    { en: "Nine in the morning, and you pass a neighbour.", ok: ["Sabàh al-khèir", "Marhàban", "As-salàmu ʿaláikum", "Àhlan"] },
     { en: "He answers sabàh al-khèir. Now what?", ok: ["Sabàh an-nùr"] },
     { en: "You arrive somewhere in the evening.", ok: ["Masà al-khèir"] },
     { en: "Someone asks kèifa hàluk? and you are fine.", ok: ["Anà bikhèir", "Al-hàmdu lillàh", "Là bà's"] },
     { en: "You have answered. Now you want to ask them back.", ok: ["Wa ànta?", "Kèifa hàluk?"] },
     { en: "Someone hands you your coffee.", ok: ["Shùkran", "Shùkran jazìlan"] },
     { en: "You have just been thanked.", ok: ["ʿÀfwan"] },
-    { en: "You need to get past someone in a narrow street.", ok: ["Lau samàht", "ʿÀfwan"] },
-    { en: "You are about to ask a stranger something, before anything else.", ok: ["Min fàdlik", "Lau samàht"] },
+    { en: "You need to get past someone in a narrow street.", ok: ["Lau samàht", "Lau samàhti", "ʿÀfwan"] },
+    { en: "You are about to ask a stranger something, before anything else.", ok: ["Min fàdlik", "Lau samàht", "Lau samàhti", "ʿÀfwan"] },
     { en: "You have just been introduced to someone.", ok: ["Tashàrraft"] },
     { en: "Someone asks your name.", ok: ["Ismì Marco"] },
     { en: "Someone asks where you are from.", ok: ["Anà min Itàlya"] },
@@ -11712,7 +11904,7 @@
     { en: "This is your street. Anywhere here will do.", ok: ["Qif hùna, min fàdlik"] },
     { en: "You want to know how long the journey takes.", ok: ["Kam sàʿa?"] },
     { en: "You are at a stall and you want to know the price.", ok: ["Kam as-sìʿr?", "Kam hàdha?"] },
-    { en: "The price he says is three times what it should be.", ok: ["Hàdha kathìr", "Ghàli jìddan"] },
+    { en: "The price he says is three times what it should be.", ok: ["Hàdha kathìr", "Ghàli jìddan", "Ghàli"] },
     { en: "You are haggling and you want him to come down.", ok: ["Hal ʿìndak takhfìd?"] },
     { en: "You have decided to buy it.", ok: ["Sa'àkhudh hàdha", "Urìd hàdha"] },
     { en: "You have decided against it, and you do not want a scene.", ok: ["Sa'ufàkkir", "Là, shùkran", "Là urìd"] },
@@ -11729,13 +11921,13 @@
     { en: "You are in pain and pointing at the spot.", ok: ["ʿÌndi àlam hùna", "ʿÌndi àlam"] },
     { en: "You want the chemist.", ok: ["Àina as-saydalìyya?"] },
     { en: "There is a courtyard you would like to photograph.", ok: ["Hal yùmkin at-taswìr?", "Hal yùmkin?"] },
-    { en: "Someone is holding a door open for you to go in first.", ok: ["Shùkran", "Tafàddal"] },
+    { en: "Someone is holding a door open for you to go in first.", ok: ["Shùkran", "Shùkran jazìlan", "Tafàddal"] },
     { en: "You are asking a woman whether she speaks English.", ok: ["Hal tatakàllamìn al-inglizìyya?"] },
     { en: "She has invited you for a coffee and you would like to.", ok: ["Bikùll surùr", "Naʿam"] },
-    { en: "She has asked for your number and you would rather not.", ok: ["Là, shùkran"] },
-    { en: "You are leaving the shop.", ok: ["Maʿa salàma", "Ilà al-liqà", "Shùkran"] },
+    { en: "She has asked for your number and you would rather not.", ok: ["Là, shùkran", "Là urìd", "Rùbbama fi màrra ùkhra"] },
+    { en: "You are leaving the shop.", ok: ["Maʿa salàma", "Ilà al-liqà", "Ilà al-liqà qarìban", "Fi amàn Allàh", "Shùkran", "Shùkran jazìlan"] },
     { en: "You will see them again tomorrow.", ok: ["Ilà al-ghad"] },
-    { en: "It is late, you are going to bed, your host is still up.", ok: ["Tùsbih ʿalà khèir"] },
+    { en: "It is late, you are going to bed, your host is still up.", ok: ["Tùsbih ʿalà khèir", "Làila saʿìda"] },
     { en: "You want to know what time it is.", ok: ["Kam as-sàʿa?"] },
     { en: "You are on the platform and nobody has said when the train comes.", ok: ["Matà al-qitàr?"] },
     { en: "Someone has apologised for a mix-up and it is genuinely fine.", ok: ["Là bà's", "ʿÀfwan"] },
@@ -11756,7 +11948,7 @@
     { en: "A colleague asks whether you liked the food.", ok: ["Àʿjabani", "Kàna jamìlan"] },
     { en: "It turns out there was a meeting and nobody told you.", ok: ["Lam àʿrif"] },
     { en: "Someone asks where you live.", ok: ["Àskun fi Milàno"] },
-    { en: "You are leaving the office at the end of the day.", ok: ["Maʿa salàma", "Ilà al-ghad"] },
+    { en: "You are leaving the office at the end of the day.", ok: ["Maʿa salàma", "Ilà al-ghad", "Ilà al-liqà", "Ilà al-liqà qarìban", "Fi amàn Allàh"] },
     { en: "You want to fix something for first thing tomorrow.", ok: ["Ghàdan sabàhan"] },
     { en: "They ask whether next week would work.", ok: ["Al-usbùʿ al-qàdim", "Bi at-ta'kìd"] },
     { en: "A friend is mid-story and you have lost the thread.", ok: ["Marra ùkhra, min fàdlik", "Là àfham"] },
@@ -11921,7 +12113,8 @@
       '<span class="heard-note">Not one of the answers, but recognisers are shaky on Arabic. ' +
       "Put it in the box and check it if that is what you said.</span>" +
       '<button class="pill pill--md heard-yes" data-act="moment-use" data-id="' + esc(near.text || "") + '">' +
-      '<span class="tick" aria-hidden="true"></span>That is what I said</button></div>';
+      '<span class="tick" aria-hidden="true"></span>That is what I said</button>' +
+      '<button class="pill pill--md heard-no" data-act="heard-drop">No, I will type it</button></div>';
   }
 
   function momentHTML() {
@@ -12813,6 +13006,42 @@
       (typeof barPct === "number" ? '<div class="bar"><i style="width:' + barPct + '%"></i></div>' : "");
   }
 
+  // Sitting through thirteen flashcards for a lesson you already know is
+  // the fastest way to stop using an app. Ten of its phrases, cold, no
+  // cards, no options where it can be typed: nine right and it is passed.
+  var TESTOUT_PASS = 90;
+
+  function buildTestOut(lesson) {
+    var pool = visiblePhrases(lesson);
+    if (pool.length < 6) return null;
+    var picked = shuffle(pool).slice(0, Math.min(10, pool.length));
+    var tasks = [];
+    picked.forEach(function (p) {
+      var item = { ar: p.ar, en: p.en, core: !!p.core, phrase: p, lesson: lesson };
+      var r = canMake(item, "write") ? writeRound(lesson, p) : quizRound(lesson, p);
+      if (!r) return;
+      r.isTestOut = true;
+      r.isLeech = false;
+      tasks.push(r);
+    });
+    if (tasks.length < 5) return null;
+    return newSession({ lesson: lesson, isTestOut: true, tasks: tasks });
+  }
+
+  function skipLesson(lesson, off) {
+    if (!store.hidden) store.hidden = {};
+    lesson.phrases.forEach(function (p) {
+      var k = phraseKey(lesson.id, p.ar);
+      if (off) delete store.hidden[k];
+      else store.hidden[k] = true;
+    });
+    save();
+  }
+
+  function lessonSkipped(lesson) {
+    return lesson.phrases.every(function (p) { return isHidden(lesson.id, p.ar); });
+  }
+
   function lessonHTML(lesson) {
     var r = recordOf(lesson.id);
     var coreN = lesson.phrases.filter(function (p) { return p.core; }).length;
@@ -12829,6 +13058,16 @@
       '<button class="btn btn-ghost" data-go="learn" data-id="' + lesson.id + '">Study the phrases</button>' +
       '<button class="btn" data-go="play" data-id="' + lesson.id + '">Play</button>' +
       "</div>" +
+      // Two ways past a lesson: you already know it, or you never will.
+      '<div class="lesson-past">' +
+      (r && r.done ? "" :
+        '<button class="link-btn" data-act="testout" data-id="' + lesson.id + '">' +
+        "I already know this one - test me out of it</button>") +
+      '<button class="link-btn" data-act="skip-lesson" data-id="' + lesson.id + '">' +
+      (lessonSkipped(lesson) ? "Put this lesson back" : "I will never need this lesson") + "</button>" +
+      (lessonSkipped(lesson)
+        ? '<p class="aside-note">Every phrase in it is hidden. Nothing here comes up anywhere.</p>'
+        : "") + "</div>" +
       // Three hundred pixels of settings used to sit between the card and
       // the button, on the one screen whose whole job is that button.
       '<details class="guide fold" data-fold="lessonset"' + foldAttr("lessonset") +
@@ -12945,12 +13184,21 @@
   // Who a phrase is aimed at lives in its last syllable, and that is
   // exactly the syllable a beginner drops. If the phrase carries one,
   // say what it is while the phrase is on the screen.
-  function endingHint(shown) {
+  function endingHint(shown, hasOther) {
     var w = String(shown || "").toLowerCase().replace(/[?!.,;:]/g, "").split(/\s+/);
     var last = w[w.length - 1] || "";
     var out = null;
     if (/(ik|ki)$/.test(last)) out = "woman";
     else if (/(ak|uk|ka)$/.test(last)) out = "man";
+    // A phrase about you does not change with who is listening, and
+    // knowing that is worth as much as knowing when it does.
+    if (!out && !hasOther) {
+      var mine = /[bcdfghjklmnpqrstvwxyzʿ][ìi]$/.test(last) || w.indexOf("ana") !== -1 || w.indexOf("anà") !== -1;
+      if (mine) {
+        return '<div class="flash-ending">Nothing here changes with who you are speaking to: ' +
+          "this one is about <b>you</b>. The endings that do change are <b>-ak</b> and <b>-ik</b>.</div>";
+      }
+    }
     // A verb said to a woman takes its own ending, and it is a different
     // rule from the one above.
     var verbFem = w.some(function (x) { return /(ìn|ìna)$/.test(x) && x.length > 4; });
@@ -13041,6 +13289,7 @@
     if (p.note) note += '<div class="flash-note"><span>' + p.note + "</span></div>";
     note += howNote(p.ar);
     note += twinNote(p.ar);
+    note += myNoteHTML(p.ar);
 
     var known = !!knownRec(l.id, p.ar);
     var hidden = isHidden(l.id, p.ar);
@@ -13079,12 +13328,15 @@
         ? '<div class="flash-alt">' + esc(p.fLabel || "Speaking to a woman") + ': <span class="ar">' +
           esc(disp(p.f)) + "</span>" + sayBtn(p.f, true) + "</div>"
         : "") +
-      endingHint(disp(p.ar)) +
+      endingHint(disp(p.ar), !!p.f) +
       // Silence here was making fus-ha look like the dialect you chose.
       (variety() === "msa" ? ""
         : isDialectForm(p.ar)
           ? '<div class="in-variety">' + esc(varietyInfo().label) +
-            ' &#183; fusha: <span class="ar">' + esc(p.ar) + "</span></div>"
+            ' &#183; fusha: <span class="ar">' + esc(p.ar) + "</span>" +
+            '<button class="say say-sm" data-act="say" data-say="' + esc(p.ar) + '" data-book="1"' +
+            (canSpeak() ? "" : " disabled") + ' aria-label="Hear the fus&#183;ha">' + SPEAKER_SVG +
+            "</button></div>"
           : sameInDialect(p.ar)
             ? '<div class="in-variety">the same in ' + esc(varietyInfo().label) + "</div>"
             : '<div class="in-variety">fus&#183;ha &#183; no ' + esc(varietyInfo().label) +
@@ -13204,6 +13456,12 @@
       '<div class="fade-in">' + body + "</div>" + verdictHTML(t);
   }
 
+  function dunnoHTML() {
+    if (session.state === "checked") return "";
+    return '<div class="dunno-row"><button class="link-btn" data-act="dunno">' +
+      "I do not know this one - show me</button></div>";
+  }
+
   function optionsHTML(list, arabic, t) {
     var checked = session.state === "checked";
     return '<div class="options">' + list.map(function (opt, i) {
@@ -13223,7 +13481,7 @@
         '<span class="option-key">' + (i + 1) + "</span><span>" +
         esc(arabic ? disp(opt) : opt) + "</span>" +
         (state ? '<span class="sr-only">, ' + state + "</span>" : "") + "</button>";
-    }).join("") + "</div>";
+    }).join("") + "</div>" + dunnoHTML();
   }
 
   // A stuck phrase is shown in pieces rather than asked for cold. A
@@ -13348,7 +13606,7 @@
       ' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"' +
       ' aria-label="Type the Arabic phrase"' + (checked ? " disabled" : "") + ">" +
       (checked ? "" :
-        '<div class="btn-row"><button class="btn btn-wide" data-act="check-write">Check</button></div>');
+        '<div class="action-row"><button class="btn btn-wide" data-act="check-write">Check</button></div>');
   }
 
   function dictateHTML(t) {
@@ -13366,7 +13624,7 @@
       ' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"' +
       ' aria-label="Type what you heard"' + (checked ? " disabled" : "") + ">" +
       (checked ? "" :
-        '<div class="btn-row"><button class="btn btn-wide" data-act="check-write">Check</button></div>');
+        '<div class="action-row"><button class="btn btn-wide" data-act="check-write">Check</button></div>');
   }
 
   function listenHTML(t) {
@@ -13442,12 +13700,12 @@
         (t.alts ? "Both of these are real answers. What happens next depends on which one you give."
           : t.produce ? "How do you reply? No options this time." : "How do you reply?") + "</div>" +
         (canHear() ? '<div class="mic-row">' + micBtn("Answer out loud", ears.busy) + "</div>" : micNote()) +
-        heardHTML(t, t.answer, convoHeardPick(t)) +
+        heardHTML(t, t.answer, convoHeardPick(t), !!t.produce) +
         (t.produce
           ? '<input class="' + cls + '" data-act="typing" type="text" value="' + esc(t.typed || "") + '"' +
             ' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"' +
             ' aria-label="Type your reply">' +
-            '<div class="btn-row"><button class="btn btn-wide" data-act="check-write">Check</button></div>' +
+            '<div class="action-row"><button class="btn btn-wide" data-act="check-write">Check</button></div>' +
             '<button class="link-btn" data-act="convo-options">Give me the three options</button>'
           : optionsHTML(t.options, true, t)));
   }
@@ -13592,6 +13850,12 @@
   // What you picked, and what it actually is. "Wrong" teaches nothing;
   // "you chose lau samàht, which is for getting attention" teaches the
   // difference that caught you.
+  function insteadWith(t) {
+    if (!t.instead) return "";
+    return '<div class="confused">What you wrote is <b class="ar">' + esc(disp(t.instead.ar)) +
+      "</b>, which is <b>" + esc(t.instead.en) + "</b>.</div>";
+  }
+
   function confusedWith(t) {
     var picked = t.chosen;
     if (!picked || picked === t.answer) return "";
@@ -13621,6 +13885,9 @@
         ? '<div class="verdict-msg ok"><b>Right, in ' + esc(t.otherForm === "fusha" ? "fus·ha" : t.otherForm) +
           '.</b>&nbsp;<span>Here it is as you are studying it: </span><span class="ar">' +
           esc(t.answer) + "</span>" + sayBtn(t.phrase ? t.phrase.ar : t.answer, true) + "</div>"
+        : t.typo
+          ? '<div class="verdict-msg ok"><b>Nearly - one letter out.</b>&nbsp;<span>It is written </span>' +
+            '<span class="ar">' + esc(t.answer) + "</span></div>"
         : t.loose
           ? '<div class="verdict-msg ok"><b>Correct.</b>&nbsp;<span>Written out it is </span><span class="ar">' +
             esc(t.answer) + "</span></div>"
@@ -13631,11 +13898,12 @@
               : '<div class="verdict-msg ok"><b>Correct.</b></div>';
     } else {
       var answer = t.type === "build" ? t.target.join(" ") : (arabicAnswerFor(t) ? disp(t.answer) : t.answer);
+      var head = t.noGuess ? "No guess. Here it is." : "Not quite.";
       var arabicAnswer = arabicAnswerFor(t);
       // sayBtn wants the phrase, not the words on screen: in a dialect,
       // and on anything with a question mark, they are not the same.
       var heard = t.phrase ? t.phrase.ar : (t.exchange ? t.exchange.reply : t.answer);
-      msg = '<div class="verdict-msg no"><b>Not quite.</b>&nbsp;<span' +
+      msg = '<div class="verdict-msg no"><b>' + esc(head) + "</b>&nbsp;<span" +
         (arabicAnswer ? ' class="ar"' : "") + ">" + esc(answer) + "</span>" +
         (arabicAnswer ? sayBtn(heard, true) : "") + "</div>";
     }
@@ -13646,7 +13914,8 @@
         (last ? "Finish the test" : "Next") + "</button></div>";
     }
     return '<div class="verdict" tabindex="-1">' + msg +
-      (session.lastRight ? "" : confusedWith(t)) + leechOut(t) +
+      (session.lastRight ? "" : confusedWith(t)) +
+      (session.lastRight ? "" : insteadWith(t)) + leechOut(t) +
       (session.lastRight ? "" : whyHTML(t)) + twinPickHTML(t) + roundControls(t) +
       '<button class="btn btn-wide" data-act="next">' +
       (session.isOne ? "Another one" : ending ? "See your score" : "Continue") + "</button>" +
@@ -13672,7 +13941,11 @@
     var next = lesson ? LESSONS[LESSONS.indexOf(lesson) + 1] : null;
 
     var line;
-    if (session.isTest) {
+    if (session.isTestOut) {
+      line = score >= TESTOUT_PASS
+        ? "Passed without playing it. The lesson is marked done and its phrases are in the rotation like any other."
+        : "Under " + TESTOUT_PASS + "%, so it stays open. Nothing is lost: what you just answered counted for those phrases.";
+    } else if (session.isTest) {
       var prev = examHistory().length > 1 ? examHistory()[examHistory().length - 2] : null;
       var gap = prev ? daysSince(prev.day) : null;
       line = session.tasks.length + " at random from everything you have passed, with nothing to help you. " +
@@ -13732,7 +14005,9 @@
         "Fix these " + n + " now</button></div></div>";
     }
 
-    var eyebrow = session.isTest ? "Test over"
+    var eyebrow = session.isTestOut
+        ? (score >= TESTOUT_PASS ? "You knew it" : "Not quite known")
+      : session.isTest ? "Test over"
       : session.isFixup ? "Patched up"
       : session.isConvo ? "Conversation over"
       : session.isReview ? "Review complete"
@@ -13859,6 +14134,27 @@
     render();
   }
 
+  // Guessing between four options teaches the app nothing and you less.
+  // Saying so costs one step, not two, because you were honest about it.
+  function giveUp() {
+    if (session.state === "checked") return;
+    var t = session.tasks[session.i];
+    t.gaveUp = true;
+    t.noGuess = true;
+    var ph = phraseOfTask(t);
+    session.state = "checked";
+    session.lastRight = false;
+    t.settled = true;
+    t.wasRight = false;
+    if (ph && !t.isRetry) noteMiss(t, ph);
+    var l = ph && lessonOf(t, ph);
+    if (l && !t.isRetry && !t.isTest && !t.noMemory) {
+      bumpStrength(l.id, ph.ar, false, "soft");
+      save();
+    }
+    render();
+  }
+
   function answer(value) {
     if (session.state === "checked") return;
     var t = session.tasks[session.i];
@@ -13930,8 +14226,12 @@
     var verdict = ph ? judgeTyped(t.typed, ph.ar) : { right: sameSaid(t.typed, t.answer) };
     if (!verdict) return;
     t.loose = !!verdict.loose;
+    t.typo = !!verdict.typo;
     t.otherForm = verdict.other || null;
-    settle(t, verdict.right, ph);
+    t.instead = verdict.instead || null;
+    // A slip of the thumb is right, but it is not solid: it holds the
+    // phrase where it is rather than letting it climb.
+    settle(t, verdict.right, ph, verdict.typo ? true : undefined);
   }
 
   function checkBuild() {
@@ -13993,18 +14293,62 @@
     }, 420);
   }
 
+  // Closing the tab in the middle of a session lost the session. The
+  // strengths were safe - they are written as each answer lands - but the
+  // twelve rounds you were in the middle of were not.
+  function keepSession() {
+    if (!session || session.finished || session.isTest || session.isTestOut) { store.open = null; return; }
+    if (session.i < 1) { store.open = null; return; }
+    store.open = {
+      day: today(),
+      i: session.i,
+      of: session.tasks.length,
+      kind: sessionKind(),
+      lesson: session.lesson ? session.lesson.id : null,
+      convo: session.convo ? session.convo.id : null,
+      only: session.only || null
+    };
+    save();
+  }
+
+  function openSession() {
+    var o = store.open;
+    if (!o || o.day !== today()) return null;
+    return o;
+  }
+
+  function resumeSession() {
+    var o = openSession();
+    if (!o) return;
+    store.open = null;
+    save();
+    var s2 = null;
+    if (o.kind === "lesson" && o.lesson) s2 = buildSession(lessonById(o.lesson));
+    else if (o.kind === "convo" || o.kind === "daily") {
+      var c = convoById(o.convo);
+      if (c) s2 = buildConvo(c);
+    } else s2 = buildReview(o.only ? { only: o.only } : {});
+    if (s2) { session = s2; go({ name: "play" }); }
+    else { render(); }
+  }
+
   function finish() {
     // Walking back to the last round and forward again must not score
     // the session twice.
     if (session.finished) { go({ name: "result" }, { replace: true }); return; }
     session.finished = true;
+    store.open = null;
     var score = session.max ? Math.round(session.earned / session.max * 100) : 0;
     // Sessions are the clock the spot checks run on. A test is not one:
     // nothing in it counted, so nothing in it may move the clock either.
     if (!session.isTest) store.runs = runCount() + 1;
     store.lastDay = today();
     noteDiary(score);
-    if (session.isTest) {
+    if (session.isTestOut) {
+      // Nine out of ten cold is a better proof than a played lesson.
+      if (score >= TESTOUT_PASS) record(session.lesson.id, score);
+      else save();
+    } else if (session.isTest) {
       store.exams = examHistory().concat([{ day: today(), score: score, n: session.tasks.length }]).slice(-12);
       save();
     } else if (session.isFixup) {
@@ -14055,6 +14399,7 @@
   function advance() {
     stopTape();
     dropTape();
+    keepSession();
     rotateVoice();
     speech.lastSaid = null;
     // A single question has no next round and no end: either another
@@ -14174,6 +14519,15 @@
         if (typeof tf.setSelectionRange === "function") tf.setSelectionRange(tf.value.length, tf.value.length);
       }
       return;
+    }
+    // A round that wants typing should not also want a tap on the box
+    // first. On iOS the keyboard may refuse to open without a gesture of
+    // its own, in which case this costs nothing and changes nothing.
+    if (view.name === "play" && session && session.state === "asking") {
+      var box = app.querySelector('[data-act="typing"]');
+      if (box && !box.value && typeof box.focus === "function") {
+        try { box.focus(); } catch (e) { /* some browsers refuse */ }
+      }
     }
     if (view.name === "phrasebook") {
       var search = app.querySelector('[data-act="search"]');
@@ -14718,14 +15072,18 @@
     }
     if (act === "mic-stop") { stopListening(); return; }
     if (act === "heard-drop") {
-      if (session && session.tasks[session.i]) {
-        session.tasks[session.i].heard = null;
-        session.tasks[session.i].produce = session.tasks[session.i].produce || false;
-      }
+      if (session && session.tasks[session.i]) session.tasks[session.i].heard = null;
       if (moment) { moment.heard = null; moment.spoken = false; }
       if (talk) { talk.heard = null; talk.options = []; }
       if (numbers) numbers.heard = null;
       render();
+      var box = app.querySelector('[data-act="typing"]') ||
+        app.querySelector('[data-act="moment-typing"]') ||
+        app.querySelector('[data-act="talk-typing"]') ||
+        app.querySelector('[data-act="numbers-typing"]');
+      if (box && typeof box.focus === "function") {
+        try { box.focus(); } catch (e) { /* some browsers refuse */ }
+      }
       return;
     }
     if (act === "tape") {
@@ -14735,6 +15093,43 @@
       return;
     }
     if (act === "tape-play") { playTape(); return; }
+    if (act === "resume") { resumeSession(); return; }
+    if (act === "drop-open") { store.open = null; save(); render(); return; }
+    if (act === "testout") {
+      var tol = lessonById(el.getAttribute("data-id"));
+      var tos = tol && buildTestOut(tol);
+      if (tos) { session = tos; go({ name: "play" }); }
+      return;
+    }
+    if (act === "skip-lesson") {
+      var skl = lessonById(el.getAttribute("data-id"));
+      if (!skl) return;
+      var off = lessonSkipped(skl);
+      if (off || window.confirm("Hide every phrase in this lesson? It will not come up anywhere until you put it back.")) {
+        skipLesson(skl, off);
+        render();
+      }
+      return;
+    }
+    if (act === "stuck-play") {
+      var items = stuckList(12);
+      if (!items.length) return;
+      var fix = buildFixup(items.map(function (u) {
+        return { ar: u.ar, en: u.en, lesson: u.lesson };
+      }));
+      if (fix) { session = fix; go({ name: "play" }); }
+      return;
+    }
+    if (act === "mynote") {
+      var nar = el.getAttribute("data-id");
+      var was = myNote(nar);
+      var txt = window.prompt("Your own note for this phrase. Anything that helps you remember it; " +
+        "leave it empty to remove it.", was);
+      if (txt === null) return;
+      setMyNote(nar, txt);
+      render();
+      return;
+    }
     if (act === "mine-add") {
       var heard = window.prompt("How did it sound? Write it in these letters, the way you heard it.", "");
       if (heard === null) return;
@@ -15021,6 +15416,7 @@
       advance();
       return;
     }
+    if (act === "dunno") { giveUp(); return; }
     if (act === "next") { stopSpeech(); advance(); return; }
   });
 

@@ -3416,8 +3416,10 @@ section("how a phrase lands");
 
   click({ "data-go": "home" });
   click({ "data-go": "moment" });
-  let g9 = 0;
-  while (g9++ < 120 && !peek().moment.m.no) click({ "data-act": "moment-next" });
+  // drawing at random can miss the three that have one; put it in front
+  // of us instead of hoping
+  const withNo = D.MOMENTS.find(m => m.no && D.openMoments().some(o => o.en === m.en));
+  if (withNo) { peek().moment.m = withNo; peek().moment.checked = false; peek().moment.typed = ""; }
   if (peek().moment.m.no) {
     const mo = peek().moment;
     const before = JSON.stringify(st.str);
@@ -3533,6 +3535,41 @@ section("what you asked for while it was being built");
   check("and with nothing slipping it does not invent one",
     !/Before you go on/.test(h) && /Take me to a lesson of my choosing/.test(h));
 
+  // a right answer has to be accepted
+  const stillRejected = [];
+  D.MOMENTS.forEach(m => {
+    m.ok.forEach(ar => {
+      LESSONS.forEach(l => l.phrases.forEach(p => {
+        if (m.ok.indexOf(p.ar) === -1 && D.sameJob(p.ar, ar) &&
+          (m.no || []).indexOf(p.ar) === -1) {
+          stillRejected.push(m.en.slice(0, 30) + " / " + p.ar);
+        }
+      }));
+    });
+  });
+  console.log(`    ${stillRejected.length} situation-phrase pairs left deliberately out`);
+  // Every one of these has been read: what is left out is left out on
+  // purpose (àhlan wa sàhlan is what is said TO you, min fàdlik does not
+  // answer a thank you, wadàʿan is a farewell not the end of a workday).
+  // The number is here so that adding a situation carelessly shows up.
+  check("what a situation still refuses is a list somebody has read",
+    stillRejected.length <= 34);
+
+  // and the ones that were the app being wrong are fixed
+  const widened = [
+    ["Nine in the morning", "As-salàmu ʿaláikum"],
+    ["The price he says", "Ghàli"],
+    ["holding a door open", "Shùkran jazìlan"],
+    ["asked for your number", "Rùbbama fi màrra ùkhra"],
+    ["leaving the shop", "Fi amàn Allàh"],
+    ["going to bed", "Làila saʿìda"]
+  ];
+  check("nine situations now take the answer a person would give",
+    widened.every(([bit, ar]) => {
+      const m = D.MOMENTS.find(x => x.en.includes(bit));
+      return m && m.ok.indexOf(ar) !== -1;
+    }));
+
   // a wrong answer has to be actually wrong
   check("two ways of saying one thing are known to do the same job",
     D.sameJob("Marhàban", "Àhlan") && D.sameJob("Anà bikhèir", "Al-hàmdu lillàh"));
@@ -3623,6 +3660,129 @@ section("a conversation that goes two ways");
   check("and it finishes either way", peek().view.name === "result");
 
   st.str = {};
+  click({ "data-go": "home" });
+}
+
+section("the app stops fighting you");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.variety = undefined; st.open = null;
+
+  // one letter out is a slip, two is a different word
+  check("one letter out of a long word is a slip",
+    D.oneOut("alhamdulillah", "alhamdulilah") && D.oneOut("shukran", "shukrn"));
+  check("two are not", !D.oneOut("shukran", "shukr"));
+  check("and a short word gets no leniency at all", !D.oneOut("qahwa", "qhwa"));
+  const typo = D.judgeTyped("shukrn", "Shùkran");
+  check("so a typo is right, and said to be one", typo.right && typo.typo);
+  const other = D.judgeTyped("Shày", "Qàhwa");
+  check("and writing another real phrase is named",
+    !other.right && other.instead && other.instead.en === "Tea");
+
+  // not knowing is an answer
+  st.games = { quiz: true, match: false, build: false, dialog: false, say: false,
+    listen: false, write: false, dictate: false, swap: false };
+  click({ "data-go": "home" });
+  click({ "data-go": "review" });
+  check("every round offers a way out of guessing", /data-act="dunno"/.test(h));
+  const t0 = peek().session.tasks[0];
+  const src0 = t0.srcLesson;
+  click({ "data-act": "dunno" });
+  check("saying so settles the round", peek().session.state === "checked");
+  check("without pretending you chose", !peek().session.tasks[0].chosen);
+  check("and it says what it was", /No guess. Here it is/.test(h));
+  if (src0 && t0.phrase) {
+    check("it costs one step, not two",
+      (st.str[src0.id + "|" + t0.phrase.ar] || {}).s === 0);
+  }
+  st.games = undefined;
+
+  // a note of your own
+  const someAr = LESSONS[0].phrases[0].ar;
+  global.window.prompt = () => "suona come 'mare' + 'ban'";
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "1" });
+  click({ "data-act": "learn-reveal" });
+  check("a card offers a note of your own", /data-act="mynote"/.test(h));
+  click({ "data-act": "mynote", "data-id": someAr });
+  check("what you write is kept", D.myNote(someAr).includes("mare"));
+  check("and shown on the card", /class="mynote-text"/.test(h));
+  global.window.prompt = () => "";
+  click({ "data-act": "mynote", "data-id": someAr });
+  check("emptying it removes it", D.myNote(someAr) === "");
+  global.window.prompt = () => promptAnswer;
+
+  // where a phrase stands
+  st.str = {};
+  st.str["1|" + someAr] = { s: 5, n: 9, day: D.today() };
+  const standing = D.standing(someAr);
+  check("a solid phrase says so and says when it comes back",
+    standing.cls === "solid" && /solid/.test(standing.text) && /days|due/.test(standing.text));
+  st.str["1|" + someAr] = { s: 5, n: 9, day: D.today() - 200 };
+  check("a slipping one says that instead", D.standing(someAr).cls === "fade");
+  click({ "data-go": "phrasebook" });
+  check("and the phrasebook shows it", /class="standing/.test(h));
+
+  // what you keep getting wrong
+  st.str["1|" + someAr] = { s: 1, n: 9, day: D.today(), miss: 4, missDay: D.today() - 1 };
+  check("the misses that span sessions are a list", D.stuckList().length >= 1);
+  click({ "data-go": "diary" });
+  check("the diary shows it", /What you keep getting wrong/.test(h));
+  check("ordered by how often", /4&#215;|4×/.test(h));
+  click({ "data-act": "stuck-play" });
+  check("and you can play exactly those", peek().session && peek().session.isFixup === true);
+
+  // a lesson you already know, and one you never will
+  click({ "data-go": "home" });
+  st.lessons = {};
+  click({ "data-go": "lesson", "data-id": "1" });
+  check("a lesson offers a way past it", /data-act="testout"/.test(h));
+  check("and a way to drop it", /data-act="skip-lesson"/.test(h));
+  const out = D.buildTestOut(LESSONS[0]);
+  check("the test out is cold, no cards", !!out && out.isTestOut === true);
+  check("with up to ten of its phrases", out.tasks.length <= 10 && out.tasks.length >= 5);
+  session_out: {
+    peek().store.lessons = {};
+    click({ "data-go": "lesson", "data-id": "1" });
+    click({ "data-act": "testout", "data-id": "1" });
+    let g = 0;
+    while (g++ < 40 && peek().view.name !== "result") playRound(true);
+    check("passing it marks the lesson done without playing it",
+      (peek().store.lessons[1] || {}).done === true);
+    check("and says so", /You knew it/.test(h));
+  }
+  unlockAll();
+
+  confirmAnswer = true;
+  click({ "data-go": "lesson", "data-id": "12" });
+  click({ "data-act": "skip-lesson", "data-id": "12" });
+  check("dropping a lesson hides all of it", D.lessonSkipped(LESSONS.find(l => l.id === 12)));
+  click({ "data-act": "skip-lesson", "data-id": "12" });
+  check("and it goes back in one tap", !D.lessonSkipped(LESSONS.find(l => l.id === 12)));
+
+  // carry on where you left off
+  st.str = {};
+  st.games = { quiz: true, match: false, build: false, dialog: false, say: false,
+    listen: false, write: false, dictate: false, swap: false };
+  click({ "data-go": "home" });
+  click({ "data-go": "review" });
+  playRound(true); playRound(true); playRound(true); playRound(true);
+  check("a session in progress is remembered", !!D.openSession());
+  click({ "data-go": "home" });
+  check("and the home screen offers it back", /data-act="resume"/.test(h));
+  check("saying which round you were on", /round \d+ of \d+/.test(h));
+  click({ "data-act": "resume" });
+  check("carrying on starts a session", peek().view.name === "play");
+  check("and clears the marker", !D.openSession());
+
+  // what is in the session, before you press start
+  click({ "data-go": "home" });
+  check("the card says what is in there", /class="today-peek"/.test(h));
+  check("and how long it is", /\d+ rounds from \d+ phrases/.test(h));
+
+  st.str = {}; st.open = null; st.games = undefined;
   click({ "data-go": "home" });
 }
 
@@ -4580,6 +4740,9 @@ if (withMic) {
   section("speaking your reply in a conversation");
   {
     unlockAll();
+    // a conversation whose replies are solid asks you to produce them,
+    // which is a different screen from the one this section is about
+    peek().store.str = {};
     click({ "data-go": "home" });
     click({ "data-go": "convo", "data-id": CONVOS[0].id });
     const turn = peek().session.tasks[0];
