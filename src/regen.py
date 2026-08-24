@@ -42,6 +42,8 @@ HOOKS = (
     ' myNote: myNote, standing: standing, stuckList: stuckList, buildTestOut: buildTestOut,'
     ' lessonSkipped: lessonSkipped, openSession: openSession, TESTOUT_PASS: TESTOUT_PASS,'
     ' oneOut: oneOut, phraseTyped: phraseTyped, openMoments: openMoments,'
+    ' ITALIAN: ITALIAN, italianFor: italianFor, courseSearch: courseSearch,'
+    ' WANTS: WANTS, wantKey: wantKey, nextForWant: nextForWant, forWant: forWant,'
     ' englishFor: englishFor, courseIndex: courseIndex, normalise: normalise,'
     ' sameSaid: sameSaid, tokens: tokens, canMake: canMake, coreCounts: coreCounts,'
     ' lessonNo: lessonNo, RECHECK_AFTER: RECHECK_AFTER, HOLDS: HOLDS, today: today,'

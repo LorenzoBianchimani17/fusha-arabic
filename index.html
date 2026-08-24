@@ -565,6 +565,10 @@
   .flash-ending { margin-top: var(--s-3); color: var(--ink-3); font-size: var(--t-1);
     line-height: 1.5; }
   .flash-ending b { color: var(--ink-2); }
+  .notice-want { border-color: var(--accent); }
+  .want-why { margin: var(--s-3) 0 var(--s-4); color: var(--ink-3); font-size: var(--t-1); }
+  .pb-italian { margin: var(--s-3) 0 var(--s-5); color: var(--ink-3); font-size: var(--t-1); }
+  .pb-italian b { color: var(--ink-2); font-weight: 600; }
   .pace-real { display: block; margin-top: var(--s-3); color: var(--ink-3); font-size: var(--t-1); }
   .notice-open { border-color: var(--accent); }
   .lesson-past { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2);
@@ -2904,34 +2908,47 @@
     { id: "reply", can: "answer a question, not only ask one",
       needs: ["Naʿam, ʿìndi", "Là, làisa ʿìndi", "Là àʿrif", "Kamà turìd"] },
     { id: "order", can: "order a coffee and ask for the bill",
+      want: ["travel", "someone"],
       needs: ["Qàhwa", "Urìd mà', min fàdlik", "Al-hisàb, min fàdlik"] },
     { id: "hungry", can: "say you are hungry or thirsty",
+      want: ["travel"],
       needs: ["Anà jà'iʿ", "Anà ʿatshàn"] },
     { id: "way", can: "ask where something is and follow the answer",
+      want: ["travel"],
       needs: ["Àina al-hammàm?", "Ilà al-yamìn", "Ilà al-yasàr", "ʿAlà tùl"] },
     { id: "price", can: "ask a price and understand what you are told",
+      want: ["travel"],
       needs: ["Kam as-sìʿr?", "ʿIshrùn", "Mi'a"] },
     { id: "haggle", can: "say it is too expensive and walk away",
+      want: ["travel"],
       needs: ["Ghàli jìddan", "Hàdha kathìr", "Sa'ufàkkir"] },
     { id: "buy", can: "say you will take it",
+      want: ["travel"],
       needs: ["Kam hàdha?", "Sa'àkhudh hàdha", "Urìd hàdha"] },
     { id: "taxi", can: "take a taxi and say where you are going",
+      want: ["travel"],
       needs: ["Urìd tàksi", "Khudhni ilà al-matàr", "Qif hùna, min fàdlik"] },
     { id: "hotel", can: "ask for a room and for the wifi",
+      want: ["travel"],
       needs: ["Al-fùnduq", "Ghùrfa", "Hal ʿìndakum wàifài?"] },
     { id: "time", can: "ask the time and understand the answer",
       needs: ["Kam as-sàʿa?", "Fi ày sàʿa?", "Fi as-sàʿa thamàniya"] },
     { id: "meet", can: "arrange to meet someone",
+      want: ["someone", "work"],
       needs: ["Ghàdan sabàhan", "Al-àn munàsib", "Sa'akùn hunàk"] },
     { id: "ill", can: "say you are ill and where it hurts",
+      want: ["travel"],
       needs: ["Anà marìd", "ʿÌndi àlam hùna", "Ahtàj tabìb"] },
     { id: "may", can: "ask whether you are allowed to",
+      want: ["travel", "work"],
       needs: ["Hal yùmkin?", "Hal yùmkin at-taswìr?", "Làhza min fàdlik"] },
     { id: "past", can: "say what you did yesterday",
+      want: ["someone"],
       needs: ["Ams", "Kùntu", "Dhahàbtu"] },
     { id: "want", can: "say what you want, need and like",
       needs: ["Urìd", "Ahtàj", "Ùhib"] },
     { id: "lost", can: "say you have lost something and ask for help",
+      want: ["travel"],
       needs: ["Fàqadtu haqìbati", "Sàʿidni, min fàdlik", "Àina ash-shùrta?"] },
     { id: "bye", can: "end a conversation properly",
       needs: ["Maʿa salàma", "Ilà al-liqà", "Tùsbih ʿalà khèir"] }
@@ -9073,6 +9090,45 @@
 
   var CAN_SOLID = 3;
 
+  // The course order is fixed and should be: it builds. What is not
+  // fixed is what the app puts in front of you next, and that depends
+  // on why you are here.
+  var WANTS = [
+    { key: "travel", label: "I am going there", why: "the street, the taxi, the bill, the chemist" },
+    { key: "someone", label: "Someone I want to talk to", why: "the questions after hello, and what keeps a conversation going" },
+    { key: "work", label: "Work", why: "arranging, asking permission, being understood plainly" }
+  ];
+
+  function wantKey() {
+    var w = store.want;
+    for (var i = 0; i < WANTS.length; i++) if (WANTS[i].key === w) return w;
+    return null;
+  }
+
+  function wantInfo() {
+    var k = wantKey();
+    for (var i = 0; i < WANTS.length; i++) if (WANTS[i].key === k) return WANTS[i];
+    return null;
+  }
+
+  function forWant(entry) {
+    var k = wantKey();
+    if (!k || !entry.want) return !!k ? false : false;
+    return entry.want.indexOf(k) !== -1;
+  }
+
+  // The next thing worth doing for the reason you gave: the closest
+  // capability you have not got yet.
+  function nextForWant() {
+    if (!wantKey()) return null;
+    var mine = canStates().filter(function (c) {
+      return c.level !== "yes" && forWant(c.entry) && canOpen(c.entry);
+    });
+    if (!mine.length) return null;
+    mine.sort(function (a, b) { return (b.have / b.n) - (a.have / a.n); });
+    return mine[0];
+  }
+
   function canState(entry) {
     var have = 0, met = 0, open = 0;
     entry.needs.forEach(function (ar) {
@@ -10344,6 +10400,13 @@
       '<p class="can-lead">Something counts as yours when every phrase under it is solid' +
       " - strength " + CAN_SOLID + " or better, after any fading. That is a harder line than the" +
       " mastered count on the home screen, and it is the one that matters in the street.</p>" +
+      (nextForWant()
+        ? '<div class="can-group"><h2 class="can-head">' + esc(wantInfo().label) + "</h2>" +
+          '<p class="can-note">' + esc(wantInfo().why) + ". The closest one you have not got yet:</p>" +
+          canRow(nextForWant()) +
+          '<div class="btn-row"><button class="btn" data-go="ready" data-id="' +
+          esc(nextForWant().entry.id) + '">Get me ready for that</button></div></div>'
+        : "") +
       group("You can", yes) +
       group("Nearly", nearly, "One phrase short, or one that has faded. These are the cheapest things left to fix.") +
       group("Not yet", no, "Either the lesson is still ahead of you, or nothing in it has stuck.") +
@@ -10519,6 +10582,9 @@
       '<span class="nav-note">' + esc(diary().length
         ? "A line for each of your last " + diary().length + " sessions"
         : "A line after each session, and a week at a time") + "</span></button>" +
+      '<button class="nav-item" data-act="want-clear"><span class="nav-label">What you need Arabic for</span>' +
+      '<span class="nav-note">' + esc(wantInfo() ? wantInfo().label + " · tap to change" : "Not said · tap to choose") +
+      "</span></button>" +
       '<button class="nav-item" data-go="can"><span class="nav-label">What you can do</span>' +
       '<span class="nav-note">' + esc(canAt("yes").length + " of " + CAN.length +
         " things you could carry through") + "</span></button>" +
@@ -10685,6 +10751,17 @@
       (counts.fading ? '<small> +' + counts.fading + " fading</small>" : "") + "</dd></div>" +
       "</dl>" +
 
+      (!wantKey() && !store.wantAsked && finishedLessons().length
+        ? '<div class="notice notice-want"><b>What do you need Arabic for?</b>' +
+          '<p class="want-why">The lessons stay in the order they are in - they build. This only changes ' +
+          "what the app puts in front of you next.</p>" +
+          '<div class="chips">' + WANTS.map(function (w) {
+            return '<button class="pill pill--md chip" data-act="want" data-id="' + w.key + '">' +
+              esc(w.label) + "</button>";
+          }).join("") +
+          '<button class="pill pill--md chip" data-act="want" data-id="">All of it</button>' +
+          "</div></div>"
+        : "") +
       (openSession()
         ? '<div class="notice notice-open">You left a session at round ' + openSession().i +
           " of " + openSession().of + " today. " +
@@ -11013,11 +11090,16 @@
   var COURSE_HITS = 24;
 
   function courseSearch(q, skip) {
+    var alsoEn = italianFor(q);
     return courseIndex().filter(function (item) {
       if (skip[item.ar]) return false;
-      return normalise(item.ar).indexOf(q) !== -1 ||
-        normalise(disp(item.ar)).indexOf(q) !== -1 ||
-        normalise(item.en).indexOf(q) !== -1;
+      if (normalise(item.ar).indexOf(q) !== -1) return true;
+      if (normalise(disp(item.ar)).indexOf(q) !== -1) return true;
+      if (normalise(item.en).indexOf(q) !== -1) return true;
+      for (var i = 0; i < alsoEn.length; i++) {
+        if (normalise(item.en).indexOf(alsoEn[i]) !== -1) return true;
+      }
+      return false;
     });
   }
 
@@ -11025,20 +11107,110 @@
     return topbarHTML("Phrasebook") +
       '<p class="pb-lead">The lines worth having to hand, and a search that reaches every phrase in the course. Nothing here is locked, and the speaker works on every one.</p>' +
       '<input class="pb-search" data-act="search" type="text" value="' + esc(pbQuery) + '"' +
-      ' placeholder="Search the whole course, English or Arabic" autocomplete="off" autocorrect="off"' +
+      ' placeholder="Search in English, Arabic or Italian" autocomplete="off" autocorrect="off"' +
       ' autocapitalize="off" spellcheck="false" aria-label="Search every phrase in the course">' +
+      (italianFor(normalise(pbQuery)).length
+        ? '<p class="pb-italian">Italian works too: <b>' + esc(pbQuery.trim()) + "</b> is being read as <b>" +
+          esc(italianFor(normalise(pbQuery)).join(", ")) + "</b>.</p>"
+        : '<p class="pb-italian">English, Arabic, or Italian: <b>acqua</b>, <b>dove</b>, <b>quanto costa</b>.</p>') +
       '<div data-results aria-live="polite">' + phrasebookResults() + "</div>";
+  }
+
+  // The search box matches the English gloss and the transliteration, and
+  // you think in Italian. Translating the whole course would be a month's
+  // work and a second thing to keep true; a table for the search box is
+  // an afternoon and cannot go stale, because a test asks every entry to
+  // find something.
+  var ITALIAN = {
+    acqua: "water", caffe: "coffee", te: "tea", succo: "juice",
+    pane: "bread", riso: "rice", carne: "meat", pollo: "chicken", pesce: "fish",
+    zucchero: "sugar", conto: "bill", mangiare: "eat", bere: "drink",
+    fame: "hungry", sete: "thirsty", buono: "good", delizioso: "delicious",
+    ciao: "hello", salve: "hello", buongiorno: "good morning", buonasera: "good evening",
+    buonanotte: "good night", arrivederci: "goodbye", addio: "goodbye",
+    grazie: "thank", prego: "welcome", scusa: "sorry", scusi: "excuse",
+    perfavore: "please", favore: "please", permesso: "excuse",
+    si: "yes", no: "no", forse: "maybe", certo: "certainly", davvero: "really",
+    nome: "name", chiamo: "name", chiami: "name", come: "how", dove: "where",
+    quando: "when", quanto: "much", quale: "which", perche: "because", chi: "who",
+    cosa: "what", che: "what",
+    io: "i am", tu: "you", lui: "he",
+    sono: "i am", stai: "how are you", sto: "i am",
+    bene: "fine", male: "bad", meglio: "better",
+    casa: "home", bagno: "bathroom", stanza: "room", camera: "room",
+    albergo: "hotel", hotel: "hotel", ristorante: "restaurant", mercato: "market",
+    stazione: "station", aeroporto: "airport", treno: "train",
+    autobus: "bus", taxi: "taxi", macchina: "car", auto: "car", bicicletta: "bicycle",
+    biglietto: "ticket", passaporto: "passport", valigia: "suitcase", borsa: "bag",
+    destra: "right", sinistra: "left", dritto: "straight",
+    vicino: "near", lontano: "far", qui: "here", li: "there",
+    soldi: "money", denaro: "money", caro: "expensive",
+    costa: "how much", economico: "cheap", sconto: "discount", comprare: "take",
+    medico: "doctor", dottore: "doctor", farmacia: "chemist", medicina: "medicine",
+    male_fisico: "pain", dolore: "pain", malato: "ill", febbre: "fever",
+    testa: "head", stomaco: "stomach", gola: "throat", mano: "hand", gamba: "leg",
+    aiuto: "help", polizia: "police", perso: "lost", problema: "problem",
+    famiglia: "family", padre: "father", madre: "mother", fratello: "brother",
+    sorella: "sister", figlio: "son", figlia: "daughter", moglie: "wife",
+    marito: "husband", amico: "friend", bambini: "children", sposato: "married",
+    lavoro: "work", lavori: "work", studio: "study", ufficio: "office",
+    tempo: "time", ora: "time", oggi: "today", domani: "tomorrow", ieri: "yesterday",
+    adesso: "now", dopo: "later", tardi: "late", sempre: "always",
+    volte: "sometimes", mai: "never", settimana: "week", giorno: "day",
+    stasera: "tonight", mattina: "morning", sera: "evening", notte: "night",
+    caldo: "hot", freddo: "cold", pioggia: "rain", sole: "sun", tempo_meteo: "weather",
+    numero: "number", telefono: "phone", messaggio: "message", chiamare: "call",
+    musica: "music", film: "film", viaggiare: "travel", cucinare: "cooking",
+    calcio: "football", libro: "book", leggere: "read", scrivere: "write",
+    capito: "understand", capisco: "understand", ripetere: "once more",
+    lento: "slowly", parlare: "speak", significa: "mean", dire: "say",
+    voglio: "want", vorrei: "want", bisogno: "need", piace: "like",
+    posso: "may", puo: "may", vietato: "not allowed", aspetta: "wait",
+    andiamo: "let us go", vieni: "come", siediti: "sit",
+    uno: "one", due: "two", tre: "three", quattro: "four", cinque: "five",
+    sei_numero: "six", sette: "seven", otto: "eight", nove: "nine", dieci: "ten",
+    venti: "twenty", cento: "hundred", meta: "half",
+    gatto: "cat", cane: "dog", cavallo: "horse", camicia: "shirt", vestito: "dress",
+    scarpe: "shoes", rosso: "red", blu: "blue", verde: "green", nero: "black",
+    bianco: "white", bello: "beautiful", gentile: "kind", stanco: "tired",
+    occupato: "busy", pronto: "ready", contento: "fine", noioso: "boring",
+    facile: "easy", difficile: "difficult", insieme: "together", anche: "too",
+    libero: "free", incontrare: "meet", vedere: "see", andare: "go",
+    aereo: "plane", chiave: "key", porta: "door", finestra: "window"
+  };
+
+  // The keys carry a suffix where Italian has one word for two English
+  // ones; the suffix is never typed, so it is stripped before matching.
+  function italianFor(q) {
+    var out = [];
+    Object.keys(ITALIAN).forEach(function (k) {
+      var word = k.split("_")[0];
+      if (out.indexOf(ITALIAN[k]) !== -1) return;
+      if (word === q || (q.length >= 3 && word.indexOf(q) === 0)) out.push(ITALIAN[k]);
+    });
+    return out;
   }
 
   function phrasebookResults() {
     var q = normalise(pbQuery);
+    var viaItalian = q ? italianFor(q) : [];
     var groups = "", hits = 0;
+
+    function matches(ar, en) {
+      if (!q) return true;
+      if (normalise(ar).indexOf(q) !== -1) return true;
+      if (normalise(en).indexOf(q) !== -1) return true;
+      for (var i = 0; i < viaItalian.length; i++) {
+        if (normalise(en).indexOf(viaItalian[i]) !== -1) return true;
+      }
+      return false;
+    }
 
     PHRASEBOOK.forEach(function (group) {
       var rows = "";
       group.lines.forEach(function (ar) {
         var en = englishFor(ar);
-        if (q && normalise(ar).indexOf(q) === -1 && normalise(en).indexOf(q) === -1) return;
+        if (!matches(ar, en)) return;
         hits++;
         rows += '<div class="pb-row">' + sayBtn(ar, true) +
           '<span class="pb-text"><span class="ar">' + esc(disp(ar)) + "</span>" +
@@ -14045,7 +14217,14 @@
     // Before the onward step, the honest one: something you passed is
     // slipping, and it has a name.
     var weak = weakestLesson(session.lesson || null);
-    var back = weak
+    var aim = nextForWant();
+    var back = aim
+      ? '<div class="circuit"><button class="btn btn-ghost btn-wide" data-go="ready" data-id="' +
+        esc(aim.entry.id) + '">Next for what you are here for: ' + esc(aim.entry.can) + "</button>" +
+        '<span class="circuit-why">' + aim.have + " of " + aim.n + " phrases solid &#183; " +
+        esc(wantInfo().label.toLowerCase()) + "</span>" +
+        '<button class="link-btn" data-go="choose">or pick the lessons yourself</button></div>'
+      : weak
       ? '<div class="circuit"><button class="btn btn-ghost btn-wide" data-go="play" data-id="' +
         weak.lesson.id + '">Before you go on: lesson ' + lessonNo(weak.lesson) + " again</button>" +
         '<span class="circuit-why">' + weak.n + " phrases there are slipping &#183; " +
@@ -15110,6 +15289,22 @@
       return;
     }
     if (act === "tape-play") { playTape(); return; }
+    if (act === "want-clear") {
+      store.want = null;
+      store.wantAsked = false;
+      save();
+      navOpen = false;
+      go({ name: "home" });
+      return;
+    }
+    if (act === "want") {
+      var wk = el.getAttribute("data-id");
+      store.want = wk || null;
+      store.wantAsked = true;
+      save();
+      render();
+      return;
+    }
     if (act === "resume") { resumeSession(); return; }
     if (act === "drop-open") { store.open = null; save(); render(); return; }
     if (act === "testout") {

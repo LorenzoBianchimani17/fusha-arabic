@@ -1,22 +1,21 @@
 # Where we stopped, 2026-08-24
 
-Two things were agreed and are not built. Everything else on the list is
-in and live.
+Everything agreed is built and live. This file is the handover: what is
+open, what to watch, and the rules for the repository.
 
 ## Still to build
 
-**Search the phrasebook in Italian.** The search box matches the English
-gloss and the transliteration, so thinking *acqua* finds nothing. The
-cheap version is a small Italian-to-English index used by the search box
-only - two or three hundred common words - rather than translating the
-course. Decided against translating the interface: it is written well in
-English and reads without effort.
+Nothing agreed is outstanding. The two that were open on the evening of
+2026-08-24 - searching in Italian, and telling the app what you need
+Arabic for - are both in.
 
-**Tell the app what you need Arabic for.** Travel, work, or knowing
-somebody. The twenty-four capabilities and the aimed revision already
-exist; what is missing is the question and an order derived from the
-answer. This is the most speculative thing on the list and the only one
-where I would want to see the first version before trusting it.
+**One thing to watch, not a task.** The 150-day simulation reads 85
+mastered and 51 core out of a pool of 476, against 112 and 58 out of 431
+before the six lessons of 2026-08-24 went in. Nothing in the scheduler
+changed; the course grew by a tenth and the simulated learner is spread
+thinner over it, and the last lessons now open forty days later than
+they did. Adding material has a price and this is where it shows. Worth
+re-reading before agreeing to another six lessons.
 
 ## What went in on 2026-08-24
 

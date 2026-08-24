@@ -3786,6 +3786,69 @@ section("the app stops fighting you");
   click({ "data-go": "home" });
 }
 
+section("your Italian, and your reason for being here");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.want = undefined; st.wantAsked = undefined;
+
+  // the search box speaks Italian
+  check("there is a table of Italian words", Object.keys(D.ITALIAN).length >= 200);
+  check("and every entry finds something in the course", (function () {
+    const dead = Object.keys(D.ITALIAN).filter(k =>
+      !D.courseSearch(D.normalise(k.split("_")[0]), {}).length);
+    if (dead.length) console.log("   dead:", dead.slice(0, 8));
+    return dead.length === 0;
+  })());
+  check("acqua reads as water", D.italianFor("acqua").indexOf("water") !== -1);
+  check("and a prefix is enough", D.italianFor("caff").indexOf("coffee") !== -1);
+  check("but two letters are not, or everything would match",
+    D.italianFor("ac").length === 0);
+
+  click({ "data-go": "phrasebook" });
+  type("search", "acqua");
+  check("searching in Italian finds the phrases", (h.match(/class="pb-row"/g) || []).length > 0);
+  check("and says how it read what you typed", /is being read as/.test(h));
+  type("search", "dove");
+  check("so does a question word", (h.match(/class="pb-row"/g) || []).length > 3);
+  type("search", "zzzqqq");
+  check("and nonsense still finds nothing", !/class="pb-row"/.test(h));
+  type("search", "");
+
+  // why you are here
+  click({ "data-go": "home" });
+  check("it asks once, on the screen you land on", /data-act="want"/.test(h));
+  check("with the three reasons and a way out", (h.match(/data-act="want"/g) || []).length === 4);
+  check("and says what it will and will not change", /lessons stay in the order/.test(h));
+
+  click({ "data-act": "want", "data-id": "" });
+  check("saying all of it is an answer", st.wantAsked === true && !D.wantKey());
+  click({ "data-go": "home" });
+  check("and it never asks again", !/data-act="want"/.test(h.split("</nav>")[1]));
+
+  st.want = "travel"; st.wantAsked = true;
+  const next = D.nextForWant();
+  check("with a reason given, there is a next thing", !!next);
+  check("and it is one that serves the reason",
+    next.entry.want && next.entry.want.indexOf("travel") !== -1);
+  check("and one you have not got yet", next.level !== "yes");
+
+  click({ "data-go": "can" });
+  check("the capability screen leads with it", /class="can-head">I am going there/.test(h));
+  check("with a way straight into it", /data-go="ready"/.test(h));
+
+  // the basics belong to everyone, whatever you said
+  check("the phrases everyone needs are not filed under a reason",
+    D.CAN.filter(c => !c.want).length >= 10);
+  check("and the ones that are, are filed sensibly",
+    D.CAN.find(c => c.id === "taxi").want.indexOf("travel") !== -1 &&
+    D.CAN.find(c => c.id === "past").want.indexOf("someone") !== -1);
+
+  st.want = undefined; st.wantAsked = undefined; st.str = {};
+  click({ "data-go": "home" });
+}
+
 section("was that a yes?");
 {
   const D = global.__data;
