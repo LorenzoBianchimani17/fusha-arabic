@@ -4551,6 +4551,16 @@ section("the warmer light theme");
   const head = require("fs").readFileSync("build.py", "utf8");
   check("the browser bar matches the page", head.includes('content="#F3F0E8"'));
 
+  // added to the home screen it should look like an app, not a page
+  check("there is a real icon for the home screen", head.includes("apple-touch-icon"));
+  check("and it is a png, which is the only thing iOS takes",
+    /apple-touch-icon" href="data:image\/png;base64,[A-Za-z0-9+/=]{200,}/.test(head));
+  check("the status bar is declared", head.includes("apple-mobile-web-app-status-bar-style"));
+  check("the navigation bar stays put when you scroll",
+    /\.topbar \{[^}]*position: sticky/.test(css));
+  check("and a swipe from the edge goes back",
+    require("fs").readFileSync("fusha.html", "utf8").includes('addEventListener("touchstart"'));
+
   // every colour in the CSS is a token, and every rule closes
   check("the style block is balanced",
     (css.match(/\{/g) || []).length === (css.match(/\}/g) || []).length);

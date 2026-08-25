@@ -7,8 +7,10 @@
 <meta name="theme-color" content="#F3F0E8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0D1417" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fusha">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%97%A3%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAADGklEQVR42u3dIW5bURCG0cu9sKwkNFso8ApiHNLSUCPLxKBSNxRSFdQKrKKokf3enX/ekb4FjO49eGbsnr5JHzY8geAQHIJDcAgOwSE4BIfgEBwSHIJDcAgOwSE4BIfgEByCQ4JDcAgOwfFPD88vxYNjTt9//vrz+6141yHhIKOhj0EGH31wxMnI9THI4KMDjmgZiT4GGXxk42gjI8vHIIOPVBz/L+NwvuyPp+ldx2jjY/SQ8fjjtc7Y12F6+Bhk8BGGI1pGGx+DDD5icLSR0cDHIIOPABwtZUT7GGTwURpHexmhPgYZfBTFsSkZcT4GGXyUw7FZGUE+Bhl8FMJBRoqPQQYfJXCQkeVjkMHHZBxkJPoYZPAxDQcZuT4GGXxMwEFGuo9BBh+r4iCjh49BBh8r4SCjk4974nh4fiFjro/77i+cgIOM5Xxk4yBjUR/BOMhY2kcqjsP54ndv7/P9H6k49seTr7296zPCITgEBxxwwAEHHHDAAQcccMABBxxwwAEHHIJDcPhdOOCAAw444IADDjjggAMOOOCAAw7BITgEBxxwwAEHHHDAAQcccMABBxxwwAEHHIJDcMABBxxwwAEHHHDAAQcccMABBxxwwCE4tG0cFuPfpZ6L8Z3UuL22JzX4WFqGM15ktMbBx0IySuPYOR06VUbp06F8dJKxc66cjLVx8NFAxoI4+EiXsSwOPqJlLI6Dj1wZa+DgI1TGSjj4SJSxHg4+4mSsioOPLBlr4+AjSMYEHHykyJiDg48IGdNw8FFfxkwcW/YRIWMyjm36SJExH8fWfATJKIFjOz6yZFTBsQUfcTIK4ejtI1FGLRxdfYTKKIejn49cGRVxdPIRLaMojh4+0mXUxZHuo4GM0jhyffSQUR3Hl3wczpf98TS9z/dnBMkIwPElH0HVl5GBo5+PCBkxODr5SJGRhKOHjyAZYTjSfWTJyMOR6yNORiSORB+JMlJxZPkIlRGMI8VHroxsHLv3/YXFi37ebByCQ3AIDsEhOASH4JDgEByCQ3AIDsEhOASH4BAcEhyCQ3AIDsEhOASH4voLrhwYQb+D7KcAAAAASUVORK5CYII=">
 <link rel="manifest" href="manifest.webmanifest">
 <title>Fusha - Modern Standard Arabic for beginners</title>
 <style>
@@ -1213,7 +1215,19 @@
 
   /* ---------- topbar ---------- */
 
-  .topbar { display: flex; align-items: center; gap: var(--s-5); padding: 20px 0 var(--s-6); }
+  /* On a phone the back button used to scroll away with the page. A
+     navigation bar does not do that. */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: var(--s-5);
+    margin: 0 calc(var(--s-4) * -1);
+    padding: max(12px, env(safe-area-inset-top)) var(--s-4) var(--s-4);
+    background: linear-gradient(to bottom, var(--bg) 72%, transparent);
+  }
 
   .topbar-title {
     flex: 1;
@@ -15686,13 +15700,7 @@
       else render();
       return;
     }
-    if (act === "back") {
-      var up = parentHash(view);
-      stopSpeech();
-      setHash(up);
-      applyHash(up);
-      return;
-    }
+    if (act === "back") { goBack(); return; }
     if (act === "known") {
       var ar = el.getAttribute("data-id");
       var lid = el.getAttribute("data-lesson");
@@ -16328,6 +16336,39 @@
       render();
     }
   });
+
+  // Added to the home screen there is no browser chrome, which means no
+  // back gesture at all unless the app provides one. From the left edge
+  // only, so it never fights a drag inside the page.
+  var swipe = null;
+
+  function goBack() {
+    var up = parentHash(view);
+    stopSpeech();
+    if (view.name === "home") return;
+    setHash(up);
+    applyHash(up);
+  }
+
+  if (typeof document.addEventListener === "function") {
+    document.addEventListener("touchstart", function (ev) {
+      var t = ev.touches && ev.touches[0];
+      if (!t || navOpen || (ev.touches && ev.touches.length > 1)) { swipe = null; return; }
+      swipe = t.clientX <= 24 ? { x: t.clientX, y: t.clientY, at: Date.now() } : null;
+    }, { passive: true });
+
+    document.addEventListener("touchend", function (ev) {
+      if (!swipe) return;
+      var t = ev.changedTouches && ev.changedTouches[0];
+      var was = swipe;
+      swipe = null;
+      if (!t) return;
+      var dx = t.clientX - was.x;
+      var dy = Math.abs(t.clientY - was.y);
+      // a real edge swipe: mostly sideways, far enough, and not a slow drag
+      if (dx > 70 && dy < 60 && Date.now() - was.at < 700) goBack();
+    }, { passive: true });
+  }
 
   document.addEventListener("keydown", function (ev) {
     if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
