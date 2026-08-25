@@ -548,6 +548,18 @@
   .flash-ending { margin-top: var(--s-3); color: var(--ink-3); font-size: var(--t-1);
     line-height: 1.5; }
   .flash-ending b { color: var(--ink-2); }
+  .anchor { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3);
+    margin-top: var(--s-4); padding: 12px 14px; border-radius: var(--r-md);
+    background: var(--surface-2); }
+  .anchor-head { color: var(--ink-3); font-size: var(--t-1); }
+  .anchor .ar { font-size: var(--t-6); }
+  .anchor-why { flex: 1 0 100%; color: var(--ink-3); font-size: var(--t-1); line-height: 1.5; }
+  .cold-open { padding: 16px 18px; margin: 0 0 var(--s-5); border: 1px solid var(--accent);
+    border-radius: var(--r-md); background: var(--accent-soft); }
+  .cold-line { margin: var(--s-2) 0 var(--s-4); color: var(--ink-2); font-size: var(--t-3); }
+  .want-tag { margin-left: var(--s-3); color: var(--accent-ink); background: var(--accent-soft); }
+  .history { margin-top: var(--s-3); color: var(--ink-3); font-size: var(--t-1); }
+  .notice-pool { border-color: var(--amber); }
   .notice-want { border-color: var(--accent); }
   .want-why { margin: var(--s-3) 0 var(--s-4); color: var(--ink-3); font-size: var(--t-1); }
   .pb-italian { margin: var(--s-3) 0 var(--s-5); color: var(--ink-3); font-size: var(--t-1); }
@@ -2603,6 +2615,30 @@
       ]
     },
     {
+      id: 37,
+      title: "Saying something that lands",
+      intro: "The lines that are actually said, and are worth more than a correct sentence: praise, thanks, and the two or three that open a door.",
+      phrases: [
+        { ar: "Ànti kal-qàmar", en: "You are like the moon", f: "Ànta kal-qàmar", fLabel: "Speaking to a man", how: "direct", note: "In the street this is <b>ìnti àmar</b>, and it is the compliment everybody knows. Say it carefully: the q is swallowed, and <b>hmàr</b> - one consonant away - is <i>donkey</i>. If you are not sure of the sound, <b>ìnti hìlwe</b> does the same job with nothing to lose." },
+        { ar: "Ùhib hàdha fìki", en: "I like this about you", f: "Ùhib hàdha fìk", fLabel: "Speaking to a man", how: "safe", core: true, note: "Better than a compliment about looks, and it works with anybody: a friend, a colleague, someone you have just met. It says you were paying attention." },
+        { ar: "Dàmuki khafìf", en: "You are good company", f: "Dàmuk khafìf", fLabel: "Speaking to a man", how: "safe", note: "Literally <i>your blood is light</i>. It means funny, easy to be around, and it is high praise. The opposite, heavy blood, is said behind people's backs." },
+        { ar: "Allàh yuʿtìki al-ʿàfiya", en: "May God give you strength", f: "Allàh yuʿtìk al-ʿàfiya", fLabel: "Speaking to a man", how: "safe", core: true, note: "Said to anybody working: the man behind the counter, someone carrying something, a colleague at the end of a shift. Saying it marks you out as someone who was raised properly." },
+        { ar: "Tìslam yadàki", en: "Bless your hands", f: "Tìslam yadàk", fLabel: "Speaking to a man", how: "safe", note: "For food someone cooked, or anything made by hand. Not optional after a meal at somebody's house." },
+        { ar: "Sàhha", en: "Enjoy it, to your health", how: "safe", note: "Said when someone is eating or drinking, and after a shower or a haircut. In the street it is <b>sàhtein</b>, two healths." },
+        { ar: "Nàwwarti al-màkan", en: "You have lit the place up", f: "Nàwwart al-màkan", fLabel: "Speaking to a man", how: "safe", note: "Said to someone arriving. Warm, and completely ordinary: it is the standard thing to say when a guest comes in." },
+        { ar: "Min ʿuyùni", en: "With pleasure, of course", how: "safe", core: true, note: "Literally <i>from my eyes</i>. It answers a request more warmly than yes does, and it costs nothing to learn." },
+        { ar: "Allàh yakhallìki", en: "May God keep you", f: "Allàh yakhallìk", fLabel: "Speaking to a man", how: "safe", note: "The warm thank-you. Used between friends and family more than shùkran, which can sound formal between people who know each other." },
+        { ar: "Yà rèit", en: "If only", how: "safe", note: "Said to a plan you would like and cannot manage, and to anything you wish were true. Two syllables that sound like a person rather than a textbook." },
+        { ar: "Tikràm ʿàinuki", en: "At your service", f: "Tikràm ʿàinuk", fLabel: "Speaking to a man", how: "safe", note: "An answer to a request: <i>your eye is honoured</i>. Formal in fus·ha, everyday in the street." }
+      ],
+      dialogue: [
+        { ask: "Hal tùhib hàdha?", askEn: "Do you like this?", reply: "Ùhib hàdha fìki", en: "I like this about you" },
+        { ask: "Tafàddal", askEn: "Here you are", reply: "Tìslam yadàki", en: "Bless your hands" },
+        { ask: "Hal nàshrab qàhwa màʿan?", askEn: "Shall we have a coffee together?", reply: "Min ʿuyùni", en: "With pleasure, of course" },
+        { ask: "Anà taʿbàn", askEn: "I am tired", reply: "Allàh yuʿtìk al-ʿàfiya", en: "May God give you strength" }
+      ]
+    },
+    {
       id: 19,
       title: "Numbers to 100",
       intro: "The tens, and the trick for everything in between.",
@@ -3517,6 +3553,26 @@
     "As-sàmak ladhìdh hùna": "السَّمَكُ لَذِيذٌ هُنَا",
     "Là, àbadan": "لَا، أَبَدًا",
     "Hal turìdìn àkthar?": "هَلْ تُرِيدِينَ أَكْثَر؟",
+    "Ànti kal-qàmar": "أَنْتِ كَالْقَمَر",
+    "Ànta kal-qàmar": "أَنْتَ كَالْقَمَر",
+    "Ùhib hàdha fìki": "أُحِبُّ هَذَا فِيكِ",
+    "Ùhib hàdha fìk": "أُحِبُّ هَذَا فِيكَ",
+    "Dàmuki khafìf": "دَمُكِ خَفِيف",
+    "Dàmuk khafìf": "دَمُكَ خَفِيف",
+    "Allàh yuʿtìki al-ʿàfiya": "اللَّهُ يُعْطِيكِ الْعَافِيَة",
+    "Allàh yuʿtìk al-ʿàfiya": "اللَّهُ يُعْطِيكَ الْعَافِيَة",
+    "Tìslam yadàki": "تِسْلَمْ يَدَاكِ",
+    "Tìslam yadàk": "تِسْلَمْ يَدَاكَ",
+    "Sàhha": "صَحَّة",
+    "Nàwwarti al-màkan": "نَوَّرْتِ الْمَكَان",
+    "Nàwwart al-màkan": "نَوَّرْتَ الْمَكَان",
+    "Min ʿuyùni": "مِنْ عُيُونِي",
+    "Allàh yakhallìki": "اللَّهُ يُخَلِّيكِ",
+    "Allàh yakhallìk": "اللَّهُ يُخَلِّيكَ",
+    "Yà rèit": "يَا رَيْت",
+    "Tikràm ʿàinuki": "تِكْرَمْ عَيْنُكِ",
+    "Tikràm ʿàinuk": "تِكْرَمْ عَيْنُكَ",
+    "Hal tùhib hàdha?": "هَلْ تُحِبُّ هَذَا؟",
     "Ilà al-liqà qarìban": "إِلَى اللِّقَاءِ قَرِيبًا",
     "Ilà al-ghad": "إِلَى الْغَد",
     "Tùsbih ʿalà khèir": "تُصْبِحُ عَلَى خَيْرٍ",
@@ -5216,6 +5272,63 @@
     "Hal turìdìn àkthar?": {
       lev: ["Bìddik kamàn?", "بدك كمان؟"]
     },
+    "Ànti kal-qàmar": {
+      lev: ["Ìnti àmar", "إنتي قمر"]
+    },
+    "Ànta kal-qàmar": {
+      lev: ["Ìnta àmar", "إنتَ قمر"]
+    },
+    "Ùhib hàdha fìki": {
+      lev: ["Bhìbb hàl shi fìki", "بحب هالشي فيكي"]
+    },
+    "Ùhib hàdha fìk": {
+      lev: ["Bhìbb hàl shi fìk", "بحب هالشي فيك"]
+    },
+    "Dàmuki khafìf": {
+      lev: ["Dàmmik khafìf", "دمك خفيف"]
+    },
+    "Dàmuk khafìf": {
+      lev: ["Dàmmak khafìf", "دمك خفيف"]
+    },
+    "Allàh yuʿtìki al-ʿàfiya": {
+      lev: ["Yaʿtìki al-ʿàfye", "يعطيكي العافية"]
+    },
+    "Allàh yuʿtìk al-ʿàfiya": {
+      lev: ["Yaʿtìk al-ʿàfye", "يعطيك العافية"]
+    },
+    "Tìslam yadàki": {
+      lev: ["Tìslam ìdeiki", "تسلم إيديكي"]
+    },
+    "Tìslam yadàk": {
+      lev: ["Tìslam ìdeik", "تسلم إيديك"]
+    },
+    "Sàhha": {
+      lev: ["Sàhtein", "صحتين"]
+    },
+    "Nàwwarti al-màkan": {
+      lev: ["Nàwwarti", "نورتي"]
+    },
+    "Nàwwart al-màkan": {
+      lev: ["Nàwwart", "نورت"]
+    },
+    "Min ʿuyùni": {
+      lev: ["Min ʿyùni", "من عيوني"]
+    },
+    "Allàh yakhallìki": {
+      lev: ["Allàh ykhallìki", "الله يخليكي"]
+    },
+    "Allàh yakhallìk": {
+      lev: ["Allàh ykhallìk", "الله يخليك"]
+    },
+    "Tikràm ʿàinuki": {
+      lev: ["Tikràm ʿèinik", "تكرم عينك"]
+    },
+    "Tikràm ʿàinuk": {
+      lev: ["Tikràm ʿèinak", "تكرم عينك"]
+    },
+    "Hal tùhib hàdha?": {
+      lev: ["Bithìbb hàda?", "بتحب هدا؟"]
+    },
     "Ilà al-liqà qarìban": {
       lev: ["Bshùfik arìb", "بشوفكِ قريب"]
     },
@@ -5627,7 +5740,7 @@
     lev: {
       "Mumtàz": 1, "Mumtìʿ": 1, "Mùmill": 1, "Sàʿb": 1, "Hàsab": 1, "Àbadan": 1,
       "Tàbʿan": 1, "Yà salàm!": 1, "Mà shà' Allàh": 1, "Miskìn": 1,
-      "Ladhìdh!": 1,
+      "Ladhìdh!": 1, "Yà rèit": 1,
       "Tàyyib": 1, "Tamàm": 1, "Khalàs": 1, "Yàʿni": 1, "Inshàallah": 1, "Yaʿni shùkran": 1,
       "Àhlan": 1, "Àhlan wa sàhlan": 1, "As-salàmu ʿaláikum": 1, "Wa ʿaláikum as-salàm": 1,
       "Sabàh al-khèir": 1, "Sabàh an-nùr": 1, "Masà al-khèir": 1, "Masà an-nùr": 1,
@@ -5780,6 +5893,15 @@
   // Every word below appears in a Levantine line somewhere in the course;
   // anything the two varieties share falls through to the fus-ha table.
   var GLOSS_LEV = {
+    "àmar": "a moon", "hàl": "this", "shi": "thing", "dàmmik": "your blood (to a woman)",
+    "dàmmak": "your blood", "khafìf": "light", "yaʿtìki": "may he give you (to a woman)",
+    "yaʿtìk": "may he give you", "al-ʿàfye": "the strength, the health",
+    "tìslam": "may it be safe", "ìdeiki": "your hands (to a woman)", "ìdeik": "your hands",
+    "sàhtein": "two healths, enjoy it", "nàwwarti": "you lit it up (to a woman)",
+    "nàwwart": "you lit it up", "ʿyùni": "my eyes", "ykhallìki": "may he keep you (to a woman)",
+    "ykhallìk": "may he keep you", "rèit": "would that", "tikràm": "may it be honoured",
+    "ʿèinik": "your eye (to a woman)", "ʿèinak": "your eye", "bithìbb": "you like",
+    "hàda": "this",
     "ana": "I", "bint": "a girl, a daughter", "sàheb": "a friend",
     "àbadan": "never, not at all", "bìddik": "you want (to a woman)",
     "mitzàwwje": "married (a woman)", "mitzàwwej": "married", "wlàd": "children",
@@ -5802,7 +5924,7 @@
     "bithìbbi": "you like (to a woman)", "bithìbb": "you like",
     "tìʿmali": "you do (to a woman)", "tìʿmal": "you do",
     "ʿàndik": "you have (to a woman)", "hiwayàt": "hobbies",
-    "bhìb": "I like", "al-mùsiqa": "the music", "nàuʿ": "kind, sort",
+    "bhìb": "I like", "bhìbb": "I like", "al-mùsiqa": "the music", "nàuʿ": "kind, sort",
     "al-aflàm": "the films", "àhla": "nicest, best", "fìlm": "film",
     "at-tàbekh": "the cooking", "bìlʿab": "I play", "kùra": "ball, football",
     "wàʾt": "time", "al-fàdi": "the free, the empty", "sàne": "year",
@@ -5995,6 +6117,25 @@
   }
 
   function reviewRounds() { return pace().rounds; }
+
+  // How many phrases a day the pool needs if nothing is to decay, against
+  // how many the session you chose actually asks. When the first is
+  // bigger than the second, some of the course is going to slip however
+  // diligent you are, and no amount of scheduling can fix it: the only
+  // levers are a longer session or a smaller pool.
+  function poolFits() {
+    var pool = 0;
+    finishedLessons().forEach(function (l) {
+      visiblePhrases(l).forEach(function (p) {
+        if (!knownRec(l.id, p.ar)) pool++;
+      });
+    });
+    if (!pool) return null;
+    var need = Math.ceil(pool / holdFor(MASTERED));
+    var have = reviewRounds();
+    var longest = PACES[PACES.length - 1].rounds;
+    return { pool: pool, need: need, have: have, ok: need <= have, longestOk: need <= longest };
+  }
   var MATCH_PAIRS = 5;
   var RETRY_MAX = 4;
 
@@ -7234,6 +7375,20 @@
     if (clean) store.mynotes[ar] = clean;
     else delete store.mynotes[ar];
     save();
+  }
+
+  // The app has counted every answer you have given and never shown you
+  // one of them.
+  function historyOf(lid, ar) {
+    var rec = rawStrength(lid, ar);
+    if (!rec || !rec.n) return "";
+    var miss = rec.miss || 0;
+    var right = Math.max(0, rec.n - miss);
+    var when = rec.missDay ? daysSince(rec.missDay) : null;
+    return '<div class="history">' + right + " right out of " + rec.n +
+      (miss
+        ? " &#183; last missed " + (when === 0 ? "today" : when === 1 ? "yesterday" : when + " days ago")
+        : " &#183; never missed") + "</div>";
   }
 
   function myNoteHTML(ar) {
@@ -9957,6 +10112,23 @@
       '<span class="side-m">' + esc(meta) + "</span></button>";
   }
 
+  // Opening the app and being handed a menu is a small tax on every
+  // session. If you were here yesterday and not yet today, the first
+  // thing can be a question instead.
+  function coldOpen() {
+    if (!store.coldOpen) return "";
+    if (!finishedLessons().length) return "";
+    var d = daysSince(store.lastDay);
+    if (d === 0 || d === null) return "";
+    var one = buildOne();
+    if (!one) return "";
+    return '<div class="cold-open">' +
+      '<span class="eyebrow">Before anything else</span>' +
+      '<p class="cold-line">One question, now, and then the rest of the screen.</p>' +
+      '<div class="btn-row"><button class="btn btn-wide" data-go="one">Ask me</button></div>' +
+      "</div>";
+  }
+
   function sidesHTML() {
     if (!finishedLessons().length) return "";
     var out = "";
@@ -9970,6 +10142,26 @@
       var last = lastExam();
       out += sideHTML("test", null, "The test",
         last ? "Last time " + last.score + "%, and no help" : EXAM_LENGTH + " at random, with no help");
+    }
+    if (finishedLessons().length > 1) {
+      var picked = chosenLessons();
+      out += sideHTML("choose", null, "Choose your lessons",
+        picked.length ? picked.length + " picked, and only those" : "Draw from the ones you name");
+    }
+    var sits = openMoments().length;
+    if (sits) {
+      out += sideHTML("moment", null, "What would you say?",
+        sits + " situations, no English to translate");
+    }
+    var madeN = combos().length;
+    if (madeN) {
+      out += sideHTML("make", null, "Make a sentence",
+        madeN + " none of them taught as a phrase");
+    }
+    var undecided = twinsToDecide().length;
+    if (undecided) {
+      out += sideHTML("twins", null, "One job, several phrases",
+        undecided + " to decide: keep one, recognise the rest");
     }
     out += sideHTML("can", null, "What you can do",
       canAt("yes").length + " of " + CAN.length + " things, not phrases");
@@ -10397,43 +10589,10 @@
       '<button class="btn" data-go="home">Back</button></div>';
   }
 
-  function twinsCardHTML() {
-    var n = twinsToDecide().length;
-    if (!n) return "";
-    return '<button class="review" data-go="twins">' +
-      '<span class="review-body">' +
-      '<span class="eyebrow">One job, several phrases</span>' +
-      '<span class="review-title">Decide which one you will say</span>' +
-      '<span class="review-meta">' + n + " group" + (n === 1 ? "" : "s") +
-      " where the course has taught you more than one way. Keep one, recognise the rest.</span></span>" +
-      '<span class="lesson-lock" aria-hidden="true">&rarr;</span></button>';
-  }
 
-  function momentCardHTML() {
-    var n = openMoments().length;
-    if (!n) return "";
-    return '<button class="review" data-go="moment">' +
-      '<span class="review-body">' +
-      '<span class="eyebrow">What would you say?</span>' +
-      '<span class="review-title">The situation, not the sentence</span>' +
-      '<span class="review-meta">' + n +
-      " situations with no English to translate. More than one answer works.</span></span>" +
-      '<span class="lesson-lock" aria-hidden="true">&rarr;</span></button>';
-  }
 
   // The one thing on the home screen that is not the course repeating
   // itself back at you.
-  function makeCardHTML() {
-    var n = combos().length;
-    if (!n) return "";
-    return '<button class="review" data-go="make">' +
-      '<span class="review-body">' +
-      '<span class="eyebrow">Make a sentence</span>' +
-      '<span class="review-title">Say something new</span>' +
-      '<span class="review-meta">' + n +
-      " sentences built from patterns and words you know, none of them taught as a phrase.</span></span>" +
-      '<span class="lesson-lock" aria-hidden="true">&rarr;</span></button>';
-  }
 
   function convosHTML() {
     var done = store.convos || {};
@@ -10574,6 +10733,11 @@
 
       '<div class="nav-group">One game at a time</div>' + drills +
 
+      '<button class="nav-item" data-act="cold-open" aria-pressed="' +
+      (store.coldOpen ? "true" : "false") + '"><span class="nav-label">Straight to a question' +
+      (store.coldOpen ? " &#183; on" : "") + "</span>" +
+      '<span class="nav-note">Open the app on a day you have not been here and the first thing is one phrase, not a menu</span>' +
+      (store.coldOpen ? '<span class="who-tick" aria-hidden="true"></span>' : "") + "</button>" +
       '<button class="nav-item' + (canSpeak() ? "" : " is-off") + '" data-act="ear-only"' +
       (canSpeak() ? "" : " disabled") + ' aria-pressed="' + (store.earOnly ? "true" : "false") + '">' +
       '<span class="nav-label">Ear only' + (store.earOnly ? " &#183; on" : "") + "</span>" +
@@ -10679,11 +10843,16 @@
           ? '<span class="lesson-lock" aria-hidden="true">&rarr;</span>'
           : '<span class="lesson-lock" aria-hidden="true">&#9679;</span>';
       var meta = open ? l.intro : "Score " + PASS + "% on lesson " + idx + " to open this";
+      var serves = wantKey() && CAN.some(function (c) {
+        return forWant(c) && c.needs.some(function (ar) { return lessonTeaching(ar) === l.id; });
+      });
       return '<button class="' + cls + '" data-go="lesson" data-id="' + l.id + '"' +
         (open ? "" : " disabled") + ">" +
         '<span class="lesson-num">' + (idx + 1) + "</span>" +
         '<span class="lesson-body">' +
-        '<span class="lesson-title">' + esc(l.title) + "</span>" +
+        '<span class="lesson-title">' + esc(l.title) +
+        (serves ? '<span class="pill pill--tag want-tag">' + esc(wantInfo().label) + "</span>" : "") +
+        "</span>" +
         '<span class="lesson-meta">' + esc(meta) + "</span>" +
         (open ? strengthStrip(l) : "") +
         "</span>" + right + "</button>";
@@ -10734,7 +10903,7 @@
       (counts.fading ? '<small> +' + counts.fading + " fading</small>" : "") + "</dd></div>" +
       "</dl>" +
 
-      (!wantKey() && !store.wantAsked && finishedLessons().length
+      (!wantKey() && !store.wantAsked && !openSession() && finishedLessons().length
         ? '<div class="notice notice-want"><b>What do you need Arabic for?</b>' +
           '<p class="want-why">The lessons stay in the order they are in - they build. This only changes ' +
           "what the app puts in front of you next.</p>" +
@@ -10745,23 +10914,34 @@
           '<button class="pill pill--md chip" data-act="want" data-id="">All of it</button>' +
           "</div></div>"
         : "") +
+      (function () {
+        var fit = poolFits();
+        if (!fit || fit.ok) return "";
+        return '<div class="notice notice-pool"><b>' + fit.pool +
+          " phrases is more than " + fit.have + " rounds a day can keep alive.</b>" +
+          '<p class="want-why">To hold all of it, about ' + fit.need +
+          " would have to come round every day. Three ways out, and they are all fine: " +
+          (fit.longestOk ? "the longer session, " : "") +
+          "<b>I know this one</b> on what you already have, or <b>not for me</b> on what you " +
+          "will never need. Doing nothing is also a choice - the core stays first either way.</p>" +
+          '<div class="chips">' +
+          (fit.longestOk
+            ? '<button class="pill pill--md chip" data-act="pace" data-id="long">Longer sessions</button>'
+            : "") +
+          '<button class="pill pill--md chip" data-go="words">See what I have set aside</button>' +
+          "</div></div>";
+      })() +
       (openSession()
         ? '<div class="notice notice-open">You left a session at round ' + openSession().i +
           " of " + openSession().of + " today. " +
           '<button class="link-btn" data-act="resume">Carry on</button> or ' +
           '<button class="link-btn" data-act="drop-open">start fresh</button>.</div>'
         : "") +
+      coldOpen() +
       todayHTML() +
       coreHTML() +
       reviewHTML() +
-      (finishedLessons().length > 1
-        ? '<p class="review-choose"><button class="link-btn" data-go="choose">' +
-          "or choose which lessons to draw from</button></p>"
-        : "") +
       sidesHTML() +
-      momentCardHTML() +
-      makeCardHTML() +
-      twinsCardHTML() +
 
       // Everything else is here when you want it and out of the way when
       // you do not. One screen with five things shouting at once is how
@@ -11080,7 +11260,7 @@
       if (normalise(disp(item.ar)).indexOf(q) !== -1) return true;
       if (normalise(item.en).indexOf(q) !== -1) return true;
       for (var i = 0; i < alsoEn.length; i++) {
-        if (normalise(item.en).indexOf(alsoEn[i]) !== -1) return true;
+        if (hasWord(normalise(item.en), alsoEn[i])) return true;
       }
       return false;
     });
@@ -11111,8 +11291,8 @@
     fame: "hungry", sete: "thirsty", buono: "good", delizioso: "delicious",
     ciao: "hello", salve: "hello", buongiorno: "good morning", buonasera: "good evening",
     buonanotte: "good night", arrivederci: "goodbye", addio: "goodbye",
-    grazie: "thank", prego: "welcome", scusa: "sorry", scusi: "excuse",
-    perfavore: "please", favore: "please", permesso: "excuse",
+    grazie: "thank", prego: "you are welcome", scusa: "sorry", scusi: "excuse",
+    favore: "please", permesso: "excuse",
     si: "yes", no: "no", forse: "maybe", certo: "certainly", davvero: "really",
     nome: "name", chiamo: "name", chiami: "name", come: "how", dove: "where",
     quando: "when", quanto: "much", quale: "which", perche: "because", chi: "who",
@@ -11128,7 +11308,7 @@
     destra: "right", sinistra: "left", dritto: "straight",
     vicino: "near", lontano: "far", qui: "here", li: "there",
     soldi: "money", denaro: "money", caro: "expensive",
-    costa: "how much", economico: "cheap", sconto: "discount", comprare: "take",
+    costa: "how much", economico: "cheap", sconto: "discount", comprare: "will take this",
     medico: "doctor", dottore: "doctor", farmacia: "chemist", medicina: "medicine",
     male_fisico: "pain", dolore: "pain", malato: "ill", febbre: "fever",
     testa: "head", stomaco: "stomach", gola: "throat", mano: "hand", gamba: "leg",
@@ -11137,7 +11317,7 @@
     sorella: "sister", figlio: "son", figlia: "daughter", moglie: "wife",
     marito: "husband", amico: "friend", bambini: "children", sposato: "married",
     lavoro: "work", lavori: "work", studio: "study", ufficio: "office",
-    tempo: "time", ora: "time", oggi: "today", domani: "tomorrow", ieri: "yesterday",
+    tempo: "time", ora: "time", ora_adesso: "now", oggi: "today", domani: "tomorrow", ieri: "yesterday",
     adesso: "now", dopo: "later", tardi: "late", sempre: "always",
     volte: "sometimes", mai: "never", settimana: "week", giorno: "day",
     stasera: "tonight", mattina: "morning", sera: "evening", notte: "night",
@@ -11148,7 +11328,7 @@
     capito: "understand", capisco: "understand", ripetere: "once more",
     lento: "slowly", parlare: "speak", significa: "mean", dire: "say",
     voglio: "want", vorrei: "want", bisogno: "need", piace: "like",
-    posso: "may", puo: "may", vietato: "not allowed", aspetta: "wait",
+    posso: "may i", puo: "may i", vietato: "not allowed", aspetta: "wait",
     andiamo: "let us go", vieni: "come", siediti: "sit",
     uno: "one", due: "two", tre: "three", quattro: "four", cinque: "five",
     sei_numero: "six", sette: "seven", otto: "eight", nove: "nine", dieci: "ten",
@@ -11159,19 +11339,53 @@
     occupato: "busy", pronto: "ready", contento: "fine", noioso: "boring",
     facile: "easy", difficile: "difficult", insieme: "together", anche: "too",
     libero: "free", incontrare: "meet", vedere: "see", andare: "go",
-    aereo: "plane", chiave: "key", porta: "door", finestra: "window"
+    aereo: "plane", chiave: "key", porta: "door", finestra: "window",
+    qua: "here", piacere: "nice to meet", grande: "big", piccolo: "small",
+    nuovo: "new", vecchio: "old", aperto: "open", chiuso: "closed",
+    colore: "colour", inglese: "english", arabo: "arabic",
+    abitare: "live", vivere: "live", animale: "animal", veloce: "fast",
+    anno: "year", pomeriggio: "afternoon", ospedale: "hospital",
+    giallo: "yellow", marrone: "brown", grigio: "grey",
+    vegetariano: "vegetarian", turista: "tourist", studente: "student",
+    vestiti: "clothes", insegnante: "teacher"
   };
 
   // The keys carry a suffix where Italian has one word for two English
   // ones; the suffix is never typed, so it is stripped before matching.
+  //
+  // Two rules learned the hard way. An exact word beats a prefix, or
+  // typing "chi" (who) drags in chiamare, chiave and chiamo. And a
+  // multi-word query is tried whole and word by word, or "per favore"
+  // and "quanto costa" - which this app suggests itself - find nothing.
   function italianFor(q) {
-    var out = [];
-    Object.keys(ITALIAN).forEach(function (k) {
-      var word = k.split("_")[0];
-      if (out.indexOf(ITALIAN[k]) !== -1) return;
-      if (word === q || (q.length >= 3 && word.indexOf(q) === 0)) out.push(ITALIAN[k]);
+    var tries = [q];
+    if (q.indexOf(" ") !== -1) {
+      tries.push(q.replace(/ /g, ""));
+      q.split(" ").forEach(function (w) { if (w.length >= 3) tries.push(w); });
+    }
+    var exact = [], pre = [];
+    tries.forEach(function (t) {
+      Object.keys(ITALIAN).forEach(function (k) {
+        var word = k.split("_")[0];
+        var v = ITALIAN[k];
+        if (word === t) { if (exact.indexOf(v) === -1) exact.push(v); return; }
+        if (t.length >= 3 && word.indexOf(t) === 0 && pre.indexOf(v) === -1) pre.push(v);
+      });
     });
-    return out;
+    return exact.length ? exact : pre;
+  }
+
+  // "he" is inside hello, where, here, the and head. A gloss matches an
+  // Italian word only when the English word is a word.
+  function hasWord(hay, needle) {
+    var at = hay.indexOf(needle);
+    while (at !== -1) {
+      var before = at === 0 ? " " : hay.charAt(at - 1);
+      var after = at + needle.length >= hay.length ? " " : hay.charAt(at + needle.length);
+      if (!/[a-z]/.test(before) && !/[a-z]/.test(after)) return true;
+      at = hay.indexOf(needle, at + 1);
+    }
+    return false;
   }
 
   function phrasebookResults() {
@@ -11184,7 +11398,7 @@
       if (normalise(ar).indexOf(q) !== -1) return true;
       if (normalise(en).indexOf(q) !== -1) return true;
       for (var i = 0; i < viaItalian.length; i++) {
-        if (normalise(en).indexOf(viaItalian[i]) !== -1) return true;
+        if (hasWord(normalise(en), viaItalian[i])) return true;
       }
       return false;
     }
@@ -13461,6 +13675,7 @@
     if (p.note) note += '<div class="flash-note"><span>' + p.note + "</span></div>";
     note += howNote(p.ar);
     note += twinNote(p.ar);
+    note += historyOf(l.id, p.ar);
     note += myNoteHTML(p.ar);
 
     var known = !!knownRec(l.id, p.ar);
@@ -13659,6 +13874,26 @@
   // A stuck phrase is shown in pieces rather than asked for cold. A
   // one-word phrase has no pieces, so it gets whatever the course knows
   // about it instead: the rule it was taught with, or its own meaning.
+  // A phrase that keeps going while you are studying a dialect has a
+  // second thing to hold on to: the fus-ha it came from, which is often
+  // the version a beginner half recognises already.
+  function anchorHTML(t) {
+    if (variety() === "msa" || !t.phrase) return "";
+    var lsn = lessonOf(t, t.phrase);
+    if (!lsn) return "";
+    var ar = t.phrase.ar;
+    if (!isDialectForm(ar)) return "";
+    var st = strengthOf(lsn.id, ar);
+    var stuck = missCount(lsn.id, ar) >= 2 || (st !== null && st <= 1);
+    if (!stuck) return "";
+    return '<div class="anchor"><span class="anchor-head">Hard one. In fus&#183;ha it is</span>' +
+      '<span class="ar">' + esc(ar) + "</span>" +
+      '<button class="say say-sm" data-act="say" data-say="' + esc(ar) + '" data-book="1"' +
+      (canSpeak() ? "" : " disabled") + ' aria-label="Hear the fus&#183;ha">' + SPEAKER_SVG + "</button>" +
+      '<span class="anchor-why">The street form came out of that one. Hearing both is usually ' +
+      "enough to make the street one stick.</span></div>";
+  }
+
   function leechAid(t) {
     if (!t.isLeech || !t.phrase) return "";
     var g = glossHTML(t.phrase.ar);
@@ -14087,7 +14322,7 @@
     }
     return '<div class="verdict" tabindex="-1">' + msg +
       (session.lastRight ? "" : confusedWith(t)) +
-      (session.lastRight ? "" : insteadWith(t)) + leechOut(t) +
+      (session.lastRight ? "" : insteadWith(t)) + leechOut(t) + anchorHTML(t) +
       (session.lastRight ? "" : whyHTML(t)) + twinPickHTML(t) + roundControls(t) +
       '<button class="btn btn-wide" data-act="next">' +
       (session.isOne ? "Another one" : ending ? "See your score" : "Continue") + "</button>" +
@@ -15528,6 +15763,12 @@
     }
     if (act === "pace") {
       store.pace = el.getAttribute("data-id");
+      save();
+      render();
+      return;
+    }
+    if (act === "cold-open") {
+      store.coldOpen = !store.coldOpen;
       save();
       render();
       return;

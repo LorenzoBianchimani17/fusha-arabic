@@ -1693,7 +1693,7 @@ section("making sentences the course never taught");
 
   unlockAll();
   click({ "data-go": "home" });
-  check("the home screen offers it once something is open", /class="review" data-go="make"/.test(h));
+  check("the home screen offers it once something is open", /class="side" data-go="make"/.test(h));
   const all = D.combos();
   check(`there are sentences to make (${all.length})`, all.length > 40);
 
@@ -1983,7 +1983,7 @@ section("what would you say?");
   check("passing everything opens the lot", D.openMoments().length === D.MOMENTS.length);
 
   click({ "data-go": "home" });
-  check("the home screen offers it", /class="review" data-go="moment"/.test(h));
+  check("the home screen offers it", /class="side" data-go="moment"/.test(h));
   click({ "data-go": "moment" });
   check("it has its own address", location.hash === "#/moment");
   let mo = peek().moment;
@@ -3786,6 +3786,130 @@ section("the app stops fighting you");
   click({ "data-go": "home" });
 }
 
+section("three small ones");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.want = undefined; st.coldOpen = undefined; st.lastDay = D.today();
+
+  // the course list marks what serves your reason
+  click({ "data-go": "home" });
+  check("with no reason given, no lesson is marked", !/class="pill pill--tag want-tag"/.test(h));
+  st.want = "travel"; st.wantAsked = true;
+  click({ "data-go": "home" });
+  const marked = (h.match(/class="pill pill--tag want-tag"/g) || []).length;
+  console.log(`    ${marked} lessons marked for travel`);
+  check("with one given, the lessons that serve it are marked", marked >= 3);
+  check("but not all of them, or the mark would say nothing", marked < LESSONS.length / 2);
+  st.want = undefined;
+
+  // a phrase's own history
+  const ar = LESSONS[0].phrases[0].ar;
+  st.str["1|" + ar] = { s: 3, n: 9, day: D.today(), miss: 2, missDay: D.today() - 3 };
+  click({ "data-go": "learn", "data-id": "1" });
+  click({ "data-act": "learn-reveal" });
+  check("the card shows what you have done with this phrase", /class="history"/.test(h));
+  check("right out of asked", /7 right out of 9/.test(h));
+  check("and when it last went", /last missed 3 days ago/.test(h));
+  st.str["1|" + ar] = { s: 3, n: 4, day: D.today() };
+  click({ "data-go": "home" });
+  click({ "data-go": "learn", "data-id": "1" });
+  click({ "data-act": "learn-reveal" });
+  check("a phrase never missed says that instead", /never missed/.test(h));
+  st.str = {};
+
+  // the cold open
+  click({ "data-go": "home" });
+  check("it is off unless you ask for it", !/class="cold-open"/.test(h));
+  check("and the menu offers it", /data-act="cold-open"/.test(h));
+  click({ "data-act": "cold-open" });
+  check("switching it on is remembered", st.coldOpen === true);
+  st.lastDay = D.today();
+  click({ "data-go": "home" });
+  check("on a day you have already been here it stays quiet", !/class="cold-open"/.test(h));
+  st.lastDay = D.today() - 1;
+  click({ "data-go": "home" });
+  check("on a day you have not, it leads with a question", /class="cold-open"/.test(h));
+  check("which goes straight to one phrase", /data-go="one"/.test(h));
+  click({ "data-act": "cold-open" });
+  st.coldOpen = undefined; st.lastDay = D.today();
+  click({ "data-go": "home" });
+}
+
+section("the fus-ha behind a hard one");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.variety = "lev"; st.games = { quiz: true, match: false, build: false,
+    dialog: false, say: false, listen: false, write: false, dictate: false, swap: false };
+
+  // a phrase that keeps going, in a dialect
+  const hard = "Kèifa hàluk?";
+  st.str["2|" + hard] = { s: 0, n: 6, day: D.today(), miss: 3, missDay: D.today() - 1 };
+  let found = null;
+  for (let i = 0; i < 30 && !found; i++) {
+    click({ "data-go": "home" });
+    click({ "data-go": "review" });
+    peek().session.tasks.forEach((t, n) => {
+      if (!found && t.phrase && t.phrase.ar === hard) found = n;
+    });
+  }
+  if (found !== null) {
+    peek().session.i = found;
+    peek().session.state = "asking";
+    const t = peek().session.tasks[found];
+    click({ "data-act": "answer", "data-value": t.options.find(o => o !== t.answer) });
+    click({ "data-act": "answer", "data-value": t.answer });
+    check("a phrase that keeps slipping shows the fus-ha behind it", /class="anchor"/.test(h));
+    check("with the fus-ha itself", h.includes(hard));
+    check("and a speaker that plays the fus-ha, not the dialect", /data-book="1"/.test(h));
+  } else {
+    check("a slipping phrase could be reached", false);
+  }
+
+  // one you know does not get it
+  st.str["2|" + hard] = { s: 4, n: 9, day: D.today() };
+  click({ "data-go": "home" });
+  click({ "data-go": "review" });
+  let g = 0;
+  while (g++ < 3 && peek().session.state !== "checked") playRound(true);
+  check("a phrase you have is left alone",
+    !/class="anchor"/.test(h) || (peek().session.tasks[peek().session.i].phrase || {}).ar !== hard);
+
+  // and on fus-ha there is nothing to anchor to
+  st.variety = undefined;
+  st.str["2|" + hard] = { s: 0, n: 6, day: D.today(), miss: 3, missDay: D.today() - 1 };
+  click({ "data-go": "home" });
+  click({ "data-go": "review" });
+  check("on fus-ha it never appears", !/class="anchor"/.test(h));
+
+  st.str = {}; st.games = undefined;
+  click({ "data-go": "home" });
+}
+
+section("saying something that lands");
+{
+  const D = global.__data;
+  const land = LESSONS.find(l => l.id === 37);
+  check("there is a lesson of things people actually say", !!land && land.phrases.length >= 10);
+  ["Ànti kal-qàmar", "Ùhib hàdha fìki", "Dàmuki khafìf", "Allàh yuʿtìki al-ʿàfiya",
+    "Tìslam yadàki", "Min ʿuyùni", "Yà rèit"]
+    .forEach(ar => check("it can say " + ar, land.phrases.some(p => p.ar === ar)));
+  check("the compliment carries the warning that goes with it",
+    /donkey/.test(land.phrases.find(p => p.ar === "Ànti kal-qàmar").note || ""));
+  check("and it is the only one marked as committing you",
+    land.phrases.filter(p => p.how === "direct").length === 1);
+  check("the rest are safe with anybody",
+    land.phrases.filter(p => p.how === "safe").length >= 8);
+  check("every one of them is speakable", land.phrases.every(p => !!SCRIPT[p.ar]));
+  check("and exists in Levantine, which is where these live",
+    land.phrases.every(p => (D.DIALECT[p.ar] || {}).lev || (D.SAME.lev || {})[p.ar]));
+  check("the street form of the compliment is the one people say",
+    D.DIALECT["Ànti kal-qàmar"].lev[0] === "Ìnti àmar");
+}
+
 section("your Italian, and your reason for being here");
 {
   const D = global.__data;
@@ -3805,6 +3929,33 @@ section("your Italian, and your reason for being here");
   check("and a prefix is enough", D.italianFor("caff").indexOf("coffee") !== -1);
   check("but two letters are not, or everything would match",
     D.italianFor("ac").length === 0);
+
+  // an English word only counts when it is a word: "he" is inside hello,
+  // where, here, the and head
+  check("a gloss matches on whole words, not on fragments",
+    D.courseSearch("lui", {}).length <= 2);
+  check("qui does not drag in where and there", D.courseSearch("qui", {}).length <= 20);
+  check("andare does not drag in good morning", D.courseSearch("andare", {}).length <= 12);
+  check("caldo does not drag in hotel", (function () {
+    return !D.courseSearch("caldo", {}).some(function (x) { return /hotel/i.test(x.en); });
+  })());
+
+  // an exact word beats a prefix, or chi drags in chiave and chiamare
+  check("typing a whole word gets that word", D.italianFor("chi").join() === "who");
+  check("and a real prefix still works", D.italianFor("chiam").length >= 1);
+
+  // the app suggests these two itself, so they had better work
+  check("a query with a space is tried word by word",
+    D.courseSearch(D.normalise("quanto costa"), {}).length > 0);
+  check("and per favore finds please", D.courseSearch(D.normalise("per favore"), {}).length > 0);
+
+  // the four senses a boundary cannot separate
+  check("prego is the reply to thanks, not the greeting",
+    D.italianFor("prego").join() === "you are welcome");
+  check("comprare is buying, not taking a photo",
+    D.courseSearch("comprare", {}).every(function (x) { return !/photo/i.test(x.en); }));
+  check("posso is asking permission, not blessing anyone",
+    D.courseSearch("posso", {}).every(function (x) { return !/God/i.test(x.en); }));
 
   click({ "data-go": "phrasebook" });
   type("search", "acqua");
@@ -4259,10 +4410,20 @@ section("the look of it");
   unlockAll();
   click({ "data-go": "home" });
   const cards = (h.match(/class="review(?: is-lead)?"/g) || []);
-  check(`the home cards are one lead and a shelf (${cards.length})`,
-    cards.filter(c => /is-lead/.test(c)).length === 1 && cards.length > 2);
-  check("and the day comes before the settings",
+  check(`the mixed review is the one card, and it leads (${cards.length})`,
+    cards.length === 1 && /is-lead/.test(cards[0]));
+  check("everything else is a button on the shelf",
+    (h.match(/class="side"/g) || []).length >= 5);
+  check("and the day comes before any of it",
     h.indexOf('class="today') < h.indexOf('class="review'));
+
+  // The home screen has been de-piled twice and grown back both times.
+  // This is the line: what sits above the folds, counted.
+  const above = (h.split("</header>")[1] || "").split('class="guide fold"')[0];
+  const blocks = (above.match(/class="(notice[^"]*|cold-open|today|core|review is-lead|review-choose|sides|stats)"/g) || []);
+  console.log(`    ${blocks.length} blocks above the folds`);
+  check("the home screen stays short: eight blocks or fewer above the folds",
+    blocks.length <= 8);
 
   click({ "data-go": "learn", "data-id": "1" });
   click({ "data-act": "learn-reveal" });
@@ -4340,11 +4501,27 @@ section("the course can be climbed");
   check("and still tight at the bottom, where you know least",
     D.HOLDS[1] <= 3 && D.HOLDS[2] <= 6);
 
-  // what the whole pool needs per day, against what a session gives
+  // what the whole pool needs per day, against what a session gives.
+  // The course outgrew ten minutes a day on 2026-08-25; the app now says
+  // so instead of letting the meter quietly fall.
   const pool = LESSONS.reduce((n, l) => n + l.phrases.length, 0);
   const perDay = pool / D.HOLDS[4];
-  check(`a daily session can carry the whole pool (${pool} phrases, ${perDay.toFixed(0)} a day needed)`,
-    perDay <= 16);
+  console.log(`    ${pool} phrases, ${perDay.toFixed(0)} a day needed to hold all of it`);
+  check("the longest session can still carry the whole pool",
+    perDay <= D.PACES[D.PACES.length - 1].rounds);
+  unlockAll();
+  peek().store.pace = "normal";
+  peek().store.known = {};
+  click({ "data-go": "home" });
+  check("and where the chosen one cannot, the app says so plainly",
+    !D.poolFits().ok && /more than \d+ rounds a day can keep alive/.test(h));
+  check("naming the three ways out", /I know this one/.test(h) && /not for me/.test(h));
+  check("and offering the longer session on the spot",
+    /data-act="pace" data-id="long"/.test(h));
+  peek().store.pace = "long";
+  click({ "data-go": "home" });
+  check("which makes it fit, and the warning goes", D.poolFits().ok && !/notice-pool/.test(h));
+  peek().store.pace = undefined;
 
   // and coming back late costs one step, not the lot
   put(5, D.HOLDS[5] * 4);

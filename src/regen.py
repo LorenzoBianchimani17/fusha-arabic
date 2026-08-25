@@ -44,6 +44,7 @@ HOOKS = (
     ' oneOut: oneOut, phraseTyped: phraseTyped, openMoments: openMoments,'
     ' ITALIAN: ITALIAN, italianFor: italianFor, courseSearch: courseSearch,'
     ' WANTS: WANTS, wantKey: wantKey, nextForWant: nextForWant, forWant: forWant,'
+    ' poolFits: poolFits, PACES: PACES,'
     ' englishFor: englishFor, courseIndex: courseIndex, normalise: normalise,'
     ' sameSaid: sameSaid, tokens: tokens, canMake: canMake, coreCounts: coreCounts,'
     ' lessonNo: lessonNo, RECHECK_AFTER: RECHECK_AFTER, HOLDS: HOLDS, today: today,'
