@@ -4004,8 +4004,12 @@ section("nine ways the app was still marking you wrong");
     !!D.otherGenderOf || true);
 
   // 5 and 6. more than one reply is right
-  check("a line the course answers two ways knows both",
-    D.repliesTo("Hal fahìmt?", "Naʿam, fahìmtu").length === 2);
+  check("a line the course answers more than one way knows them all", (function () {
+    const asked = "Hal fahìmt?";
+    const inData = new Set();
+    LESSONS.forEach(l => (l.dialogue || []).forEach(d => { if (d.ask === asked) inData.add(d.reply); }));
+    return inData.size > 1 && D.repliesTo(asked, "Naʿam, fahìmtu").length === inData.size;
+  })());
   check("and neither is offered as the mistake", (function () {
     for (let i = 0; i < 20; i++) {
       const r = D.dialogRound ? null : null;
@@ -4077,10 +4081,15 @@ section("your Italian, and your reason for being here");
 
   // an English word only counts when it is a word: "he" is inside hello,
   // where, here, the and head
-  check("a gloss matches on whole words, not on fragments",
-    D.courseSearch("lui", {}).length <= 2);
-  check("qui does not drag in where and there", D.courseSearch("qui", {}).length <= 20);
-  check("andare does not drag in good morning", D.courseSearch("andare", {}).length <= 12);
+  // The count grows every time the course does, so the check is not how
+  // many come back but that none of them came back on a fragment.
+  const noBleed = (q, w) => D.courseSearch(q, {}).every(x =>
+    new RegExp("\\b" + w + "\\b", "i").test(x.en) ||
+    D.normalise(x.ar).indexOf(q) !== -1 ||
+    D.normalise(D.disp(x.ar)).indexOf(q) !== -1);
+  check("a gloss matches on whole words, not on fragments", noBleed("lui", "he"));
+  check("qui does not drag in where and there", noBleed("qui", "here"));
+  check("andare does not drag in good morning", noBleed("andare", "go"));
   check("caldo does not drag in hotel", (function () {
     return !D.courseSearch("caldo", {}).some(function (x) { return /hotel/i.test(x.en); });
   })());
