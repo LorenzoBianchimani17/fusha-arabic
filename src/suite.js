@@ -3323,7 +3323,7 @@ section("the curious questions");
   check("there is a lesson for keeping in touch", !!touch && touch.phrases.length >= 10);
   check("it follows the other two", LESSONS.indexOf(touch) === LESSONS.indexOf(think) + 1);
   ["Hàdha ràqmi", "Ìbʿathi li risàla", "Hal ànti hùrra ghàdan?", "Àina nàltaqi?",
-    "Urìd an àraki màrra ùkhra"]
+    "Urìd an aràki màrra ùkhra"]
     .forEach(ar => check("it can say " + ar, touch.phrases.some(p => p.ar === ar)));
   check("all of it speakable and Levantine",
     touch.phrases.every(p => !!SCRIPT[p.ar] &&

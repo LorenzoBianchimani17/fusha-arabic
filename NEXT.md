@@ -1,29 +1,69 @@
-# Where we stopped, 2026-08-24
+# Where we stopped, 2026-08-26
 
 Everything agreed is built and live. This file is the handover: what is
 open, what to watch, and the rules for the repository.
 
+## What went in on 2026-08-26
+
+Twenty-one lessons, 533 phrases to 829. In order: feelings, the body,
+more food, places in town, position and time, comparing, more verbs,
+asking why, whose it is, distance, learning from a local, character,
+fruit and vegetables, the chemist and the jeweller, a night out, the
+way they put it, what a price is actually in, when it goes wrong, at
+the chemist and what is wrong, coming and going, the match and the
+traffic and the family, being someone's guest.
+
+Two features. **The dictionary** (`#/dict`): every word in `GLOSS` and
+`GLOSS_LEV` indexed against every line of the course, on both the
+fus-ha and the Levantine side, with what it means, what kind of word it
+is, and every line it appears in. Open one and it builds a session out
+of nothing but those lines. **Four iOS things**: large titles that hand
+over to the bar on scroll, the menu as a bottom sheet under 620px, drag
+from the grip to dismiss it, and a right answer that arrives and draws
+its own tick.
+
+## What the audits found, and the rule they earned
+
+Two agent audits paid for themselves several times over.
+
+A **teacher's audit** of thirteen new lessons found 21 real errors,
+including a phrase with the pair of hands in the nominative where an
+order needs the accusative, which the synthesiser was saying out loud.
+The same audit has **not** been run on lessons 1 to 41. It is the
+highest-value thing left in this repo.
+
+A **can-he-say-it audit** walked seven real days with the course and
+reported sentence by sentence what it could and could not produce. Ten
+gaps came out ranked; all ten are now closed. The method is worth
+repeating whenever the course grows: it finds what a topic list cannot.
+
+The rule they earned: **a new lesson is not finished until something
+adversarial has read it.** The suite checks that the data is
+consistent, not that the Arabic is right.
+
 ## Still to build
 
-Nothing agreed is outstanding. The two that were open on the evening of
-2026-08-24 - searching in Italian, and telling the app what you need
-Arabic for - are both in.
+- **Two-turn chains** in the conversations, a **weekly plan**, and the
+  **same phrase from two voices**. All three were agreed and none is
+  built.
+- **The search remembering what it could not find**, and a
+  **circumlocution drill** (no word for it, so describe it with the
+  words you have). Agreed, not built.
+- The dictionary builds a session from a word. It does **not** invent
+  new dialogue on it, and it cannot: there is no model in a static
+  file, only `FRAMES` recombination. Extending `FRAMES` is the honest
+  version of that idea.
+- `numberWords()` still stops at 99. It only powers ages and the
+  counting drill, so nothing is broken; the hundreds and thousands are
+  taught as phrases in lesson 56 instead.
 
-**One thing to watch, not a task.** The 150-day simulation reads 85
-mastered and 51 core out of a pool of 476, against 112 and 58 out of 431
-before the six lessons of 2026-08-24 went in. Nothing in the scheduler
-changed; the course grew by a tenth and the simulated learner is spread
-thinner over it, and the last lessons now open forty days later than
-they did. Adding material has a price and this is where it shows. Worth
-re-reading before agreeing to another six lessons.
+## One thing to watch, not a task
 
-## What went in on 2026-08-24
-
-Three lessons of the conversation after the first two minutes (31 to 33),
-three more of what keeps it going (34 to 36), the yes-maybe-no drill, the
-register tags, the branching conversation, the minimal pairs, the ear
-measurements, the substitution run, and fifteen fixes that came out of
-using it on a phone. The commit messages carry the detail.
+The pool is 829 phrases and needs 28 reviews a day to hold all of it.
+The longest pace gives 30, raised from 22 on 2026-08-26 for exactly
+this reason - a pace labelled *as long as it takes* should mean it.
+There is no room left above 30 without changing what a session is.
+Before agreeing to another twenty lessons, read that number again.
 
 ## The standing rules for this repo
 
@@ -31,8 +71,13 @@ using it on a phone. The commit messages carry the detail.
   `src/build.py` and is never edited by hand.
 - `python3 src/regen.py` then `node src/suite.js` before any commit, in
   all four configurations: plain, `--voice`, `--mic`, `--voice --mic`.
+  `--quick` while editing; the four in full before committing.
 - Re-run the 150-day simulation when anything touches the spaced
   repetition, and only then.
 - Every new phrase needs four things: the lesson entry, a vocalised
   SCRIPT entry, a Levantine form in DIALECT or a line in SAME, and a
-  gloss for every new Levantine word.
+  gloss for every new word on both sides. Two tests now enforce the
+  last one: every word the course teaches has a dictionary entry, and
+  no word is glossed twice in either table.
+- The Levantine has still never been read by a native speaker. That is
+  the largest unmeasured risk in the project.
