@@ -607,6 +607,11 @@
   .flash-ending { margin-top: var(--s-3); color: var(--ink-3); font-size: var(--t-1);
     line-height: 1.5; }
   .flash-ending b { color: var(--ink-2); }
+  .recall-what { font-size: var(--t-6); line-height: 1.4; }
+  .recall-box { min-height: 130px; font-family: var(--sans); line-height: 1.7; resize: vertical; }
+  .recall-list { margin-top: var(--s-5); }
+  .recall-list h3 { font-size: var(--t-2); letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0 0 var(--s-3); }
   .ritual { display: flex; flex-wrap: wrap; gap: var(--s-3); padding: 12px 0;
     border-bottom: 1px solid var(--line); }
   .ritual-side { flex: 1 1 46%; display: flex; flex-wrap: wrap; align-items: center;
@@ -2768,6 +2773,56 @@
       ]
     },
     {
+      id: 40,
+      title: "Whose it is, and who they are",
+      intro: "The ending that says my, your, his, hers and ours - and the words for he, she, we and they, which the course has never once used.",
+      phrases: [
+        { ar: "Kitàbi", en: "My book", core: true, note: "The ending <b>is</b> the possessive: there is no separate word for <i>my</i>. <b>Kitàb</b> plus <b>-i</b>. The same <b>-i</b> turned <b>ism</b> into <b>ismì</b> back in lesson 3, and you have been using it ever since without being told." },
+        { ar: "Kitàbuk", en: "Your book", f: "Kitàbuki", fLabel: "Speaking to a woman", core: true },
+        { ar: "Kitàbuhu", en: "His book" },
+        { ar: "Kitàbuha", en: "Her book" },
+        { ar: "Kitàbuna", en: "Our book" },
+        { ar: "Hal hàdha kitàbuk?", en: "Is this your book?", f: "Hal hàdha kitàbuki?", fLabel: "Speaking to a woman" },
+        { ar: "Là, hùwa kitàbuha", en: "No, it is her book" },
+        { ar: "Hùwa sadìqi", en: "He is my friend", note: "<b>Hàdha sadìqi</b>, from lesson 3, points at someone and introduces him. <b>Hùwa sadìqi</b> says something about a man already in the conversation." },
+        { ar: "Hìya hùna", en: "She is here" },
+        { ar: "Nàhnu hùna", en: "We are here", core: true },
+        { ar: "Àina hum?", en: "Where are they?", note: "<b>Hum</b> covers a group of men or a mixed group, and unlike <b>ànta</b> and <b>ànti</b> it does not change for gender." },
+        { ar: "Hum fi al-bàit", en: "They are at home" },
+        { ar: "Àina bàituk?", en: "Where is your house?", f: "Àina bàituki?", fLabel: "Speaking to a woman" },
+        { ar: "Hàdha bàituna", en: "This is our house" }
+      ],
+      dialogue: [
+        { ask: "Hal hàdha kitàbuk?", askEn: "Is this your book?", reply: "Là, hùwa kitàbuha", en: "No, it is her book" },
+        { ask: "Man hàdha?", askEn: "Who is this?", reply: "Hùwa sadìqi", en: "He is my friend" },
+        { ask: "Àina hum?", askEn: "Where are they?", reply: "Hum fi al-bàit", en: "They are at home" },
+        { ask: "Àina bàituk?", askEn: "Where is your house?", reply: "Hàdha bàituna", en: "This is our house" }
+      ]
+    },
+    {
+      id: 41,
+      title: "Asking why",
+      intro: "The one question word the course never got round to giving you, and the reason that answers it.",
+      phrases: [
+        { ar: "Limàdha?", en: "Why?", core: true, note: "The ninth of a set you already know eight of: <b>àina</b> where, <b>matà</b> when, <b>man</b> who, <b>kèifa</b> how, <b>kam</b> how much, <b>mà</b> and <b>màdha</b> what, <b>ày</b> which, <b>hal</b> for a yes or no. It goes in the same place at the front, and it covers <i>what for</i> as well: Arabic does not split the two the way English does." },
+        { ar: "Limàdha là?", en: "Why not?" },
+        { ar: "Mà as-sàbab?", en: "What is the reason?", note: "A doctor, a border officer and a curious neighbour all reach for this rather than <b>limàdha</b>, which can sound like an interrogation. <b>Kèifa dhàlik?</b>, how come, is the gentlest of the three." },
+        { ar: "Limàdha ànta hùna?", en: "Why are you here?", f: "Limàdha ànti hùna?", fLabel: "Speaking to a woman" },
+        { ar: "Limàdha ànta taʿbàn?", en: "Why are you tired?", f: "Limàdha ànti taʿbàna?", fLabel: "Speaking to a woman", core: true, note: "Answerable with a sentence the course already gave you whole: <b>Li'ànna al-jàww hàrr</b>, because it is hot." },
+        { ar: "Limàdha tùhib hàdha?", en: "Why do you like this?", f: "Limàdha tuhibbìn hàdha?", fLabel: "Speaking to a woman" },
+        { ar: "Limàdha là turìd shày?", en: "Why do you not want tea?" },
+        { ar: "Limàdha hùnaka mushkìla?", en: "Why is there a problem?" },
+        { ar: "Limàdha hàdha ghàli?", en: "Why is this expensive?" },
+        { ar: "Là sàbab", en: "No reason", note: "With a shrug, it does exactly the same work as the English." }
+      ],
+      dialogue: [
+        { ask: "Limàdha ànta taʿbàn?", askEn: "Why are you tired?", reply: "Anà taʿbàn li'ànna al-jàww hàrr", en: "I am tired because it is hot" },
+        { ask: "Limàdha là?", askEn: "Why not?", reply: "Là sàbab", en: "No reason" },
+        { ask: "Limàdha là turìd shày?", askEn: "Why do you not want tea?", reply: "Là urìd", en: "I do not want it" },
+        { ask: "Mà as-sàbab?", askEn: "What is the reason?", reply: "Là àʿrif", en: "I do not know" }
+      ]
+    },
+    {
       id: 19,
       title: "Numbers to 100",
       intro: "The tens, and the trick for everything in between.",
@@ -3734,6 +3789,36 @@
     "Là ùrid an ùzʿijaki": "لَا أُرِيدُ أَنْ أُزْعِجَكِ",
     "Shùkran, hàdha kàfi": "شُكْرًا، هَذَا كَافِي",
     "Hal turìd àkthar?": "هَلْ تُرِيدُ أَكْثَر؟",
+    "Kitàbi": "كِتَابِي",
+    "Kitàbuk": "كِتَابُكَ",
+    "Kitàbuki": "كِتَابُكِ",
+    "Kitàbuhu": "كِتَابُهُ",
+    "Kitàbuha": "كِتَابُهَا",
+    "Kitàbuna": "كِتَابُنَا",
+    "Hal hàdha kitàbuk?": "هَلْ هَذَا كِتَابُكَ؟",
+    "Hal hàdha kitàbuki?": "هَلْ هَذَا كِتَابُكِ؟",
+    "Là, hùwa kitàbuha": "لَا، هُوَ كِتَابُهَا",
+    "Hùwa sadìqi": "هُوَ صَدِيقِي",
+    "Hìya hùna": "هِيَ هُنَا",
+    "Nàhnu hùna": "نَحْنُ هُنَا",
+    "Àina hum?": "أَيْنَ هُمْ؟",
+    "Hum fi al-bàit": "هُمْ فِي الْبَيْت",
+    "Àina bàituk?": "أَيْنَ بَيْتُكَ؟",
+    "Àina bàituki?": "أَيْنَ بَيْتُكِ؟",
+    "Hàdha bàituna": "هَذَا بَيْتُنَا",
+    "Limàdha?": "لِمَاذَا؟",
+    "Limàdha là?": "لِمَاذَا لَا؟",
+    "Mà as-sàbab?": "مَا السَّبَب؟",
+    "Limàdha ànta hùna?": "لِمَاذَا أَنْتَ هُنَا؟",
+    "Limàdha ànti hùna?": "لِمَاذَا أَنْتِ هُنَا؟",
+    "Limàdha ànta taʿbàn?": "لِمَاذَا أَنْتَ تَعْبَان؟",
+    "Limàdha ànti taʿbàna?": "لِمَاذَا أَنْتِ تَعْبَانَة؟",
+    "Limàdha tùhib hàdha?": "لِمَاذَا تُحِبُّ هَذَا؟",
+    "Limàdha tuhibbìn hàdha?": "لِمَاذَا تُحِبِّينَ هَذَا؟",
+    "Limàdha là turìd shày?": "لِمَاذَا لَا تُرِيدُ شَاي؟",
+    "Limàdha hùnaka mushkìla?": "لِمَاذَا هُنَاكَ مُشْكِلَة؟",
+    "Limàdha hàdha ghàli?": "لِمَاذَا هَذَا غَالِي؟",
+    "Là sàbab": "لَا سَبَب",
     "Ilà al-liqà qarìban": "إِلَى اللِّقَاءِ قَرِيبًا",
     "Ilà al-ghad": "إِلَى الْغَد",
     "Tùsbih ʿalà khèir": "تُصْبِحُ عَلَى خَيْرٍ",
@@ -4167,6 +4252,46 @@
     { key: "lev", label: "Levantine", where: "Syria, Lebanon, Jordan, Palestine. Written out in full: every phrase in the course.", done: true },
     { key: "egy", label: "Egyptian", where: "Egypt, and understood everywhere through its films. Part written, and not being finished." },
     { key: "gulf", label: "Gulf", where: "UAE, Saudi Arabia, Qatar, Kuwait, Bahrain, Oman. Part written, and not being finished." }
+  ];
+
+  // The strongest form of retrieval there is, and the one thing this
+  // app never asked for: a situation, no cue of any kind, and
+  // everything you can dig out of your own head.
+  var RECALL = [
+    { en: "You run into someone you know on the street and greet them properly, asking how they are.", from: 2,
+      has: ["Marhàban", "As-salàmu ʿaláikum", "Sabàh al-khèir", "Kèifa hàluk?", "Anà bikhèir", "Wa ànta?", "Shùkran"] },
+    { en: "Someone you have just met asks your name and where you are from.", from: 4,
+      has: ["Mà ìsmuk?", "Ismì Marco", "Tashàrraft", "Min àina ànta?", "Anà min Itàlya", "Hal tatakàllam al-ʿarabìyya?", "Naʿam, qalìlan"] },
+    { en: "You need to get a stranger's attention and ask them for something politely.", from: 5,
+      has: ["Lau samàht", "Min fàdlik", "Àsif", "Tafàddal", "Naʿam", "Là"] },
+    { en: "The evening has gone well and you are saying goodbye, keen to meet again.", from: 33,
+      has: ["Maʿa salàma", "Ilà al-liqà", "Tùsbih ʿalà khèir", "Kàna màsa'an jamìlan", "Hàdha ràqmi", "Urìd an àraki màrra ùkhra"] },
+    { en: "You have just sat down at a café and are ordering something to eat and drink.", from: 9,
+      has: ["Mà'", "Qàhwa", "Urìd mà', min fàdlik", "Anà jà'iʿ", "Anà ʿatshàn", "Al-hisàb, min fàdlik"] },
+    { en: "You are lost in a town and stop someone to ask for directions.", from: 10,
+      has: ["Àina al-hammàm?", "Ilà al-yamìn", "Ilà al-yasàr", "ʿAlà tùl", "Sàʿidni, min fàdlik", "Là àfham", "Takàllam bibut'"] },
+    { en: "Someone asks what your job is and where you work.", from: 13,
+      has: ["Mà mìhnatuk?", "Anà muhàndis", "Anà tabìb", "Anà mudàrris", "Anà tàlib", "Àina taʿmal?", "Hal tùhib ʿàmalak?"] },
+    { en: "You are going through the airport or checking into a hotel.", from: 17,
+      has: ["Al-matàr", "Tàdhkara", "Al-fùnduq", "Anà sà'ih", "Urìd tàdhkara", "Àina al-matàr?", "Hal ʿìndakum wàifài?"] },
+    { en: "Someone you just met asks you for coffee, and you have to answer.", from: 18,
+      has: ["Hal nàshrab qàhwa màʿan?", "Bikùll surùr", "Là, shùkran", "Àsifa, anà mashghùla", "Ilà al-liqà qarìban"] },
+    { en: "You have lost the thread of what someone just said and need to get back on track.", from: 27,
+      has: ["Marra ùkhra, min fàdlik", "Màdha yaʿni?", "Kèifa taqùl hàdha?", "Là àʿrif", "Fahìmtu", "Tàyyib", "Inshàallah"] },
+    { en: "You feel unwell and need to explain what is wrong and find help.", from: 22,
+      has: ["Anà marìd", "ʿÌndi àlam hùna", "ʿÌndi sudàʿ", "ʿÌndi hùmma", "Ahtàj tabìb", "Àina as-saydalìyya?", "Anà àhsan al-yàum"] },
+    { en: "Someone asks what you did yesterday.", from: 23,
+      has: ["Kùntu fi al-bàit", "Dhahàbtu ilà al-bàit", "Màdha àkalta?", "Àʿjabani", "Hal àʿjabak?", "Màdha fàʿalta ams?", "Kàna jamìlan"] },
+    { en: "You are haggling over the price of something at the market.", from: 24,
+      has: ["Ghàli", "Ghàli jìddan", "Hal ʿìndak takhfìd?", "Sa'àkhudh hàdha", "Là urìd", "Sa'ufàkkir", "Kam hàdha?"] },
+    { en: "You are getting to know someone: their hobbies and how long they have been here.", from: 31,
+      has: ["Mà tùhibbìn an tafʿalì?", "Ùhib al-mùsiqa", "Ùhib al-aflàm", "Ùhib as-sàfar", "Mùndhu matà ànti hùna?", "Hal taʿmalìn àm tadrusìn?", "Ùhibbu jìddan"] },
+    { en: "Someone asks whether you are married and who you live with.", from: 35,
+      has: ["Hal ànti mutazàwwija?", "Anà mutazàwwij", "Lastu mutazàwwij", "Hal ʿìndaki àtfal?", "Aʿìsh wàhdi", "Aʿìsh maʿa ùsrati", "Anà hùna li al-ʿàmal"] },
+    { en: "You are at the table with others, ordering, mentioning what you cannot eat, and settling the bill.", from: 36,
+      has: ["Màdha tànsahìn?", "Anà nabàti", "Là àkul làhm", "Bidùn sùkkar, min fàdlik", "Ladhìdh!", "Hal nàqsim al-hisàb?", "Al-hisàb ʿalàyya"] },
+    { en: "Someone pays you a compliment or blessing and you need to answer it correctly.", from: 38,
+      has: ["Allàh yuʿtìki al-ʿàfiya", "Allàh yuʿàfìk", "Tìslam yadàki", "Allàh yusàllimuk", "Mabrùk", "Allàh yubàrik fìk", "Sàhha", "ʿAlà qàlbik"] },
   ];
 
   // The highest-return two seconds in the language: a line that has one
@@ -5592,6 +5717,96 @@
     "Hal turìd àkthar?": {
       lev: ["Bìddak kamàn?", "بدك كمان؟"]
     },
+    "Kitàbi": {
+      lev: ["Ktàbi", "كتابي"]
+    },
+    "Kitàbuk": {
+      lev: ["Ktàbak", "كتابك"]
+    },
+    "Kitàbuki": {
+      lev: ["Ktàbik", "كتابكِ"]
+    },
+    "Kitàbuhu": {
+      lev: ["Ktàbo", "كتابو"]
+    },
+    "Kitàbuha": {
+      lev: ["Ktàba", "كتابها"]
+    },
+    "Kitàbuna": {
+      lev: ["Ktàbna", "كتابنا"]
+    },
+    "Hal hàdha kitàbuk?": {
+      lev: ["Hàda ktàbak?", "هدا كتابك؟"]
+    },
+    "Hal hàdha kitàbuki?": {
+      lev: ["Hàda ktàbik?", "هدا كتابكِ؟"]
+    },
+    "Là, hùwa kitàbuha": {
+      lev: ["Làʾ, hùwe ktàba", "لأ هو كتابها"]
+    },
+    "Hùwa sadìqi": {
+      lev: ["Hùwe sàhbi", "هو صاحبي"]
+    },
+    "Hìya hùna": {
+      lev: ["Hìyye hòn", "هي هون"]
+    },
+    "Nàhnu hùna": {
+      lev: ["Nìhna hòn", "نحنا هون"]
+    },
+    "Àina hum?": {
+      lev: ["Wèin hìnne?", "وين هني؟"]
+    },
+    "Hum fi al-bàit": {
+      lev: ["Hìnne bil-bèit", "هني بالبيت"]
+    },
+    "Àina bàituk?": {
+      lev: ["Wèin bèitak?", "وين بيتك؟"]
+    },
+    "Àina bàituki?": {
+      lev: ["Wèin bèitik?", "وين بيتكِ؟"]
+    },
+    "Hàdha bàituna": {
+      lev: ["Hàda bèitna", "هدا بيتنا"]
+    },
+    "Limàdha?": {
+      lev: ["Lèish?", "ليش؟"]
+    },
+    "Limàdha là?": {
+      lev: ["Lèish làʾ?", "ليش لأ؟"]
+    },
+    "Mà as-sàbab?": {
+      lev: ["Shu as-sàbab?", "شو السبب؟"]
+    },
+    "Limàdha ànta hùna?": {
+      lev: ["Lèish ìnta hòn?", "ليش انت هون؟"]
+    },
+    "Limàdha ànti hùna?": {
+      lev: ["Lèish ìnti hòn?", "ليش انتي هون؟"]
+    },
+    "Limàdha ànta taʿbàn?": {
+      lev: ["Lèish ìnta taʿbàn?", "ليش انت تعبان؟"]
+    },
+    "Limàdha ànti taʿbàna?": {
+      lev: ["Lèish ìnti taʿbàne?", "ليش انتي تعبانة؟"]
+    },
+    "Limàdha tùhib hàdha?": {
+      lev: ["Lèish bithìbb hàda?", "ليش بتحب هدا؟"]
+    },
+    "Limàdha tuhibbìn hàdha?": {
+      lev: ["Lèish bithìbbi hàda?", "ليش بتحبي هدا؟"]
+    },
+    "Limàdha là turìd shày?": {
+      lev: ["Lèish mà bìddak shày?", "ليش ما بدك شاي؟"]
+    },
+    "Limàdha hùnaka mushkìla?": {
+      lev: ["Lèish fìh mushkìle?", "ليش فيه مشكلة؟"]
+    },
+    "Limàdha hàdha ghàli?": {
+      lev: ["Lèish hàda ghàli?", "ليش هدا غالي؟"]
+    },
+    "Là sàbab": {
+      lev: ["Bidùn sàbab", "بدون سبب"]
+    },
     "Ilà al-liqà qarìban": {
       lev: ["Bshùfik arìb", "بشوفكِ قريب"]
     },
@@ -6157,6 +6372,11 @@
   // Every word below appears in a Levantine line somewhere in the course;
   // anything the two varieties share falls through to the fus-ha table.
   var GLOSS_LEV = {
+    "lèish": "why", "sàbab": "reason", "taʿbàne": "tired (a woman)",
+    "ktàbi": "my book", "ktàbak": "your book", "ktàbik": "your book (to a woman)",
+    "ktàbo": "his book", "ktàba": "her book", "ktàbna": "our book",
+    "bèitak": "your house", "bèitik": "your house (to a woman)", "bèitna": "our house",
+    "nìhna": "we", "hìnne": "they",
     "yà": "the word you put before a name or a title when you address someone",
     "yʿàfik": "may he keep you well", "yʿàfiki": "may he keep you well (to a woman)",
     "yislàmak": "may he keep you safe", "yislàmik": "may he keep you safe (to a woman)",
@@ -7290,7 +7510,38 @@
   }
 
   // What to show on screen for a phrase whose key is `ar`.
+  // You may have a word you prefer. Aywa instead of èh, or a form you
+  // grew up hearing. The course has an opinion; you get the last word.
+  function myForm(ar) {
+    return (store.myform || {})[ar] || null;
+  }
+
+  // If what you asked for is a form the app already knows from another
+  // variety, it can still say it out loud. If it is not, it is yours in
+  // writing only, and the card says so rather than mispronouncing it.
+  function myFormScript(ar) {
+    var want = myForm(ar);
+    if (!want) return null;
+    var found = null;
+    var row = DIALECT[ar] || {};
+    Object.keys(row).forEach(function (v) {
+      if (!found && row[v] && normalise(row[v][0]) === normalise(want)) found = row[v][1];
+    });
+    if (!found && normalise(ar) === normalise(want)) found = SCRIPT[ar] || null;
+    return found;
+  }
+
+  function setMyForm(ar, text) {
+    if (!store.myform) store.myform = {};
+    var clean = String(text || "").trim().slice(0, 40);
+    if (clean && normalise(clean) !== normalise(disp(ar))) store.myform[ar] = clean;
+    else delete store.myform[ar];
+    save();
+  }
+
   function disp(ar) {
+    var mine = myForm(ar);
+    if (mine) return mine;
     var p = personalOf(ar);
     if (p) return p[0];
     var d = dialectOf(ar);
@@ -7303,6 +7554,7 @@
 
   // What to hand the speech engine for it.
   function spk(ar) {
+    if (myForm(ar)) return myFormScript(ar) || "";
     var p = personalOf(ar);
     if (p) return p[1];
     var d = dialectOf(ar);
@@ -7969,6 +8221,8 @@
     if (!normalise(typed)) return null;
     var shown = disp(ar);
     if (sameSaid(typed, shown)) return { right: true };
+    // the course's own form stays right even after you have replaced it
+    if (myForm(ar) && (sameSaid(typed, dialectOf(ar) ? dialectOf(ar)[0] : ar))) return { right: true };
     if (sameSaid(typed, ar)) return { right: true, other: ar === shown ? null : "fusha" };
     var loose = sameSaidLoose(typed, shown) || sameSaidLoose(typed, ar);
     if (loose) return { right: true, loose: true };
@@ -9802,6 +10056,7 @@
     if (v.name === "mine") return "#/mine";
     if (v.name === "now") return "#/now";
     if (v.name === "street") return "#/street";
+    if (v.name === "recall") return "#/recall";
     if (v.name === "ritual") return "#/ritual";
     if (v.name === "choose") return "#/choose";
     if (v.name === "sounds") return "#/sounds";
@@ -9929,6 +10184,14 @@
     if (parts[0] === "ritual") {
       session = null;
       view = { name: "ritual" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "recall") {
+      session = null;
+      recall = newRecall(null);
+      view = { name: "recall" };
       render();
       return;
     }
@@ -10827,6 +11090,98 @@
       '<div class="btn-row"><button class="btn" data-go="home">Back</button></div>';
   }
 
+  var recall = null;
+
+  function recallOpen() {
+    return RECALL.filter(function (r) {
+      var l = lessonById(r.from);
+      var rec = l ? recordOf(l.id) : null;
+      return !!(rec && rec.done);
+    });
+  }
+
+  function newRecall(prev) {
+    var pool = recallOpen();
+    if (!pool.length) return null;
+    var r = shuffle(pool)[0];
+    if (prev && pool.length > 1) {
+      var g = 0;
+      while (g++ < 8 && r.en === prev.r.en) r = shuffle(pool)[0];
+    }
+    return { r: r, typed: "", checked: false, got: [], missed: [] };
+  }
+
+  function recallCheck() {
+    if (!recall || recall.checked) return;
+    var field = app.querySelector('[data-act="recall-typing"]');
+    if (field) recall.typed = field.value;
+    var lines = String(recall.typed || "").split(/[\n,;]+/).map(function (x) { return x.trim(); })
+      .filter(Boolean);
+    var got = [], missed = [];
+    recall.r.has.forEach(function (ar) {
+      var hit = lines.some(function (line) {
+        var v = judgeTyped(line, ar);
+        return !!(v && v.right);
+      });
+      if (hit) got.push(ar); else missed.push(ar);
+    });
+    recall.got = got;
+    recall.missed = missed;
+    recall.checked = true;
+    // Producing a phrase from nothing but a situation is the hardest way
+    // to prove you have it, so it counts like any other right answer.
+    got.forEach(function (ar) {
+      var lid = lessonTeaching(ar);
+      if (lid) bumpStrength(lid, ar, true);
+    });
+    save();
+    render();
+  }
+
+  function recallHTML() {
+    if (!recall) {
+      return topbarHTML("Say everything you can") +
+        '<p class="pb-lead">Pass a couple of lessons and this opens: a situation, nothing else, and ' +
+        "everything you can dig out of your own head.</p>" +
+        '<div class="btn-row"><button class="btn" data-go="home">Back to the lessons</button></div>';
+    }
+    var r = recall;
+    var cls = "type-in recall-box" + (r.checked ? "" : "");
+    return topbarHTML("Say everything you can") +
+      '<p class="pb-lead">No English to translate and no options: only the situation. Write every phrase ' +
+      "you can think of, one per line. Digging them out with nothing to go on is the strongest practice " +
+      "there is, and the only one this app did not have.</p>" +
+      '<div class="prompt"><div class="prompt-label">The situation</div>' +
+      '<div class="prompt-main recall-what">' + esc(r.r.en) + "</div></div>" +
+      (r.checked
+        ? '<div class="verdict" tabindex="-1">' +
+          '<div class="verdict-msg ' + (r.got.length >= Math.ceil(r.r.has.length / 2) ? "ok" : "no") + '">' +
+          "<b>" + r.got.length + " of " + r.r.has.length + ".</b>&nbsp;<span>" +
+          (r.got.length === r.r.has.length ? "All of them, from nothing."
+            : r.got.length ? "What you dug out counts for those phrases."
+            : "Nothing this time. The list is below; it is worth reading slowly.") + "</span></div>" +
+          (r.got.length
+            ? '<div class="recall-list"><h3>You had these</h3>' + r.got.map(function (ar) {
+                return '<div class="pb-row is-yours">' + sayBtn(ar, true) +
+                  '<span class="pb-text"><span class="ar">' + esc(disp(ar)) + "</span>" +
+                  '<span class="pb-en">' + esc(englishFor(ar) || "") + "</span></span></div>";
+              }).join("") + "</div>"
+            : "") +
+          (r.missed.length
+            ? '<div class="recall-list"><h3>These were there too</h3>' + r.missed.map(function (ar) {
+                return '<div class="pb-row">' + sayBtn(ar, true) +
+                  '<span class="pb-text"><span class="ar">' + esc(disp(ar)) + "</span>" +
+                  '<span class="pb-en">' + esc(englishFor(ar) || "") + "</span></span></div>";
+              }).join("") + "</div>"
+            : "") +
+          '<button class="btn btn-wide" data-act="recall-next">Another situation</button></div>'
+        : '<textarea class="' + cls + '" data-act="recall-typing" rows="6" spellcheck="false"' +
+          ' autocomplete="off" autocorrect="off" autocapitalize="off"' +
+          ' aria-label="Everything you can remember">' + esc(r.typed) + "</textarea>" +
+          '<div class="action-row"><button class="btn btn-wide" data-act="recall-check">' +
+          "That is all I have</button></div>");
+  }
+
   function streetHTML() {
     var v = varietyInfo();
     var isLev = variety() === "lev";
@@ -11085,6 +11440,11 @@
       '><span class="nav-label">One phrase</span>' +
       '<span class="nav-note">' + (done ? "A single question, no session" : "Pass a lesson to open this") + "</span></button>" +
 
+      '<button class="nav-item' + (recallOpen().length ? "" : " is-off") + '" data-go="recall"' +
+      (recallOpen().length ? "" : " disabled") + '><span class="nav-label">Say everything you can</span>' +
+      '<span class="nav-note">' + (recallOpen().length
+        ? "A situation, no cue at all, and whatever you can dig out"
+        : "Pass a couple of lessons to open this") + "</span></button>" +
       '<button class="nav-item' + (canExam() ? "" : " is-off") + '" data-go="test"' +
       (canExam() ? "" : " disabled") + '><span class="nav-label">The test</span>' +
       '<span class="nav-note">' + (canExam()
@@ -13198,6 +13558,7 @@
     { key: "when", en: "When", word: "matà", lev: "èmta" },
     { key: "howmuch", en: "How much, or how many", word: "kam", lev: "addèsh" },
     { key: "what", en: "What", word: "mà, màdha", lev: "shu" },
+    { key: "why", en: "Why", word: "limàdha", lev: "lèish" },
     { key: "who", en: "Who", word: "man", lev: "mìn" },
     { key: "how", en: "How", word: "kèifa", lev: "kìf" },
     { key: "yesno", en: "Something you can answer yes or no", word: "hal",
@@ -13253,6 +13614,7 @@
     // the second one, and that is caught above.
     if (w[0] === "min") return "who";
     if (w[0] === "kif" || w[0] === "kifak" || w[0] === "kifik") return "how";
+    if (w[0] === "leish") return "why";
     if (w[0] === "anu") return "which";
     if (w.indexOf("willa") > 0) return "choice";
     for (var j = 0; j < w.length - 1; j++) {
@@ -13279,6 +13641,7 @@
     if (w[0] === "ma" || w[0] === "madha") return "what";
     if (w[0] === "man") return "who";
     if (w[0] === "keifa") return "how";
+    if (w[0] === "limadha") return "why";
     // "And you?" can come after an answer rather than open the sentence.
     for (var i = 0; i < w.length - 1; i++) {
       if (w[i] === "wa" && (w[i + 1] === "anta" || w[i + 1] === "anti")) return "backatyou";
@@ -15305,6 +15668,7 @@
     if (view.name === "mine") return mineHTML();
     if (view.name === "now") return nowHTML();
     if (view.name === "street") return streetHTML();
+    if (view.name === "recall") return recallHTML();
     if (view.name === "ritual") return ritualHTML();
     if (view.name === "choose") return chooseHTML();
     if (view.name === "sounds") return soundsHTML();
@@ -15576,6 +15940,12 @@
       if (dest === "mine") { session = null; go({ name: "mine" }); return; }
       if (dest === "now") { session = null; go({ name: "now" }); return; }
       if (dest === "street") { session = null; go({ name: "street" }); return; }
+      if (dest === "recall") {
+        session = null;
+        recall = newRecall(recall);
+        if (recall) go({ name: "recall" });
+        return;
+      }
       if (dest === "ritual") { session = null; go({ name: "ritual" }); return; }
       if (dest === "choose") { session = null; go({ name: "choose" }); return; }
       if (dest === "sounds") { session = null; sounds = null; go({ name: "sounds" }); return; }
@@ -15976,6 +16346,12 @@
       render();
       return;
     }
+    if (act === "recall-check") { recallCheck(); return; }
+    if (act === "recall-next") {
+      recall = newRecall(recall);
+      render();
+      return;
+    }
     if (act === "resume") { resumeSession(); return; }
     if (act === "drop-open") { store.open = null; save(); render(); return; }
     if (act === "testout") {
@@ -16323,6 +16699,7 @@
       if (send) send.disabled = !el.value.trim();
       return;
     }
+    if (what === "recall-typing") { if (recall && !recall.checked) recall.typed = el.value; return; }
     if (what === "restore-file") {
       readFile(el.files && el.files[0]);
       return;
