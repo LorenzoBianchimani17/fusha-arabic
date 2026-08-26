@@ -5501,16 +5501,25 @@ if (withMic) {
     check("and it counts for that phrase like any round",
       (((peek().store.str || {})[D.lessonTeaching(mo.m.ok[0]) + "|" + mo.m.ok[0]]) || {}).s > 0);
 
-    // one of the later answers, not just the first
+    // one of the later answers, not just the first. Picked by hand, not
+    // by walking until a situation with two answers turns up: the one
+    // worth testing is the situation whose answers are a man's form and
+    // a woman's form of the same phrase, a letter apart.
     click({ "data-act": "moment-next" });
-    let g = 0;
-    while (g++ < 40 && peek().moment.m.ok.length < 2) click({ "data-act": "moment-next" });
-    mo = peek().moment;
-    if (mo.m.ok.length > 1) {
-      nextHeard = [D.spk(mo.m.ok[1])];
-      click({ "data-act": "mic" });
-      check("any of the answers counts, not only the first", peek().moment.matched === mo.m.ok[1]);
-    }
+    const twoWays = D.MOMENTS.filter(m => (m.ok || []).length > 1);
+    check("some situations take more than one answer", twoWays.length > 0);
+    twoWays.forEach(m => {
+      peek().moment.m = m;
+      m.ok.forEach((ar, n) => {
+        peek().moment.checked = false;
+        peek().moment.matched = null;
+        nextHeard = [D.spk(ar)];
+        click({ "data-act": "mic" });
+        if (n === 0) return;
+        check("answer " + (n + 1) + " of " + m.ok.length + " counts as itself, not as the first",
+          peek().moment.matched === ar);
+      });
+    });
 
     click({ "data-act": "moment-next" });
     mo = peek().moment;
@@ -5547,6 +5556,37 @@ section("a dictionary of every word the course can explain");
     idx.list.every(r => r.gloss && r.lines.length));
   check("and nothing is listed twice",
     new Set(idx.list.map(r => r.word)).size === idx.list.length);
+
+  // The point of the screen: a word the course puts in your mouth and
+  // then cannot explain is the gap it exists to close.
+  {
+    const bare = w => w.replace(/^[bwlʿ](?=(a|i)(l|sh|s|t|th|r|n|z|d)-)/, "")
+      .replace(/^(a|i)(l|sh|s|t|th|r|n|z|d)-/, "");
+    const missing = {};
+    const scan = text => String(text).toLowerCase().split(/\s+/).forEach(raw => {
+      const w = raw.replace(/[?!.,;:"]/g, "").trim();
+      if (!w) return;
+      if (idx.by[w] || idx.by[bare(w)] || idx.by["al-" + bare(w)]) return;
+      missing[w] = true;
+    });
+    D.courseIndex().forEach(item => scan(item.ar));
+    LESSONS.forEach(l => l.phrases.forEach(p => { if (p.f) scan(p.f); }));
+    const open = Object.keys(missing);
+    check("every word the course teaches has an entry", open.length === 0);
+    if (open.length) console.log("   ", open.slice(0, 12));
+  }
+
+  // Both tables are plain object literals, so a key written twice is not
+  // an error: the second quietly wins and the first meaning is gone.
+  ["GLOSS", "GLOSS_LEV"].forEach(name => {
+    const src = require("fs").readFileSync(__dirname + "/fusha.html", "utf8");
+    const from = src.indexOf("  var " + name + " = {");
+    const to = src.indexOf("\n  };", from);
+    const keys = (src.slice(from, to).match(/"(?:[^"\\]|\\.)*":/g) || []);
+    const dupes = keys.filter((k, i) => keys.indexOf(k) !== i);
+    check(`no word is glossed twice in ${name} (${keys.length})`, dupes.length === 0);
+    if (dupes.length) console.log("   ", dupes.slice(0, 8));
+  });
 
   // The index reads both sides of the course, not whichever one is on
   // screen, or half the words would be invisible in fus-ha.
