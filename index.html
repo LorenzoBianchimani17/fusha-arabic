@@ -64,6 +64,7 @@
     --t-6: 17px;
     --t-7: 18.5px;
     --t-8: 21px;
+    --t-9: 27px;
     --s-1: 2px;
     --s-2: 5px;
     --s-3: 8px;
@@ -327,6 +328,59 @@
 
   .who-row { display: flex; flex-wrap: wrap; gap: var(--s-2); padding: var(--s-3) var(--s-2) var(--s-1); }
 
+  .nav-grip { display: none; }
+
+  /* A drawer that comes in from the left is a desktop idea. On a phone
+     the menu is a sheet: it comes up from the thumb, it has something to
+     hold, and it can be thrown back down. */
+  @media (max-width: 620px) {
+    .nav {
+      top: auto;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: auto;
+      max-height: 86vh;
+      padding: 0 max(16px, env(safe-area-inset-left)) calc(24px + env(safe-area-inset-bottom));
+      border-right: 0;
+      border-top: 1px solid var(--line);
+      border-radius: 20px 20px 0 0;
+      transform: translateY(102%);
+      transition: transform .3s cubic-bezier(.32, .72, 0, 1);
+      overscroll-behavior: contain;
+    }
+
+    .nav.is-open { transform: none; }
+    .nav.is-dragging { transition: none; }
+
+    .nav-grip {
+      display: block;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      padding: 10px 0 4px;
+      background: var(--surface);
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .nav-grip i {
+      display: block;
+      width: 38px;
+      height: 5px;
+      margin: 0 auto;
+      border-radius: 3px;
+      background: var(--line-strong);
+    }
+
+    .nav-head {
+      position: sticky;
+      top: 19px;
+      z-index: 2;
+      background: var(--surface);
+      padding-top: var(--s-2);
+    }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .nav { transition: none; }
@@ -1251,6 +1305,33 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    opacity: 0;
+    transition: opacity .18s ease;
+  }
+
+  /* The name of the screen belongs where you are looking when you
+     arrive, which is not a 13px capital in a bar. It sits big under the
+     bar until you scroll, and then hands over to the small one, which is
+     what the bar was always for. A screen with a progress bar is a task,
+     not a list, so it keeps the small title from the start. */
+  .large-title {
+    font-family: var(--serif);
+    font-size: var(--t-9);
+    font-weight: 400;
+    letter-spacing: -.025em;
+    line-height: 1.1;
+    color: var(--ink);
+    margin: 0 0 var(--s-5);
+    transform-origin: left center;
+    transition: opacity .18s ease, transform .18s ease;
+  }
+
+  .topbar.is-task .topbar-title { opacity: 1; }
+  html.is-scrolled .topbar-title { opacity: 1; }
+  html.is-scrolled .large-title { opacity: 0; transform: translateY(-8px) scale(.96); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .topbar-title, .large-title { transition: none; }
   }
 
   .icon-btn {
@@ -1839,6 +1920,48 @@
 
   .verdict-msg.ok { background: var(--good-soft); color: var(--good); }
   .verdict-msg.no { background: var(--bad-soft); color: var(--bad); }
+
+  /* Getting it right and getting it wrong looked the same except for the
+     colour, and colour alone is the one signal a phone at arm's length
+     in the sun does not carry. The right answer now arrives, and draws
+     its own tick. */
+  @keyframes verdict-in {
+    from { opacity: 0; transform: translateY(7px) scale(.985); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes verdict-ring {
+    0% { box-shadow: 0 0 0 0 var(--good-soft); }
+    55% { box-shadow: 0 0 0 8px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+
+  @keyframes tick-draw {
+    from { clip-path: inset(0 100% 0 0); opacity: 0; }
+    to { clip-path: inset(0 0 0 0); opacity: 1; }
+  }
+
+  .verdict-msg { animation: verdict-in .17s cubic-bezier(.32, .72, 0, 1) both; }
+
+  .verdict-msg.ok {
+    animation: verdict-in .17s cubic-bezier(.32, .72, 0, 1) both,
+               verdict-ring .55s ease-out .08s;
+  }
+
+  .verdict-msg.ok::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 14px;
+    height: 7px;
+    border: 2px solid currentColor;
+    border-width: 0 0 2px 2px;
+    transform: rotate(-45deg) translate(1px, -2px);
+    animation: tick-draw .24s ease-out .09s both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .verdict-msg, .verdict-msg.ok, .verdict-msg.ok::before { animation: none; }
+  }
   .verdict-msg b { font-weight: 600; }
   .verdict-msg .ar { font-family: var(--serif); font-size: var(--t-6); }
   .verdict-msg .say { margin-left: auto; background: transparent; color: inherit; }
@@ -11210,6 +11333,7 @@
     // which is the difference between an app and a website.
     var back = !deeper && typeof scrollAt[next.name] === "number" ? scrollAt[next.name] : 0;
     window.scrollTo(0, back);
+    markScroll();
   }
 
   function applyHash(raw) {
@@ -12473,6 +12597,7 @@
 
     return '<div class="nav-veil' + (navOpen ? " is-open" : "") + '" data-act="nav-close" aria-hidden="true"></div>' +
       '<nav class="nav' + (navOpen ? " is-open" : "") + '" aria-hidden="' + (navOpen ? "false" : "true") + '" aria-label="Menu">' +
+      '<div class="nav-grip" aria-hidden="true"><i></i></div>' +
       '<div class="nav-head"><span class="nav-title">Fus&#183;ha</span>' +
       '<button class="icon-btn" data-act="nav-close" aria-label="Close the menu">&times;</button></div>' +
 
@@ -15482,13 +15607,15 @@
      ============================================================ */
 
   function topbarHTML(title, barPct, counter) {
-    return '<div class="topbar">' +
+    var task = typeof barPct === "number";
+    return '<div class="topbar' + (task ? " is-task" : "") + '">' +
       '<button class="icon-btn" data-act="back" aria-label="Back">&larr;</button>' +
       '<button class="icon-btn" data-act="nav-open" aria-label="Open the menu">&#9776;</button>' +
       '<h1 class="topbar-title">' + esc(title) + "</h1>" +
       (counter ? '<span class="counter">' + esc(counter) + "</span>" : "") +
       "</div>" +
-      (typeof barPct === "number" ? '<div class="bar"><i style="width:' + barPct + '%"></i></div>' : "");
+      (task ? '<div class="bar"><i style="width:' + barPct + '%"></i></div>' : "") +
+      (task ? "" : '<div class="large-title" aria-hidden="true">' + esc(title) + "</div>");
   }
 
   // Sitting through thirteen flashcards for a lesson you already know is
@@ -18089,11 +18216,80 @@
     applyHash(up);
   }
 
+  // The large title hands over to the small one on the first scroll, so
+  // something has to notice the scroll. The class goes on the root, which
+  // survives a render; everything inside the app is replaced each time.
+  var scrolled = false;
+
+  function markScroll() {
+    var root = document.documentElement;
+    if (!root || !root.classList) return;
+    var y = typeof window.scrollY === "number" ? window.scrollY : 0;
+    var on = y > 18;
+    if (on === scrolled) return;
+    scrolled = on;
+    if (on) root.classList.add("is-scrolled");
+    else root.classList.remove("is-scrolled");
+  }
+
+  if (typeof window.addEventListener === "function") {
+    window.addEventListener("scroll", markScroll, { passive: true });
+  }
+
+  // A sheet you cannot pull down is a dialog wearing a sheet's clothes.
+  // Only from the grip or the heading, and only while it is a sheet: in
+  // the drawer, and anywhere the list has been scrolled, a downward drag
+  // is somebody reading the menu.
+  var sheet = null;
+  var SHEET_SHUT = 96;
+
+  function sheetEl() {
+    return app.querySelector ? app.querySelector(".nav") : null;
+  }
+
+  function sheetWidth() {
+    return typeof window.innerWidth === "number" ? window.innerWidth : 0;
+  }
+
+  function endSheet(shut) {
+    var el = sheet && sheet.el;
+    sheet = null;
+    if (!el || !el.style) return;
+    el.style.transform = "";
+    if (el.classList) el.classList.remove("is-dragging");
+    if (shut) { navOpen = false; render(); }
+  }
+
   if (typeof document.addEventListener === "function") {
     document.addEventListener("touchstart", function (ev) {
+      if (navOpen && sheetWidth() && sheetWidth() <= 620) {
+        var grip = ev.target && ev.target.closest && ev.target.closest(".nav-grip, .nav-head");
+        var el = grip ? sheetEl() : null;
+        var st = ev.touches && ev.touches[0];
+        if (el && st && !(el.scrollTop > 0)) {
+          sheet = { y: st.clientY, el: el, dy: 0 };
+          if (el.classList) el.classList.add("is-dragging");
+        }
+      }
       var t = ev.touches && ev.touches[0];
       if (!t || navOpen || (ev.touches && ev.touches.length > 1)) { swipe = null; return; }
       swipe = t.clientX <= 24 ? { x: t.clientX, y: t.clientY, at: Date.now() } : null;
+    }, { passive: true });
+
+    document.addEventListener("touchmove", function (ev) {
+      if (!sheet) return;
+      var t = ev.touches && ev.touches[0];
+      if (!t) return;
+      sheet.dy = Math.max(0, t.clientY - sheet.y);
+      if (sheet.el.style) sheet.el.style.transform = "translateY(" + sheet.dy + "px)";
+    }, { passive: true });
+
+    document.addEventListener("touchend", function () {
+      if (sheet) { endSheet(sheet.dy > SHEET_SHUT); return; }
+    }, { passive: true });
+
+    document.addEventListener("touchcancel", function () {
+      if (sheet) endSheet(false);
     }, { passive: true });
 
     document.addEventListener("touchend", function (ev) {

@@ -55,7 +55,8 @@ HOOKS = (
     ' replyFor: replyFor, talkScope: talkScope, romanise: romanise,'
     ' nearestTranslit: nearestTranslit, disp: disp, spk: spk, variety: variety,'
     ' dictIndex: dictIndex, dictSearch: dictSearch, kindOf: kindOf, KINDS: KINDS,'
-    ' wordDrill: wordDrill, wordPool: wordPool, levFormOf: levFormOf };'
+    ' wordDrill: wordDrill, wordPool: wordPool, levFormOf: levFormOf,'
+    ' topbarHTML: topbarHTML, navHTML: navHTML };'
 )
 
 START = '\n  applyHash(typeof window.location !== "undefined" ? window.location.hash : "");'

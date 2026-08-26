@@ -4570,6 +4570,46 @@ section("the warmer light theme");
   check("and a swipe from the edge goes back",
     require("fs").readFileSync("fusha.html", "utf8").includes('addEventListener("touchstart"'));
 
+  // the four things that made it read as a website on a phone
+  {
+    const D = global.__data;
+    const src = require("fs").readFileSync(__dirname + "/fusha.html", "utf8");
+
+    const list = D.topbarHTML("Dictionary");
+    check("a screen that is a list gets its name in full under the bar",
+      /class="large-title"[^>]*>Dictionary</.test(list));
+    check("and the small one in the bar is there, waiting to take over",
+      /class="topbar-title">Dictionary<\/h1>/.test(list));
+    const task = D.topbarHTML("Lesson", 40);
+    check("a screen with a progress bar is a task, so it keeps the small one",
+      /class="topbar is-task"/.test(task) && !/large-title/.test(task));
+    check("the small title is invisible until something scrolls",
+      /\.topbar-title \{[^}]*opacity: 0/.test(css));
+    check("and the handover is a scroll away, not a redraw",
+      /html\.is-scrolled \.topbar-title \{ opacity: 1; \}/.test(css) &&
+      /html\.is-scrolled \.large-title/.test(css));
+    check("which means something is listening for the scroll",
+      src.includes('window.addEventListener("scroll", markScroll'));
+
+    check("on a phone the menu comes up from the thumb, not in from the left",
+      /@media \(max-width: 620px\) \{\s*\.nav \{[\s\S]{0,400}transform: translateY\(102%\)/.test(css));
+    check("with something to take hold of", /class="nav-grip"/.test(D.navHTML()));
+    check("that is pinned to the top of the sheet",
+      /\.nav-grip \{[\s\S]{0,200}position: sticky/.test(css));
+    check("and it can be thrown back down", src.includes('addEventListener("touchmove"') &&
+      src.includes("SHEET_SHUT"));
+    check("the throw is cancelled cleanly if the finger leaves",
+      src.includes('addEventListener("touchcancel"'));
+    check("and dragging turns the animation off, or it fights the finger",
+      /\.nav\.is-dragging \{ transition: none; \}/.test(css));
+
+    check("a right answer arrives rather than appearing", /@keyframes verdict-in/.test(css));
+    check("and draws its own tick, which colour alone cannot do in the sun",
+      /@keyframes tick-draw/.test(css) && /\.verdict-msg\.ok::before/.test(css));
+    check("all of it stands still for anyone who asked for that",
+      /prefers-reduced-motion[\s\S]{0,220}\.verdict-msg, \.verdict-msg\.ok, \.verdict-msg\.ok::before \{ animation: none; \}/.test(css));
+  }
+
   // every colour in the CSS is a token, and every rule closes
   check("the style block is balanced",
     (css.match(/\{/g) || []).length === (css.match(/\}/g) || []).length);
