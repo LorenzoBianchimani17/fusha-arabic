@@ -863,6 +863,12 @@
   .chip:hover { border-color: var(--line-strong); color: var(--ink-2); }
   .chip.is-on { color: var(--accent-ink); background: var(--accent-soft); border-color: transparent; font-weight: 600; }
 
+  .dict-row { width: 100%; text-align: left; cursor: pointer; }
+  .dict-count {
+    flex: 0 0 auto; min-width: 1.9rem; text-align: right;
+    color: var(--ink-3); font-size: 0.82rem; font-variant-numeric: tabular-nums;
+  }
+
   /* ---------- phrasebook ---------- */
 
   /* Two of these sit side by side at the top of the home screen. They
@@ -9618,6 +9624,7 @@
       isTestOut: !!fields.isTestOut,
       only: fields.only || null,
       aimed: fields.aimed || null,
+      word: fields.word || null,
       extended: false,
       grew: false,
       convo: fields.convo || null,
@@ -10974,6 +10981,7 @@
     if (v.name === "frame") return "#/frame";
     if (v.name === "answers") return "#/answers";
     if (v.name === "words") return "#/words";
+    if (v.name === "dict") return "#/dict" + (v.word ? "/" + encodeURIComponent(v.word) : "");
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
     if (v.name === "learn") return "#/lesson/" + learn.lesson.id + "/study/" + (learn.i + 1);
@@ -10991,6 +10999,7 @@
 
   function parentHash(v) {
     if (!v) return "#/";
+    if (v.name === "dict" && v.word) return "#/dict";
     if (v.name === "learn") return "#/lesson/" + learn.lesson.id;
     if ((v.name === "play" || v.name === "result") && session && session.lesson) {
       return "#/lesson/" + session.lesson.id;
@@ -11050,6 +11059,15 @@
     if (parts[0] === "words") {
       session = null;
       view = { name: "words" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "dict") {
+      session = null;
+      var dw = parts[1] ? decodeURIComponent(parts[1]) : null;
+      if (!dw) dictQuery = "";
+      view = dw && dictIndex().by[dw] ? { name: "dict", word: dw } : { name: "dict" };
       render();
       return;
     }
@@ -12361,6 +12379,9 @@
       '<span class="nav-note">' + (canExam()
         ? "No hints, no second chances, nothing counted"
         : "Pass a few more lessons to open this") + "</span></button>" +
+      '<button class="nav-item" data-go="dict"><span class="nav-label">Dictionary</span>' +
+      '<span class="nav-note">' + esc(dictIndex().list.length +
+        " words, what each one means, and every line it turns up in") + "</span></button>" +
       '<button class="nav-item" data-go="mine"><span class="nav-label">Words you brought</span>' +
       '<span class="nav-note">' + esc(mineWords().length
         ? mineWords().length + " of your own, in the rotation like everything else"
@@ -12909,6 +12930,227 @@
       }
       return false;
     });
+  }
+
+  /* ============================================================
+     THE DICTIONARY - every word the course can break down, what it
+     means, and every line it turns up in. From a word you can start
+     a session made of nothing but those lines.
+     ============================================================ */
+
+  // A part of speech for every one of a thousand words would be a
+  // second table to keep true, and it would go stale the first time a
+  // lesson went in. The gloss is the description the file already
+  // holds, so the gloss is what decides - and the one bucket the
+  // rules cannot split says so rather than guessing.
+  var KINDS = [
+    { key: "verb", label: "Verbs" },
+    { key: "question", label: "Question words" },
+    { key: "pronoun", label: "Me, you, mine" },
+    { key: "number", label: "Numbers" },
+    { key: "formula", label: "Said whole" },
+    { key: "word", label: "Everything else" }
+  ];
+
+  var KIND_SET = {
+    formula: {
+      "shùkran": 1, "ʿàfwan": 1, "inshàallah": 1, "khalàs": 1, "yàlla": 1,
+      "maʿlèsh": 1, "wàllah": 1, "wàlaw": 1, "bkhàtrak": 1, "sàhtein": 1,
+      "hayyà": 1, "màrhaba": 1, "àhlan": 1, "sàhlan": 1, "marhàban": 1,
+      "tamàm": 1, "tàyyib": 1, "tàyyeb": 1, "mabrùk": 1
+    },
+    question: {
+      "man": 1, "mà": 1, "màdha": 1, "àina": 1, "matà": 1, "kam": 1,
+      "kèifa": 1, "ày": 1, "àyy": 1, "hal": 1, "limàdha": 1, "lèish": 1,
+      "shu": 1, "wèin": 1, "èmta": 1, "addèsh": 1, "mìn": 1, "kìf": 1,
+      "kìfak": 1, "kìfik": 1
+    }
+  };
+
+  function kindOf(word, gloss) {
+    if (KIND_SET.formula[word]) return "formula";
+    if (KIND_SET.question[word]) return "question";
+    var g = String(gloss || "").toLowerCase().replace(/\s*\([^)]*\)/g, "").trim();
+    if (/^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|a hundred|one hundred)\b/.test(g)) return "number";
+    if (/^(my|your|his|her|our|their)\b/.test(g)) return "pronoun";
+    // "I want" and "I have" are verbs to anyone looking for them, even
+    // where Arabic builds them out of a preposition and an ending.
+    if (/^(i|you|he|she|it|we|they) [a-z]/.test(g)) return "verb";
+    if (/^(i|you|he|she|it|we|they|this|that)\b/.test(g)) return "pronoun";
+    if (/^(with|about|in|on|for) (me|you|him|her|us|them|it)\b/.test(g)) return "pronoun";
+    if (/^(may|let)\b/.test(g)) return "verb";
+    if (/^(wash|take|teach|show|correct|write|come|sit|try|wait|give|look|speak|stop|enter|go|bless|say|do not)\b/.test(g)) return "verb";
+    return "word";
+  }
+
+  function kindLabel(k) {
+    for (var i = 0; i < KINDS.length; i++) if (KINDS[i].key === k) return KINDS[i].label;
+    return "";
+  }
+
+  // The Levantine of a phrase, whichever table it lives in, so a word
+  // is indexed against both sides of the course and not just the one
+  // the app happens to be showing.
+  function levFormOf(ar) {
+    var row = DIALECT[ar];
+    if (row && row.lev) return row.lev[0];
+    if ((SAME.lev || {})[ar]) return ar;
+    return null;
+  }
+
+  function dictTokens(text) {
+    return String(text).toLowerCase().split(/\s+/).map(function (w) {
+      return w.replace(/[?!.,;:"]/g, "").trim();
+    }).filter(Boolean);
+  }
+
+  var DICT = null;
+
+  function dictIndex() {
+    if (DICT) return DICT;
+    var rows = {};
+    function seed(w, gloss, isLev) {
+      if (rows[w]) return;
+      rows[w] = { word: w, gloss: gloss, lev: !!isLev, kind: kindOf(w, gloss), lines: [], seen: {} };
+    }
+    Object.keys(GLOSS).forEach(function (w) { seed(w, GLOSS[w], false); });
+    Object.keys(GLOSS_LEV).forEach(function (w) { seed(w, GLOSS_LEV[w], true); });
+
+    function hit(token, ar) {
+      var bare = bareWord(token);
+      var r = rows[token] || rows[bare] || rows["al-" + bare];
+      if (!r || r.seen[ar]) return;
+      r.seen[ar] = true;
+      r.lines.push(ar);
+    }
+
+    var texts = [];
+    courseIndex().forEach(function (item) { texts.push(item.ar); });
+    LESSONS.forEach(function (l) {
+      l.phrases.forEach(function (p) { if (p.f) texts.push(p.f); });
+    });
+    texts.forEach(function (ar) {
+      dictTokens(ar).forEach(function (t) { hit(t, ar); });
+      var lv = levFormOf(ar);
+      if (lv) dictTokens(lv).forEach(function (t) { hit(t, ar); });
+    });
+
+    var list = [];
+    Object.keys(rows).forEach(function (w) {
+      var r = rows[w];
+      if (!r.lines.length) return;
+      delete r.seen;
+      list.push(r);
+    });
+    list.sort(function (a, b) {
+      var x = normalise(a.word), y = normalise(b.word);
+      return x < y ? -1 : x > y ? 1 : 0;
+    });
+    DICT = { list: list, by: {} };
+    list.forEach(function (r) { DICT.by[r.word] = r; });
+    return DICT;
+  }
+
+  var DICT_HITS = 60;
+  var dictQuery = "";
+  var dictKindKey = "all";
+
+  function dictSearch() {
+    var q = normalise(dictQuery);
+    var alsoEn = q ? italianFor(q) : [];
+    return dictIndex().list.filter(function (r) {
+      if (dictKindKey !== "all" && r.kind !== dictKindKey) return false;
+      if (!q) return true;
+      if (normalise(r.word).indexOf(q) !== -1) return true;
+      if (normalise(r.gloss).indexOf(q) !== -1) return true;
+      for (var i = 0; i < alsoEn.length; i++) {
+        if (hasWord(normalise(r.gloss), alsoEn[i])) return true;
+      }
+      return false;
+    });
+  }
+
+  function dictRowsHTML() {
+    var hits = dictSearch();
+    var shown = hits.slice(0, DICT_HITS);
+    if (!shown.length) {
+      return '<p class="fold-lead">Nothing under that. Try the meaning instead of the word, ' +
+        "or take the filter off.</p>";
+    }
+    return '<p class="pb-italian">' + hits.length + (hits.length === 1 ? " word" : " words") +
+      (hits.length > shown.length ? ", showing the first " + shown.length : "") + ".</p>" +
+      shown.map(function (r) {
+        return '<button class="pb-row dict-row" data-act="dict-open" data-id="' + esc(r.word) + '">' +
+          '<span class="pb-text"><span class="ar">' + esc(r.word) + "</span>" +
+          '<span class="pb-en">' + esc(r.gloss) + "</span></span>" +
+          '<span class="dict-count">' + r.lines.length + "</span></button>";
+      }).join("");
+  }
+
+  function dictHTML() {
+    if (view.word) return dictWordHTML(view.word);
+    return topbarHTML("Dictionary") +
+      '<p class="pb-lead">Every word the course can break down, what it means, and every line it ' +
+      "turns up in. Open one and you can build a session out of nothing but those lines.</p>" +
+      '<input class="pb-search" data-act="dict-search" type="text" value="' + esc(dictQuery) + '"' +
+      ' placeholder="A word, or what it means" autocomplete="off" autocorrect="off"' +
+      ' autocapitalize="off" spellcheck="false" aria-label="Search the dictionary">' +
+      '<div class="chips">' +
+      '<button class="pill pill--md chip' + (dictKindKey === "all" ? " is-on" : "") +
+      '" data-act="dict-kind" data-id="all">All</button>' +
+      KINDS.map(function (k) {
+        return '<button class="pill pill--md chip' + (dictKindKey === k.key ? " is-on" : "") +
+          '" data-act="dict-kind" data-id="' + k.key + '">' + esc(k.label) + "</button>";
+      }).join("") + "</div>" +
+      '<div data-dict aria-live="polite">' + dictRowsHTML() + "</div>";
+  }
+
+  function wordPool(r) {
+    var want = {};
+    r.lines.forEach(function (ar) { want[ar] = true; });
+    return studied().filter(function (it) { return want[it.ar]; });
+  }
+
+  function dictWordHTML(word) {
+    var r = dictIndex().by[word];
+    if (!r) { view = { name: "dict" }; return dictHTML(); }
+    var ready = wordPool(r).length;
+    return topbarHTML(r.word) +
+      '<p class="pb-lead"><b>' + esc(r.gloss) + "</b> &#183; " + esc(kindLabel(r.kind)) +
+      (r.lev ? " &#183; a Levantine word" : "") + "</p>" +
+      '<div class="pb-group"><h3>' + r.lines.length +
+      (r.lines.length === 1 ? " line in the course" : " lines in the course") + "</h3>" +
+      r.lines.map(function (ar) {
+        return '<div class="pb-row">' + sayBtn(ar, true) +
+          '<span class="pb-text"><span class="ar">' + esc(disp(ar)) + "</span>" +
+          '<span class="pb-en">' + esc(englishFor(ar)) + "</span></span>" + standingHTML(ar) + "</div>";
+      }).join("") + "</div>" +
+      (ready >= 3
+        ? '<div class="btn-row"><button class="btn" data-act="dict-drill" data-id="' + esc(r.word) +
+          '">Build a session from these</button></div>' +
+          '<p class="fold-lead">' + ready + " of them are in lessons you have passed.</p>"
+        : '<p class="fold-lead">A session out of one word needs three of its lines from lessons ' +
+          "you have passed. You have " + ready + " so far.</p>");
+  }
+
+  function wordDrill(word) {
+    var r = dictIndex().by[word];
+    if (!r) return null;
+    var pool = wordPool(r);
+    if (pool.length < 3) return null;
+    var types = askingGames();
+    if (!types.length) types = ["quiz"];
+    var picked = [];
+    shuffle(pool).forEach(function (item) {
+      if (picked.length >= reviewRounds()) return;
+      var options = typeFor(item, types);
+      for (var i = 0; i < options.length; i++) {
+        var made = makeRound(item.lesson, item, options[i]);
+        if (made) { picked.push(made); return; }
+      }
+    });
+    if (picked.length < 3) return null;
+    return newSession({ isReview: true, word: word, reviewPool: pool.length, tasks: picked });
   }
 
   function phrasebookHTML() {
@@ -15501,7 +15743,8 @@
     var t = session.tasks[session.i];
     var pct = Math.round(session.i / session.tasks.length * 100);
     var body = roundBodyHTML(t);
-    var title = session.aimed ? "Ready for: " + session.aimed.can
+    var title = session.word ? "The word " + session.word
+      : session.aimed ? "Ready for: " + session.aimed.can
       : session.isTest ? "The test"
       : session.isToday ? "Today"
       : session.isFixup ? "Fixing what you missed"
@@ -16070,6 +16313,8 @@
     } else if (session.isDrill) {
       line = ((gameByKey(session.isDrill) || {}).label || "That game") +
         ", drawn from everything you have passed.";
+    } else if (session.word) {
+      line = "Every line in the course that uses " + session.word + ", and nothing else.";
     } else if (session.aimed) {
       line = "Built from what it takes to " + session.aimed.can + ", and the phrases around it.";
     } else if (session.isReview) {
@@ -16155,7 +16400,8 @@
         ? '<button class="btn" data-go="lesson" data-id="' + next.id + '">Next lesson</button>'
         : '<button class="btn" data-go="home">Back to lessons</button>';
 
-    return topbarHTML(session.aimed ? "Ready for: " + session.aimed.can
+    return topbarHTML(session.word ? "The word " + session.word
+      : session.aimed ? "Ready for: " + session.aimed.can
       : session.isTest ? "The test"
       : session.isToday ? "Today"
       : session.isFixup ? "Fixing what you missed"
@@ -16586,6 +16832,7 @@
     if (view.name === "frame") return frameRunHTML();
     if (view.name === "answers") return answersHTML();
     if (view.name === "words") return wordsHTML();
+    if (view.name === "dict") return dictHTML();
     if (view.name === "talk") return talkHTML();
     return "";
   }
@@ -16815,6 +17062,7 @@
       stopSpeech();
       if (dest === "home") { session = null; go({ name: "home" }); return; }
       if (dest === "phrasebook") { pbQuery = ""; go({ name: "phrasebook" }); return; }
+      if (dest === "dict") { dictQuery = ""; dictKindKey = "all"; go({ name: "dict" }); return; }
       if (dest === "words") { go({ name: "words" }); return; }
       if (dest === "make") { session = null; made = newMake(null); go({ name: "make" }); return; }
       if (dest === "you") { session = null; go({ name: "you" }); return; }
@@ -17142,7 +17390,22 @@
     if (act === "today") { stopSpeech(); startToday(); return; }
     if (act === "restore") { restoreBackup(); return; }
     if (act === "save-file") { saveToFile(); return; }
-    if (act === "backup" || act === "search" || act === "typing") return;
+    if (act === "backup" || act === "search" || act === "dict-search" || act === "typing") return;
+    if (act === "dict-kind") {
+      dictKindKey = el.getAttribute("data-id") || "all";
+      render();
+      return;
+    }
+    if (act === "dict-open") {
+      var dictW = el.getAttribute("data-id");
+      if (dictW && dictIndex().by[dictW]) go({ name: "dict", word: dictW });
+      return;
+    }
+    if (act === "dict-drill") {
+      var ds = wordDrill(el.getAttribute("data-id"));
+      if (ds) { session = ds; go({ name: "play" }); }
+      return;
+    }
     if (act === "game") {
       var key = el.getAttribute("data-key");
       var live = games();
@@ -17617,6 +17880,13 @@
     }
     if (what === "moment-typing") { if (moment && !moment.checked) moment.typed = el.value; return; }
     if (what === "numbers-typing") { if (numbers && !numbers.checked) numbers.typed = el.value; return; }
+    if (what === "dict-search") {
+      dictQuery = el.value;
+      var dres = app.querySelector && app.querySelector("[data-dict]");
+      if (dres) { dres.innerHTML = dictRowsHTML(); return; }
+      render();
+      return;
+    }
     if (what === "search") {
       pbQuery = el.value;
       var results = app.querySelector && app.querySelector('[data-results]');

@@ -53,7 +53,9 @@ HOOKS = (
     ' suggestionsAfter: suggestionsAfter, flattenArabic: flattenArabic,'
     ' heardScore: heardScore, talkIndex: talkIndex, bestMatches: bestMatches,'
     ' replyFor: replyFor, talkScope: talkScope, romanise: romanise,'
-    ' nearestTranslit: nearestTranslit, disp: disp, spk: spk, variety: variety };'
+    ' nearestTranslit: nearestTranslit, disp: disp, spk: spk, variety: variety,'
+    ' dictIndex: dictIndex, dictSearch: dictSearch, kindOf: kindOf, KINDS: KINDS,'
+    ' wordDrill: wordDrill, wordPool: wordPool, levFormOf: levFormOf };'
 )
 
 START = '\n  applyHash(typeof window.location !== "undefined" ? window.location.hash : "");'

@@ -5535,5 +5535,102 @@ if (withMic) {
   }
 }
 
+section("a dictionary of every word the course can explain");
+{
+  const D = global.__data;
+  unlockAll();
+  const idx = D.dictIndex();
+
+  check(`there is an entry for every word a phrase actually uses (${idx.list.length})`,
+    idx.list.length > 900);
+  check("each one carries a meaning and at least one line",
+    idx.list.every(r => r.gloss && r.lines.length));
+  check("and nothing is listed twice",
+    new Set(idx.list.map(r => r.word)).size === idx.list.length);
+
+  // The index reads both sides of the course, not whichever one is on
+  // screen, or half the words would be invisible in fus-ha.
+  check("a fus-ha word knows its fus-ha lines",
+    (idx.by["urìd"] || { lines: [] }).lines.indexOf("Urìd mà', min fàdlik") !== -1);
+  check("a Levantine word is found through the Levantine line",
+    (idx.by["bìddi"] || { lines: [] }).lines.length > 0);
+  check("and the two are told apart",
+    idx.by["bìddi"].lev === true && idx.by["urìd"].lev === false);
+
+  // The kind is worked out from the gloss, so the edges are what matter.
+  check("I want is a verb, not a pronoun", D.kindOf("urìd", "I want") === "verb");
+  check("and so is the Levantine built out of a preposition",
+    D.kindOf("bìddi", "I want") === "verb");
+  check("having is a verb too, however Arabic builds it",
+    D.kindOf("ʿìndi", "I have") === "verb");
+  check("he is a pronoun even when the gloss adds a second reading",
+    D.kindOf("hùwa", "he, it") === "pronoun");
+  check("my father is filed under mine", D.kindOf("àbi", "my father") === "pronoun");
+  check("a question word is a question word", D.kindOf("àina", "where") === "question");
+  check("a number is a number", D.kindOf("khàmsa", "five") === "number");
+  check("five before a plural is still a number",
+    D.kindOf("khams", "five (before a plural)") === "number");
+  check("thank you is said whole", D.kindOf("shùkran", "thank you") === "formula");
+  check("and what the rules cannot split says so rather than guessing",
+    D.kindOf("sabùn", "soap") === "word");
+  check("every entry lands in one of the kinds the screen offers",
+    idx.list.every(r => D.KINDS.some(k => k.key === r.kind)));
+  check("and not one of those kinds is empty",
+    D.KINDS.every(k => idx.list.some(r => r.kind === k.key)));
+
+  click({ "data-go": "dict" });
+  check("the menu opens it", /Dictionary/.test(screenOnly()));
+  const all = (h.match(/data-act="dict-open"/g) || []).length;
+  check("and it lists words", all > 0);
+
+  type("dict-search", "soap");
+  check("searching the meaning finds the word", /sab&#249;n|sabùn/.test(screenOnly()));
+  type("dict-search", "acqua");
+  check("and Italian works here as well as in the phrasebook",
+    /class="pb-row dict-row"/.test(h));
+  type("dict-search", "zzzqqq");
+  check("nothing matching says so, and says what to try",
+    /Nothing under that/.test(screenOnly()));
+  type("dict-search", "");
+
+  click({ "data-act": "dict-kind", "data-id": "question" });
+  const asked = (h.match(/data-act="dict-open"/g) || []).length;
+  check("a kind filters the list", asked > 0 && asked < all);
+  click({ "data-act": "dict-kind", "data-id": "all" });
+  check("and taking it off puts them back",
+    (h.match(/data-act="dict-open"/g) || []).length === all);
+
+  click({ "data-act": "dict-open", "data-id": "urìd" });
+  check("opening a word names it", /urìd/.test(screenOnly()));
+  check("shows what it means", /I want/.test(screenOnly()));
+  check("and every line it turns up in",
+    (h.match(/class="pb-row"/g) || []).length === idx.by["urìd"].lines.length);
+  check("with the speaker on each one", /class="say/.test(h));
+  check("it offers a session made of nothing else",
+    /data-act="dict-drill"/.test(h));
+
+  click({ "data-act": "dict-drill", "data-id": "urìd" });
+  check("which starts", !!peek().session);
+  check("and says which word it was built from", /The word urìd/.test(h));
+  const lines = {};
+  idx.by["urìd"].lines.forEach(ar => { lines[ar] = true; });
+  check("every round in it uses that word",
+    peek().session.tasks.every(t => !t.phrase || lines[t.phrase.ar]));
+  peek().store.str = {};
+  click({ "data-go": "home" });
+
+  // A word nobody has met yet cannot become a session, and says why.
+  peek().store.lessons = {};
+  click({ "data-go": "dict" });
+  click({ "data-act": "dict-open", "data-id": "urìd" });
+  check("before you have passed the lessons there is no session to build",
+    !/data-act="dict-drill"/.test(h));
+  check("and it says how many it still needs", /needs three of its lines/.test(screenOnly()));
+  check("building one anyway does nothing", D.wordDrill("urìd") === null);
+  unlockAll();
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);
