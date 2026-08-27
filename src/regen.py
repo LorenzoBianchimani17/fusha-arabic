@@ -62,7 +62,9 @@ HOOKS = (
     ' openersFor: openersFor, newTalk: newTalk, ROOTS: ROOTS, rootOf: rootOf,'
     ' holdScreen: holdScreen, AWAKE_ON: AWAKE_ON, saidBefore: saidBefore,'
     ' EAR_SOUNDS: EAR_SOUNDS, noteSounds: noteSounds, earReport: earReport,'
-    ' EAR_ENOUGH: EAR_ENOUGH };'
+    ' EAR_ENOUGH: EAR_ENOUGH, PACE_FROM: PACE_FROM, PACE_STEP: PACE_STEP,'
+    ' PACE_CEIL: PACE_CEIL, PACE_FLOOR: PACE_FLOOR, PACE_LENGTH: PACE_LENGTH,'
+    ' paceLabel: paceLabel, rateFor: rateFor };'
 )
 
 START = '\n  applyHash(typeof window.location !== "undefined" ? window.location.hash : "");'

@@ -8663,7 +8663,12 @@
   // hear until you no longer need to. Now the first play is full speed
   // and asking again is what slows it down. The crutch is still there;
   // you have to reach for it.
+  // A drill that is about speed has to be able to set it, and nothing
+  // else may be affected: it is put back the moment the drill is over.
+  var forcedRate = null;
+
   function rateFor(translit) {
+    if (forcedRate !== null) return forcedRate;
     if (store.speed === "slow") return 0.75;
     if (store.speed === "normal") return 1;
     return speech.lastSaid === translit && speech.repeats > 0 ? 0.75 : 1;
@@ -12261,7 +12266,7 @@
 
     if (parts[0] === "loud") {
       session = null;
-      loud = newLoud(parts[1] === "run" ? "run" : "shadow", null);
+      loud = newLoud(parts[1] === "run" || parts[1] === "pace" ? parts[1] : "shadow", null);
       if (loud && loud.mode === "run") loud.startedAt = Date.now();
       view = { name: "loud" };
       render();
@@ -13529,6 +13534,11 @@
       '<button class="nav-item' + (openSits ? "" : " is-off") + '" data-go="run"' +
       (openSits ? "" : " disabled") + '><span class="nav-label">At a run</span>' +
       '<span class="nav-note">Ten you know, out loud, without stopping</span></button>' +
+      '<button class="nav-item' + (canSpeak() && openSits ? "" : " is-off") + '" data-go="pace"' +
+      (canSpeak() && openSits ? "" : " disabled") + '><span class="nav-label">Keeping up</span>' +
+      '<span class="nav-note">' + (canSpeak() && openSits
+        ? "It speeds up while you follow it, and slows down when you stop"
+        : "Needs a voice, and a couple of lessons behind you") + "</span></button>" +
       '<button class="nav-item" data-go="numbers"><span class="nav-label">Numbers by ear</span>' +
       '<span class="nav-note">A price or a time, said once. Type the digits</span></button>' +
       '<button class="nav-item' + (replyPool().length >= 3 ? "" : " is-off") + '" data-go="answers"' +
@@ -16749,10 +16759,10 @@
     if (!pool.length) return null;
     // Shadowing works on anything; a run is only worth it on phrases you
     // are supposed to have.
-    var use = mode === "run" ? pool.filter(function (p) { return p.s !== null && p.s >= 2; }) : pool;
+    var use = mode === "shadow" ? pool : pool.filter(function (p) { return p.s !== null && p.s >= 2; });
     if (!use.length) use = pool;
-    var list = shuffle(use).slice(0, mode === "run" ? 10 : 1);
-    return {
+    var list = shuffle(use).slice(0, mode === "run" ? 10 : mode === "pace" ? PACE_LENGTH : 1);
+    var out = {
       mode: mode,
       list: list,
       i: 0,
@@ -16764,6 +16774,70 @@
       got: prev && prev.mode === mode ? prev.got : 0,
       run: prev && prev.mode === mode ? prev.run : 0
     };
+    if (mode === "pace") {
+      out.rate = PACE_FROM;
+      out.best = null;
+      out.picked = null;
+      out.options = list.length ? paceOptions(list[0]) : [];
+    }
+    return out;
+  }
+
+  function pacePlay() {
+    if (!loud || loud.mode !== "pace" || !canSpeak()) return;
+    var p = loudNow();
+    if (!p) return;
+    forcedRate = loud.rate;
+    speech.lastSaid = null;
+    speak(p.ar);
+    forcedRate = null;
+  }
+
+  function paceAnswer(en) {
+    if (!loud || loud.mode !== "pace" || loud.picked !== null) return;
+    var p = loudNow();
+    if (!p) return;
+    var right = en === p.en;
+    loud.picked = en;
+    loud.run += 1;
+    if (right) {
+      loud.got += 1;
+      if (loud.best === null || loud.rate > loud.best) loud.best = loud.rate;
+    }
+    render();
+  }
+
+  function paceNext() {
+    if (!loud) return;
+    var right = loud.picked !== null && loudNow() && loud.picked === loudNow().en;
+    loud.rate = right
+      ? Math.min(PACE_CEIL, Math.round((loud.rate + PACE_STEP) * 1000) / 1000)
+      : Math.max(PACE_FLOOR, Math.round((loud.rate - PACE_STEP) * 1000) / 1000);
+    if (loud.i >= loud.list.length - 1) { loud.done = true; render(); return; }
+    loud.i += 1;
+    loud.picked = null;
+    loud.played = false;
+    loud.options = paceOptions(loudNow());
+    render();
+  }
+
+  /* ------------------------------------------------------------
+     KEEPING UP - what fails in the street is not the vocabulary, it
+     is the speed. The phrase is played and nothing is written down;
+     get it and it comes back faster, miss it and it slows. What you
+     take away is not a score but a number: the speed you were still
+     following at.
+     ------------------------------------------------------------ */
+
+  var PACE_FROM = 0.7;
+  var PACE_STEP = 0.075;
+  var PACE_FLOOR = 0.6;
+  var PACE_CEIL = 1.3;
+  var PACE_LENGTH = 12;
+
+  function paceOptions(item) {
+    var wrong = distractors(visiblePhrases(item.lesson), item.en, "en", 3, item.ar);
+    return shuffle(wrong.map(function (x) { return x.en; }).concat([item.en]));
   }
 
   function loudNow() { return loud && loud.list[loud.i]; }
@@ -16782,6 +16856,7 @@
 
   function loudNext() {
     if (!loud) return;
+    if (loud.mode === "pace") { paceNext(); return; }
     if (loud.mode === "shadow") { loud = newLoud("shadow", loud); render(); return; }
     if (loud.i >= loud.list.length - 1) { loud.done = true; render(); return; }
     loud.i += 1;
@@ -16798,6 +16873,8 @@
 
     var p = loudNow();
     var shadow = loud.mode === "shadow";
+
+    if (loud.mode === "pace") return paceHTML(p);
 
     if (loud.done) {
       var secs = loud.startedAt ? Math.round((Date.now() - loud.startedAt) / 1000) : null;
@@ -16846,6 +16923,64 @@
       "</p>" +
       '<div class="prompt"><div class="prompt-label">' +
       (shadow ? "Say it back" : "Say this") + "</div>" + stage + "</div>" + body;
+  }
+
+  function paceLabel(r) {
+    if (r <= 0.65) return "very slow";
+    if (r <= 0.8) return "slow";
+    if (r <= 0.95) return "careful";
+    if (r <= 1.1) return "ordinary";
+    if (r <= 1.2) return "quick";
+    return "as fast as anyone talks";
+  }
+
+  function paceHTML(p) {
+    if (loud.done) {
+      return topbarHTML("Keeping up") +
+        '<div class="card result fade-in"><div class="eyebrow">Where you stopped</div>' +
+        '<div class="result-score mono review">' +
+        (loud.best === null ? "-" : Math.round(loud.best * 100) + "%") + "</div>" +
+        '<p class="result-line">' + (loud.best === null
+          ? "Nothing came through this time. That is a result too: start again slower."
+          : "The fastest you were still following was <b>" + paceLabel(loud.best) +
+            "</b>, at " + Math.round(loud.best * 100) + " per cent of ordinary speed. " +
+            loud.got + " of " + loud.run + " along the way, and none of it counted towards anything.") +
+        "</p></div>" +
+        '<div class="btn-row"><button class="btn btn-ghost" data-go="home">Home</button>' +
+        '<button class="btn" data-act="loud-again">Again</button></div>';
+    }
+    if (!canSpeak()) {
+      return topbarHTML("Keeping up") +
+        '<p class="pb-lead">This one needs an Arabic voice on the device, and there is not one.</p>' +
+        '<div class="btn-row"><button class="btn" data-go="home">Back</button></div>';
+    }
+    var settled = loud.picked !== null;
+    var right = settled && loud.picked === p.en;
+    return topbarHTML("Keeping up", null, (loud.i + 1) + " / " + loud.list.length) +
+      '<p class="pb-lead">Vocabulary is not what fails you in the street; speed is. Get it and the ' +
+      "next one comes faster. Miss it and it slows down. Nothing here counts towards anything - the " +
+      "only thing to take away is the speed you were still following at.</p>" +
+      '<div class="prompt"><div class="prompt-label">' + esc(paceLabel(loud.rate)) +
+      " &#183; " + Math.round(loud.rate * 100) + "%</div>" +
+      '<div class="listen-stage">' +
+      '<button class="say say-lg" data-act="pace-play" aria-label="Play it again">' +
+      SPEAKER_SVG + "</button></div>" +
+      '<div class="prompt-sub">' +
+      (settled ? '<span class="ar">' + esc(disp(p.ar)) + "</span>" : "listen, then pick what it was") +
+      "</div></div>" +
+      (settled
+        ? '<div class="verdict" tabindex="-1"><div class="verdict-msg ' + (right ? "ok" : "no") + '"><b>' +
+          (right ? "Yes." : "No - it was") + "</b>&nbsp;<span>" + esc(p.en) + "</span>" +
+          sayBtn(p.ar, true) + "</div>" +
+          '<p class="fold-lead">' + (right
+            ? "Next one is faster."
+            : "Next one slows down.") + "</p>" +
+          '<button class="btn btn-wide" data-act="loud-next">' +
+          (loud.i >= loud.list.length - 1 ? "See where you stopped" : "Continue") + "</button></div>"
+        : '<div class="options">' + loud.options.map(function (en, i) {
+            return '<button class="option" data-act="pace-pick" data-value="' + esc(en) + '">' +
+              '<span class="option-key">' + (i + 1) + "</span><span>" + esc(en) + "</span></button>";
+          }).join("") + "</div>");
   }
 
   /* ============================================================
@@ -18571,6 +18706,10 @@
         loud.played = true;
         speak(lp.ar);
       }
+      if (loud && lp && !loud.played && canSpeak() && loud.mode === "pace") {
+        loud.played = true;
+        pacePlay();
+      }
       return;
     }
     if (view.name === "numbers") {
@@ -18689,9 +18828,9 @@
       if (dest === "twins") { session = null; go({ name: "twins" }); return; }
       if (dest === "asked") { session = null; asked = newAsked(null); go({ name: "asked" }); return; }
       if (dest === "numbers") { session = null; numbers = newNumbers(null); go({ name: "numbers" }); return; }
-      if (dest === "shadow" || dest === "run") {
+      if (dest === "shadow" || dest === "run" || dest === "pace") {
         session = null;
-        loud = newLoud(dest === "run" ? "run" : "shadow", null);
+        loud = newLoud(dest, null);
         if (loud && loud.mode === "run") loud.startedAt = Date.now();
         go({ name: "loud" });
         return;
@@ -19010,6 +19149,8 @@
     if (act === "restore") { restoreBackup(); return; }
     if (act === "save-file") { saveToFile(); return; }
     if (act === "backup" || act === "search" || act === "dict-search" || act === "typing") return;
+    if (act === "pace-play") { if (loud) { loud.played = true; pacePlay(); } return; }
+    if (act === "pace-pick") { paceAnswer(el.getAttribute("data-value")); return; }
     if (act === "talk-role") {
       var wantRole = el.getAttribute("data-id");
       if (wantRole !== talkRole()) {

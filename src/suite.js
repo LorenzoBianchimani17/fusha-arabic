@@ -6098,5 +6098,69 @@ section("which of the sounds you personally lose");
 }
 
 
+section("keeping up with the speed, not the words");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+
+  check("it starts below ordinary speed", D.PACE_FROM < 1);
+  check("and can end above it", D.PACE_CEIL > 1);
+  check("the floor is below the start, so there is somewhere to fall to",
+    D.PACE_FLOOR < D.PACE_FROM);
+  check("every speed has a plain word for it",
+    [D.PACE_FLOOR, D.PACE_FROM, 1, D.PACE_CEIL].every(r => D.paceLabel(r).length > 3));
+
+  click({ "data-go": "pace" });
+  if (!withVoice) {
+    check("without a voice it says so rather than pretending", /needs an Arabic voice/.test(strip(h)));
+  } else {
+    const l = peek().loud;
+    check("it draws a run of them", l && l.mode === "pace" && l.list.length === D.PACE_LENGTH);
+    check("starting where it said it would", l.rate === D.PACE_FROM);
+    check("with nothing said about the answer yet", l.picked === null);
+    check("it plays without showing the words",
+      !visible(h).includes(D.disp(l.list[0].ar)) && /data-act="pace-play"/.test(h));
+    check("and offers what it might have been", (h.match(/data-act="pace-pick"/g) || []).length === 4);
+    check("one of which is right", l.options.indexOf(l.list[0].en) !== -1);
+
+    // right: it speeds up
+    click({ "data-act": "pace-pick", "data-value": l.list[0].en });
+    check("getting it says so", /verdict-msg ok/.test(h));
+    check("and now the words are there to see", visible(h).includes(D.disp(l.list[0].ar)));
+    check("the fastest you followed is written down", l.best === D.PACE_FROM);
+    click({ "data-act": "loud-next" });
+    check("and the next one comes faster", peek().loud.rate > D.PACE_FROM);
+
+    // wrong: it slows down
+    const was = peek().loud.rate;
+    const now = peek().loud;
+    const notIt = now.options.find(o => o !== now.list[now.i].en);
+    click({ "data-act": "pace-pick", "data-value": notIt });
+    check("missing one says what it was", /verdict-msg no/.test(h));
+    click({ "data-act": "loud-next" });
+    check("and the next one slows down", peek().loud.rate < was);
+    check("without forgetting the fastest you managed", peek().loud.best === D.PACE_FROM);
+
+    // to the end
+    let guard = 0;
+    while (guard++ < 40 && peek().loud && !peek().loud.done) {
+      const cur = peek().loud;
+      click({ "data-act": "pace-pick", "data-value": cur.list[cur.i].en });
+      click({ "data-act": "loud-next" });
+    }
+    check("it ends", peek().loud.done);
+    check("and what it reports is a speed, not a score",
+      /Where you stopped/.test(strip(h)) && /per cent of ordinary speed/.test(strip(h)));
+    check("saying plainly that none of it counted", /none of it counted/.test(strip(h)));
+  }
+
+  check("and it never leaves the speaker turned up for everything else",
+    D.rateFor("Marhàban") <= 1);
+  st.str = {};
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);
