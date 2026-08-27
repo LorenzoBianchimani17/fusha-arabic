@@ -6270,5 +6270,75 @@ section("answering with something true about you");
 }
 
 
+section("conversations you had, kept and drilled");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.talks = undefined;
+  st.talkRole = undefined;
+  st.talkScope = undefined;
+
+  click({ "data-go": "kept" });
+  check("with nothing kept it says where to keep one",
+    /Keep this one/.test(strip(screenOnly())) && /Nothing kept yet/.test(strip(screenOnly())));
+
+  click({ "data-go": "talk" });
+  check("a conversation with nothing of yours in it cannot be kept",
+    !/data-act="talk-keep"/.test(h));
+
+  // say a few things
+  const distinct = () =>
+    new Set(peek().talk.turns.filter(x => x.who === "you").map(x => x.ar)).size;
+  let guard = 0;
+  const already = {};
+  while (guard++ < 20 && (distinct() < 3 || peek().talk.turns.length < D.TALK_KEEPABLE)) {
+    const opts = peek().talk.suggest || [];
+    const say = opts.find(o => !already[o.ar]) || opts[0];
+    if (!say) break;
+    already[say.ar] = 1;
+    click({ "data-act": "talk-pick", "data-id": say.ar });
+  }
+  check("a few different things of yours went into it", distinct() >= 2);
+  check("once it has gone a few turns it offers to keep it",
+    /data-act="talk-keep"/.test(h));
+  const said = [...new Set(peek().talk.turns.filter(t2 => t2.who === "you").map(t2 => t2.ar))];
+  check("and there is something of yours in it", said.length > 0);
+
+  click({ "data-act": "talk-keep" });
+  check("keeping it writes it down", D.keptTalks().length === 1);
+  check("and says so rather than looking like nothing happened",
+    /Kept - it is in/.test(strip(screenOnly())));
+  check("what is kept is the whole exchange, both sides",
+    D.keptTalks()[0].turns.length >= D.TALK_KEEPABLE &&
+    D.keptTalks()[0].turns.some(t2 => t2.who === "them"));
+  check("with the day it happened", typeof D.keptTalks()[0].day === "number");
+
+  click({ "data-go": "kept" });
+  check("the list has it", /talk-log/.test(h));
+  check("saying how much of it was yours", /lines yours|line yours/.test(strip(screenOnly())));
+  check("and offering to drill it", /data-act="kept-play"/.test(h));
+
+  const drill = D.talkDrill(0);
+  check("which builds a session", !!drill);
+  check("out of your lines and nobody else's",
+    drill.tasks.filter(x => x.phrase).every(x => said.indexOf(x.phrase.ar) !== -1));
+  check("and it says whose lines they were", drill.hadTalk === true);
+
+  click({ "data-act": "kept-play", "data-id": "0" });
+  check("starting it names it", /Something you said/.test(strip(h)));
+  peek().store.str = {};
+  click({ "data-go": "kept" });
+  click({ "data-act": "kept-drop", "data-id": "0" });
+  check("and it can be forgotten again", D.keptTalks().length === 0);
+
+  check("only so many are kept, or it becomes a diary nobody reads",
+    D.TALKS_KEPT <= 20);
+
+  st.talks = undefined;
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);

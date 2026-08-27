@@ -65,7 +65,9 @@ HOOKS = (
     ' EAR_ENOUGH: EAR_ENOUGH, PACE_FROM: PACE_FROM, PACE_STEP: PACE_STEP,'
     ' PACE_CEIL: PACE_CEIL, PACE_FLOOR: PACE_FLOOR, PACE_LENGTH: PACE_LENGTH,'
     ' paceLabel: paceLabel, rateFor: rateFor, UNSURE: UNSURE, unsureOf: unsureOf, unsureMark: unsureMark,'
-    ' YOURS: YOURS, yoursOpen: yoursOpen, yoursRead: yoursRead, yoursSaid: yoursSaid };'
+    ' YOURS: YOURS, yoursOpen: yoursOpen, yoursRead: yoursRead, yoursSaid: yoursSaid,'
+    ' keptTalks: keptTalks, keepTalk: keepTalk, talkDrill: talkDrill,'
+    ' TALK_KEEPABLE: TALK_KEEPABLE, TALKS_KEPT: TALKS_KEPT };'
 )
 
 START = '\n  applyHash(typeof window.location !== "undefined" ? window.location.hash : "");'

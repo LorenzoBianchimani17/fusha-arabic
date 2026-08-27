@@ -10611,6 +10611,7 @@
       aimed: fields.aimed || null,
       word: fields.word || null,
       run: fields.run || null,
+      hadTalk: !!fields.hadTalk,
       extended: false,
       grew: false,
       convo: fields.convo || null,
@@ -11522,6 +11523,70 @@
       note: "A visitor asks you where something is, what it costs, when it goes. You answer from behind the counter, which means producing the answers instead of the questions." }
   ];
 
+  /* ------------------------------------------------------------
+     CONVERSATIONS YOU HAD - a free talk disappears the moment you
+     leave it. Kept, it comes back days later as a drill made of the
+     sentences you actually reached for, which are not the ones
+     anybody would have chosen for you.
+     ------------------------------------------------------------ */
+
+  var TALKS_KEPT = 12;
+  var TALK_KEEPABLE = 4;
+
+  function keptTalks() { return store.talks || []; }
+
+  function keepTalk() {
+    if (!talk || talk.turns.length < TALK_KEEPABLE) return false;
+    var mine = talk.turns.filter(function (t) { return t.who === "you"; });
+    if (!mine.length) return false;
+    var rec = {
+      day: today(),
+      role: talk.role || talkRole(),
+      turns: talk.turns.map(function (t) { return { who: t.who, ar: t.ar, en: t.en }; })
+    };
+    var list = keptTalks().slice();
+    list.unshift(rec);
+    store.talks = list.slice(0, TALKS_KEPT);
+    save();
+    return true;
+  }
+
+  function dropTalk(i) {
+    var list = keptTalks().slice();
+    if (i < 0 || i >= list.length) return;
+    list.splice(i, 1);
+    store.talks = list;
+    save();
+  }
+
+  function distinctMine(rec) {
+    var seen = {};
+    (rec.turns || []).forEach(function (t) { if (t.who === "you") seen[t.ar] = 1; });
+    return Object.keys(seen).length;
+  }
+
+  function talkDrill(i) {
+    var rec = keptTalks()[i];
+    if (!rec) return null;
+    var want = {};
+    rec.turns.forEach(function (t) { if (t.who === "you") want[t.ar] = true; });
+    var pool = studied().filter(function (it) { return want[it.ar]; });
+    if (pool.length < 2) return null;
+    var types = askingGames();
+    if (!types.length) types = ["quiz"];
+    var picked = [];
+    shuffle(pool).forEach(function (item) {
+      if (picked.length >= reviewRounds()) return;
+      var options = typeFor(item, types);
+      for (var k = 0; k < options.length; k++) {
+        var made = makeRound(item.lesson, item, options[k]);
+        if (made) { picked.push(made); return; }
+      }
+    });
+    if (picked.length < 2) return null;
+    return newSession({ isReview: true, hadTalk: true, reviewPool: pool.length, tasks: picked });
+  }
+
   function talkRole() {
     var k = store.talkRole;
     for (var i = 0; i < TALK_ROLES.length; i++) if (TALK_ROLES[i].key === k) return k;
@@ -12075,6 +12140,7 @@
     if (v.name === "words") return "#/words";
     if (v.name === "unsure") return "#/unsure";
     if (v.name === "yours") return "#/yours";
+    if (v.name === "kept") return "#/kept";
     if (v.name === "dict") return "#/dict" + (v.word ? "/" + encodeURIComponent(v.word) : "");
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -12163,6 +12229,13 @@
       session = null;
       yours = newYours(null);
       view = { name: "yours" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "kept") {
+      session = null;
+      view = { name: "kept" };
       render();
       return;
     }
@@ -13523,6 +13596,11 @@
       '<button class="nav-item" data-go="dict"><span class="nav-label">Dictionary</span>' +
       '<span class="nav-note">' + esc(dictIndex().list.length +
         " words, what each one means, and every line it turns up in") + "</span></button>" +
+      '<button class="nav-item' + (keptTalks().length ? "" : " is-off") + '" data-go="kept"' +
+      (keptTalks().length ? "" : " disabled") + '><span class="nav-label">Conversations you had</span>' +
+      '<span class="nav-note">' + esc(keptTalks().length
+        ? keptTalks().length + " kept, drillable out of your own lines"
+        : "Keep one at the bottom of a free talk and it lands here") + "</span></button>" +
       '<button class="nav-item' + (yoursOpen().length ? "" : " is-off") + '" data-go="yours"' +
       (yoursOpen().length ? "" : " disabled") + '><span class="nav-label">In your own words</span>' +
       '<span class="nav-note">' + (yoursOpen().length
@@ -14070,7 +14148,43 @@
       '<button class="btn btn-ghost" data-act="talk-reset">Start over</button>' +
       '<button class="btn" data-act="talk-send"' + (talk.draft.trim() ? "" : " disabled") + ">Say it</button>" +
       "</div>" +
+      (talk.turns.filter(function (x) { return x.who === "you"; }).length &&
+       talk.turns.length >= TALK_KEEPABLE
+        ? '<div class="btn-row"><button class="btn btn-ghost btn-wide" data-act="talk-keep">' +
+          (talk.kept ? "Kept - it is in Conversations you had" : "Keep this one") + "</button></div>"
+        : "") +
       "</div>";
+  }
+
+  function keptHTML() {
+    var list = keptTalks();
+    if (!list.length) {
+      return topbarHTML("Conversations you had") +
+        '<p class="pb-lead">Nothing kept yet. At the bottom of a free talk, once it has gone a few ' +
+        "turns, there is <b>Keep this one</b>. What you keep comes back here, and can be drilled " +
+        "later out of the sentences you actually reached for rather than the ones I would have " +
+        "picked for you.</p>" +
+        '<div class="btn-row"><button class="btn" data-go="talk">Go and have one</button></div>';
+    }
+    return topbarHTML("Conversations you had") +
+      '<p class="pb-lead">The last ' + list.length + " you kept. Say it again drills the lines that " +
+      "were yours in it - not the whole thing, and not the other side's.</p>" +
+      list.map(function (rec, i) {
+        var mine = rec.turns.filter(function (t) { return t.who === "you"; });
+        var age = today() - rec.day;
+        return '<div class="pb-group"><h3>' +
+          (age <= 0 ? "Today" : age === 1 ? "Yesterday" : age + " days ago") +
+          " &#183; " + mine.length + (mine.length === 1 ? " line yours" : " lines yours") + "</h3>" +
+          '<div class="transcript talk-log">' + rec.turns.map(function (t) {
+            return bubble(t.who === "you" ? "you" : "them", t.ar, t.en);
+          }).join("") + "</div>" +
+          '<div class="btn-row">' +
+          '<button class="btn btn-ghost" data-act="kept-drop" data-id="' + i + '">Forget it</button>' +
+          (distinctMine(rec) >= 2
+            ? '<button class="btn" data-act="kept-play" data-id="' + i + '">Say it again</button>'
+            : '<span class="fold-lead">One line of yours is not a session.</span>') +
+          "</div></div>";
+      }).join("");
   }
 
   // Every phrase you have taken out of rotation, and why, in one place.
@@ -17757,7 +17871,8 @@
     var t = session.tasks[session.i];
     var pct = Math.round(session.i / session.tasks.length * 100);
     var body = roundBodyHTML(t);
-    var title = session.run ? runTitle(session.run)
+    var title = session.hadTalk ? "Something you said"
+      : session.run ? runTitle(session.run)
       : session.word ? "The word " + session.word
       : session.aimed ? "Ready for: " + session.aimed.can
       : session.isTest ? "The test"
@@ -18328,6 +18443,9 @@
     } else if (session.isDrill) {
       line = ((gameByKey(session.isDrill) || {}).label || "That game") +
         ", drawn from everything you have passed.";
+    } else if (session.hadTalk) {
+      line = "The lines you reached for in a conversation you had, which are not the ones anybody " +
+        "would have picked for you.";
     } else if (session.run) {
       line = "A run through " + session.run.length + " lessons, in the order the course puts them in.";
     } else if (session.word) {
@@ -18417,7 +18535,8 @@
         ? '<button class="btn" data-go="lesson" data-id="' + next.id + '">Next lesson</button>'
         : '<button class="btn" data-go="home">Back to lessons</button>';
 
-    return topbarHTML(session.run ? runTitle(session.run)
+    return topbarHTML(session.hadTalk ? "Something you said"
+      : session.run ? runTitle(session.run)
       : session.word ? "The word " + session.word
       : session.aimed ? "Ready for: " + session.aimed.can
       : session.isTest ? "The test"
@@ -18852,6 +18971,7 @@
     if (view.name === "words") return wordsHTML();
     if (view.name === "unsure") return unsureHTML();
     if (view.name === "yours") return yoursHTML();
+    if (view.name === "kept") return keptHTML();
     if (view.name === "dict") return dictHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -19127,6 +19247,7 @@
       if (dest === "dict") { dictQuery = ""; dictKindKey = "all"; go({ name: "dict" }); return; }
       if (dest === "unsure") { go({ name: "unsure" }); return; }
       if (dest === "yours") { yours = newYours(yours); go({ name: "yours" }); return; }
+      if (dest === "kept") { go({ name: "kept" }); return; }
       if (dest === "words") { go({ name: "words" }); return; }
       if (dest === "make") { session = null; made = newMake(null); go({ name: "make" }); return; }
       if (dest === "you") { session = null; go({ name: "you" }); return; }
@@ -19456,6 +19577,21 @@
     if (act === "save-file") { saveToFile(); return; }
     if (act === "backup" || act === "search" || act === "dict-search" || act === "typing"
       || act === "yours-typing") return;
+    if (act === "talk-keep") {
+      if (keepTalk()) talk.kept = true;
+      render();
+      return;
+    }
+    if (act === "kept-drop") {
+      dropTalk(Number(el.getAttribute("data-id")));
+      render();
+      return;
+    }
+    if (act === "kept-play") {
+      var kd = talkDrill(Number(el.getAttribute("data-id")));
+      if (kd) { session = kd; go({ name: "play" }); }
+      return;
+    }
     if (act === "yours-read") {
       if (!yours || !yours.draft.trim()) return;
       yours.read = yoursRead(yours.draft, yours.q.ask);
