@@ -4721,20 +4721,37 @@ section("the course can be climbed");
   const pool = LESSONS.reduce((n, l) => n + l.phrases.length, 0);
   const perDay = pool / D.HOLDS[4];
   console.log(`    ${pool} phrases, ${perDay.toFixed(0)} a day needed to hold all of it`);
-  check("the longest session can still carry the whole pool",
-    perDay <= D.PACES[D.PACES.length - 1].rounds);
+  // On 2026-08-27 the course went past what even the longest session
+  // can carry: 903 phrases want 31 rounds a day and the longest gives
+  // 30. That is not a bug to hide, it is the arithmetic, and the app
+  // now has an answer to it rather than a bigger number. The check has
+  // moved with it: what has to hold is that the app never quietly lets
+  // you fall behind, and that has two halves.
+  const longest = D.PACES[D.PACES.length - 1].rounds;
+  check("the pool has outgrown even the longest session, and that is known",
+    perDay > longest);
   unlockAll();
   peek().store.pace = "normal";
   peek().store.known = {};
+  delete peek().store.trip;
+  delete peek().store.packed;
   click({ "data-go": "home" });
-  check("and where the chosen one cannot, the app says so plainly",
+  check("so the app says so plainly rather than letting the meter fall",
     !D.poolFits().ok && /more than \d+ rounds a day can keep alive/.test(h));
   check("naming the three ways out", /I know this one/.test(h) && /not for me/.test(h));
-  check("and offering the longer session on the spot",
-    /data-act="pace" data-id="long"/.test(h));
   peek().store.pace = "long";
   click({ "data-go": "home" });
-  check("which makes it fit, and the warning goes", D.poolFits().ok && !/notice-pool/.test(h));
+  check("and a longer session no longer closes the gap on its own",
+    !D.poolFits().ok);
+
+  // the second half: the answer the app actually has
+  peek().store.trip = D.today() + 21;
+  D.setPacked(true);
+  check("putting the rest aside until the trip does close it",
+    D.poolFits().ok && D.poolFits().need <= D.PACES[1].rounds);
+  D.setPacked(false);
+  delete peek().store.trip;
+  click({ "data-go": "home" });
   peek().store.pace = undefined;
 
   // and coming back late costs one step, not the lot
