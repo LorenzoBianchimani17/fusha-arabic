@@ -65,9 +65,10 @@ them back to back as one run (new session code).
    `setTalkScope()` already exist and already take several lessons, and
    the scope picker is already on the screen: that half is built. What
    is missing is who starts. Today the other side always opens and you
-   always answer. Wanted: you opening as the foreigner, and then the
-   reverse - you playing the local answering a tourist, which makes you
-   produce answers instead of questions. Held to the lessons fed in.
+   always answer. Decided: all three roles behind a selector - they
+   open and you answer (as now), you open as the foreigner, and you
+   play the local answering a tourist. The third is the one that makes
+   you produce answers instead of questions. Held to the lessons fed in.
 3. **Roots.** Group the dictionary by consonantal skeleton, so k-t-b
    shows kitàb, àktub, màktab together. Vocabulary that costs the
    review pool nothing, which is the only kind left worth having.
@@ -90,10 +91,17 @@ them back to back as one run (new session code).
    Instead, flag the entries whose Levantine or vocalisation is a
    judgement call, verify the ones that can be verified, and leave the
    rest carrying a visible mark so a native can be asked about exactly
-   those and nothing else. Every agent draft in this repo ended with a
-   "least sure about" list; that is the raw material and it is
-   currently thrown away.
-9. **Trip triage, opt in only.** Naming a departure date lets the app
+   those and nothing else. Decided: a quiet mark on the card while you
+   study **and** a screen that collects them all. Every agent draft in
+   this repo ended with a "least sure about" list; that is the raw
+   material and it is currently thrown away.
+9. **Conversations you had.** A finished free talk is saved and comes
+   back days later as a drill. You revise your own real sentences
+   rather than the ones I chose for you.
+10. **The screen stays on during a session.** It dims while you are
+   thinking about an answer. Ten lines. Icon shortcuts and a
+   one-handed reachability audit were offered and turned down.
+11. **Trip triage, opt in only.** Naming a departure date lets the app
    put everything you will not need in the first week below the line
    and bring the daily pool back under what a session can carry.
    Agreed on condition it is **never the default**: the app must not
