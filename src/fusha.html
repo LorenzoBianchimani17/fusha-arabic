@@ -541,6 +541,23 @@
 
   .pick-open { margin: 0 0 var(--s-5); }
 
+  .talk-roles { margin-bottom: var(--s-2); }
+
+  .talk-role-note {
+    margin: 0 0 var(--s-5);
+    font-size: var(--t-2);
+    line-height: 1.45;
+    color: var(--ink-3);
+  }
+
+  .talk-empty {
+    margin: 0;
+    padding: var(--s-5) 0;
+    font-size: var(--t-3);
+    color: var(--ink-3);
+    text-align: center;
+  }
+
   /* The bar lives where the thumb already is, not at the top of a list
      you have scrolled to the bottom of. */
   .pick-bar {
@@ -11350,16 +11367,95 @@
     return out.slice(0, 3);
   }
 
+  // The app only ever let you answer. Two thirds of a real conversation
+  // are the other two: opening one, and being the person who knows the
+  // answer. The machinery is the same in all three - somebody speaks
+  // and somebody answers - and what changes is which of you is which.
+  var TALK_ROLES = [
+    { key: "them", label: "They start",
+      note: "Someone speaks to you and you answer. The way it has always worked." },
+    { key: "you", label: "You start",
+      note: "Nothing on the screen until you say something. Opening is a different nerve from answering, and it is the one that fails you in a room full of strangers." },
+    { key: "local", label: "You are the local",
+      note: "A visitor asks you where something is, what it costs, when it goes. You answer from behind the counter, which means producing the answers instead of the questions." }
+  ];
+
+  function talkRole() {
+    var k = store.talkRole;
+    for (var i = 0; i < TALK_ROLES.length; i++) if (TALK_ROLES[i].key === k) return k;
+    return "them";
+  }
+
+  function setTalkRole(k) {
+    store.talkRole = k;
+    save();
+  }
+
+  function talkRoleInfo() {
+    var k = talkRole();
+    for (var i = 0; i < TALK_ROLES.length; i++) if (TALK_ROLES[i].key === k) return TALK_ROLES[i];
+    return TALK_ROLES[0];
+  }
+
+  // A question asking where something is, what it costs or when it goes
+  // is a visitor's question. A greeting, or an interest in you, is the
+  // local's. Two things decide it, and both are already in the file.
+  // First the kind, which the listening drill already works out.
+  var VISITOR_ASKS = { where: 1, howmuch: 1, when: 1 };
+
+  // Then whether it names a thing at all. Where is the bathroom and
+  // where are you from are both where-questions; only one of them
+  // points at something, and the article is what points. Where to and
+  // where are you from are left out entirely: those are what the driver
+  // and the man in the next seat ask you.
+  var NAMES_A_THING = /(^| )(al|ash|as|at|ath|ar|an|az|ad) /;
+
+  function fromVisitor(ar) {
+    var k = askKind(ar);
+    if (!k || !VISITOR_ASKS[k]) return false;
+    return NAMES_A_THING.test(normalise(ar));
+  }
+
+  function openersFor(role) {
+    var idx = talkIndex();
+    if (role === "local") {
+      var asked = Object.keys(idx.replyTo).filter(fromVisitor).map(function (ar) {
+        return { ar: ar, en: englishFor(ar) };
+      });
+      if (asked.length) return asked;
+    }
+    var mine = idx.openers.filter(function (o) { return !fromVisitor(o.ar); });
+    return mine.length ? mine : idx.openers;
+  }
+
   function newTalk() {
     var was = talk && talk.pickOpen;
-    var idx = talkIndex();
-    var open = idx.openers.length ? shuffle(idx.openers)[0] : { ar: "Marhàban", en: "Hello" };
+    var role = talkRole();
+    var list = openersFor(role);
+
+    // You start: the screen is empty on purpose, and what would have
+    // been the other side's opener becomes the list of ways in.
+    if (role === "you") {
+      return {
+        turns: [],
+        role: role,
+        draft: "",
+        heard: null,
+        options: [],
+        suggest: shuffle(list).slice(0, 3).map(function (o) { return { ar: o.ar, en: o.en }; }),
+        stuck: 0,
+        pickOpen: !!was
+      };
+    }
+
+    var open = list.length ? shuffle(list)[0] : { ar: "Marhàban", en: "Hello" };
     return {
       turns: [{ who: "them", ar: open.ar, en: open.en }],
+      role: role,
       draft: "",
       heard: null,
       options: [],
-      suggest: was === undefined ? suggestionsAfter(open.ar) : suggestionsAfter(open.ar),
+      suggest: suggestionsAfter(open.ar),
       stuck: 0,
       pickOpen: !!was
     };
@@ -13679,10 +13775,13 @@
   var loud = null;
 
   function talkHTML() {
-    var lines = talk.turns.map(function (t) {
-      return bubble(t.who === "you" ? "you" : "them", t.ar, t.en) +
-        (t.repair ? '<p class="talk-repair">' + esc(t.repair) + "</p>" : "");
-    }).join("");
+    var role = talkRoleInfo();
+    var lines = talk.turns.length
+      ? talk.turns.map(function (t) {
+          return bubble(t.who === "you" ? "you" : "them", t.ar, t.en) +
+            (t.repair ? '<p class="talk-repair">' + esc(t.repair) + "</p>" : "");
+        }).join("")
+      : '<p class="talk-empty">Nothing on the table. Say something, or take one of the ways in below.</p>';
 
     var understood = "";
     if (talk.options.length) {
@@ -13734,8 +13833,9 @@
       // Being repaired at is the one moment the way out should already
       // be open rather than folded away behind a summary.
       hint = '<details class="guide suggest"' +
-        ((talk.hintOpen || (lastTurn && lastTurn.repair)) ? " open" : "") + '>' +
-        '<summary>Stuck? Things you could say<span class="fold-count">' + talk.suggest.length + "</span></summary>" +
+        ((talk.hintOpen || !talk.turns.length || (lastTurn && lastTurn.repair)) ? " open" : "") + '>' +
+        '<summary>' + (talk.turns.length ? "Stuck? Things you could say" : "Ways in") +
+        '<span class="fold-count">' + talk.suggest.length + "</span></summary>" +
         '<div class="fold-body">' + talk.suggest.map(function (o2) {
           return '<button class="understood-opt" data-act="talk-pick" data-id="' + esc(o2.ar) + '">' +
             '<span class="ar">' + esc(disp(o2.ar)) + "</span>" +
@@ -13743,8 +13843,16 @@
         }).join("") + "</div></details>";
     }
 
+    var roleUI = '<div class="chips talk-roles">' + TALK_ROLES.map(function (r) {
+      return '<button class="pill pill--md chip' + (r.key === role.key ? " is-on" : "") +
+        '" data-act="talk-role" data-id="' + r.key + '" aria-pressed="' +
+        (r.key === role.key ? "true" : "false") + '">' + esc(r.label) + "</button>";
+    }).join("") + "</div>" +
+      '<p class="talk-role-note">' + esc(role.note) + "</p>";
+
     return topbarHTML("Free talk") +
       '<p class="pb-lead">Say something and it answers. It only ever uses phrases from the lessons you have put in play, so anything it says back is something you can learn.</p>' +
+      roleUI +
       scopeUI +
       '<div class="transcript talk-log">' + lines + "</div>" +
       understood + hint +
@@ -18368,6 +18476,16 @@
     if (act === "restore") { restoreBackup(); return; }
     if (act === "save-file") { saveToFile(); return; }
     if (act === "backup" || act === "search" || act === "dict-search" || act === "typing") return;
+    if (act === "talk-role") {
+      var wantRole = el.getAttribute("data-id");
+      if (wantRole !== talkRole()) {
+        setTalkRole(wantRole);
+        stopSpeech();
+        talk = newTalk();
+      }
+      render();
+      return;
+    }
     if (act === "pick-on") { picking = true; render(); return; }
     if (act === "pick-off") { picking = false; render(); return; }
     if (act === "pick-one") {

@@ -5821,5 +5821,83 @@ section("picking lessons off the course list");
 }
 
 
+section("free talk from all three sides of a conversation");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.talkRole = undefined;
+  st.talkScope = undefined;
+
+  check(`there are three roles (${D.TALK_ROLES.length})`, D.TALK_ROLES.length === 3);
+  check("and answering is still the one you get by default", D.talkRole() === "them");
+
+  // which side of the counter a line comes from
+  check("where is the bathroom is a visitor asking", D.fromVisitor("Àina al-hammàm?"));
+  check("how much is it too", D.fromVisitor("Kam as-sìʿr?"));
+  check("and when does the train go", D.fromVisitor("Matà al-qitàr?"));
+  check("but where are you from is what the local asks", !D.fromVisitor("Min àina ànta?"));
+  check("and so is where do you live", !D.fromVisitor("Àina taskun?"));
+  check("and where to, which is the driver's line", !D.fromVisitor("Ilà àina?"));
+  check("a question that names nothing is nobody's request for directions",
+    !D.fromVisitor("Kam ʿìndak?"));
+  check("and a greeting is not a question at all", !D.fromVisitor("Kèifa hàluk?"));
+
+  const asked = D.openersFor("local");
+  const greets = D.openersFor("them");
+  check(`the visitor has things to ask you (${asked.length})`, asked.length >= 5);
+  check("every one of them is a visitor's question", asked.every(o => D.fromVisitor(o.ar)));
+  check("and none of the local's openers is", greets.every(o => !D.fromVisitor(o.ar)));
+  check("so the two sides never hand you the same line",
+    asked.every(o => !greets.some(g => g.ar === o.ar)));
+
+  click({ "data-go": "talk" });
+  check("the screen offers all three", D.TALK_ROLES.every(r => strip(h).includes(r.label)));
+  check("it says which one you are in", /class="talk-role-note"/.test(h));
+  check("by default somebody has already spoken",
+    peek().talk.turns.length === 1 && peek().talk.turns[0].who === "them");
+
+  // you start: nothing until you say something
+  click({ "data-act": "talk-role", "data-id": "you" });
+  check("choosing to open leaves the screen empty on purpose",
+    peek().talk.turns.length === 0);
+  check("and says so rather than looking broken", /class="talk-empty"/.test(h));
+  check("with the ways in already open, not folded away",
+    /class="guide suggest" open/.test(h) && /Ways in/.test(strip(h)));
+  const wayIn = peek().talk.suggest[0];
+  check("there is at least one way in", !!wayIn);
+  click({ "data-act": "talk-pick", "data-id": wayIn.ar });
+  check("saying it puts you first in the transcript",
+    peek().talk.turns[0].who === "you" && peek().talk.turns[0].ar === wayIn.ar);
+  check("and something comes back", peek().talk.turns.length > 1 &&
+    peek().talk.turns[1].who === "them");
+
+  // you are the local: they ask, you answer from the other side
+  click({ "data-act": "talk-role", "data-id": "local" });
+  check("switching side starts the conversation again",
+    peek().talk.turns.length === 1);
+  check("and what opens it is a visitor asking you about something",
+    D.fromVisitor(peek().talk.turns[0].ar));
+  check("the note says which side you are on", /behind the counter/.test(strip(h)));
+  const answer = peek().talk.suggest[0];
+  check("it offers you the answer a local would give", !!answer);
+  click({ "data-act": "talk-pick", "data-id": answer.ar });
+  check("and answering carries on", peek().talk.turns.length >= 3);
+
+  // the role is remembered, the scope is untouched by it
+  check("the side you chose is written down", peek().store.talkRole === "local");
+  click({ "data-go": "home" });
+  click({ "data-go": "talk" });
+  check("and it is still the side you chose when you come back",
+    D.talkRole() === "local" && D.fromVisitor(peek().talk.turns[0].ar));
+
+  click({ "data-act": "talk-role", "data-id": "them" });
+  check("going back to answering opens with a greeting again",
+    !D.fromVisitor(peek().talk.turns[0].ar));
+  st.talkRole = undefined;
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);

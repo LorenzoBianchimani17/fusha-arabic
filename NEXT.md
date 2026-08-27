@@ -53,7 +53,18 @@ consistent, not that the Arabic is right.
    which is practice and does not pass a lesson). The selection lives
    in `store.chosen`, the same list `#/choose` reads, so the two cannot
    disagree.
-2. **Free talk that opens the other way round.** `talkScope()` and
+2. ~~Free talk that opens the other way round.~~ **Built 2026-08-27.**
+   Three roles behind chips at the top of the screen: they start (as
+   before), you start (the screen is empty until you speak, and the
+   openers become the ways in), and you are the local (a visitor asks
+   you where something is, what it costs, when it goes, and you give
+   the answer). Which side a question comes from is worked out from
+   data already there: its kind, from the listening drill, and whether
+   it names a thing at all - where is the bathroom points at
+   something, where are you from does not.
+
+   Old note, kept because it explains the shape:
+   **Free talk that opens the other way round.** `talkScope()` and
    `setTalkScope()` already exist and already take several lessons, and
    the scope picker is already on the screen: that half is built. What
    is missing is who starts. Today the other side always opens and you
