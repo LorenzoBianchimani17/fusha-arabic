@@ -6162,5 +6162,57 @@ section("keeping up with the speed, not the words");
 }
 
 
+section("the lines nobody who speaks it has read");
+{
+  const D = global.__data;
+  unlockAll();
+
+  check(`there is a list of what is not certain (${D.UNSURE.length})`, D.UNSURE.length >= 25);
+  check("and it is small enough to settle in one sitting", D.UNSURE.length <= 80);
+  check("every one of them says why it is on the list",
+    D.UNSURE.every(u => u.why && u.why.length > 30));
+
+  // the risk of the list: a doubt attached to nothing
+  const taught = {};
+  LESSONS.forEach(l => {
+    l.phrases.forEach(p => { taught[p.ar] = 1; if (p.f) taught[p.f] = 1; });
+    (l.dialogue || []).forEach(d => { taught[d.ask] = 1; taught[d.reply] = 1; });
+  });
+  const ghosts = D.UNSURE.filter(u => !taught[u.ar]);
+  check("every doubt is attached to a line the course actually teaches", ghosts.length === 0);
+  if (ghosts.length) console.log("   ", ghosts.map(g => g.ar).slice(0, 6));
+  check("and none is listed twice",
+    new Set(D.UNSURE.map(u => u.ar)).size === D.UNSURE.length);
+  check("the one with a real cost is on it",
+    D.UNSURE.some(u => /allerg/i.test(u.why) || u.ar.indexOf("hasasìyya") !== -1));
+
+  check("a line with a doubt knows it", !!D.unsureOf(D.UNSURE[0].ar));
+  check("and one without says nothing", D.unsureOf("Marhàban") === null);
+
+  // where you meet it
+  const one = D.UNSURE.find(u => LESSONS.some(l => l.phrases.some(p => p.ar === u.ar)));
+  const owner = LESSONS.find(l => l.phrases.some(p => p.ar === one.ar));
+  click({ "data-go": "learn", "data-id": String(owner.id) });
+  peek().learn.i = owner.phrases.findIndex(p => p.ar === one.ar);
+  peek().learn.shown = false;
+  click({ "data-act": "learn-reveal" });
+  check("the flashcard for it says to take it with a pinch of salt",
+    /pinch of salt/.test(strip(screenOnly())));
+  check("and says where the rest of them are",
+    /Not sure about these/.test(strip(screenOnly())));
+
+  click({ "data-go": "unsure" });
+  check("the menu has a screen that collects them",
+    /never been read/.test(strip(screenOnly())));
+  check("it says plainly that nobody has checked the dialect",
+    /never been read by anybody who speaks it/.test(strip(screenOnly())));
+  check("every line is on it", (h.match(/class="unsure-row"/g) || []).length === D.UNSURE.length);
+  check("with the Arabic to show somebody, not the spelling to read out",
+    /class="ar unsure-script"/.test(h));
+  check("and a speaker on each", (h.match(/class="say/g) || []).length >= D.UNSURE.length);
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);

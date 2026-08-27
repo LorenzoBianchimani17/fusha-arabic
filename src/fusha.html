@@ -720,6 +720,24 @@
   .street-en { flex: 1 0 100%; color: var(--ink-3); font-size: var(--t-1); }
   .verdict-msg.warn { color: var(--amber); background: var(--surface-2); }
   .flash-note.is-warn { border-color: var(--amber); }
+  .flash-note.is-unsure { border-style: dashed; }
+
+  .unsure-dot { font-size: var(--t-1); color: var(--ink-3); margin-left: 4px; letter-spacing: -.05em; }
+
+  .unsure-row {
+    display: flex;
+    gap: var(--s-4);
+    align-items: flex-start;
+    padding: var(--s-5) 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .unsure-row:last-of-type { border-bottom: 0; }
+  .unsure-body { flex: 1; min-width: 0; }
+  .unsure-ar { font-size: var(--t-6); }
+  .unsure-en { font-size: var(--t-2); color: var(--ink-3); margin-top: 2px; }
+  .unsure-script { font-size: var(--t-7); margin-top: var(--s-2); direction: rtl; }
+  .unsure-why { margin: var(--s-3) 0 0; font-size: var(--t-2); line-height: 1.45; color: var(--ink-2); }
   .flash-alt { margin-top: var(--s-3); color: var(--ink-3); font-size: var(--t-2);
     display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
   .flash-alt .ar { color: var(--ink-2); font-size: var(--t-4); }
@@ -12055,6 +12073,7 @@
     if (v.name === "frame") return "#/frame";
     if (v.name === "answers") return "#/answers";
     if (v.name === "words") return "#/words";
+    if (v.name === "unsure") return "#/unsure";
     if (v.name === "dict") return "#/dict" + (v.word ? "/" + encodeURIComponent(v.word) : "");
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -12128,6 +12147,13 @@
       session = null;
       talk = newTalk();
       view = { name: "talk" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "unsure") {
+      session = null;
+      view = { name: "unsure" };
       render();
       return;
     }
@@ -13488,6 +13514,9 @@
       '<button class="nav-item" data-go="dict"><span class="nav-label">Dictionary</span>' +
       '<span class="nav-note">' + esc(dictIndex().list.length +
         " words, what each one means, and every line it turns up in") + "</span></button>" +
+      '<button class="nav-item" data-go="unsure"><span class="nav-label">Not sure about these</span>' +
+      '<span class="nav-note">' + esc(UNSURE.length +
+        " lines to put in front of somebody who actually speaks it") + "</span></button>" +
       '<button class="nav-item" data-go="mine"><span class="nav-label">Words you brought</span>' +
       '<span class="nav-note">' + esc(mineWords().length
         ? mineWords().length + " of your own, in the rotation like everything else"
@@ -14077,6 +14106,26 @@
       '" data-lesson="' + it.lesson.id + '">' + esc(label) + "</button></div>";
   }
 
+  function unsureHTML() {
+    return topbarHTML("Not sure about these") +
+      '<p class="pb-lead">The Levantine in this course has never been read by anybody who speaks it. ' +
+      "These are the " + UNSURE.length + " lines where the dialect form or the vocalisation was a " +
+      "judgement rather than a rule. Everything else is either fus&#183;ha out of a grammar or a " +
+      "Levantine form with a precedent elsewhere in the course.</p>" +
+      '<p class="pb-italian">Twenty minutes with anyone from Syria, Lebanon, Jordan or Palestine ' +
+      "and this list is settled. Show them the Arabic, not the spelling.</p>" +
+      UNSURE.map(function (u) {
+        var lev = (DIALECT[u.ar] || {}).lev;
+        return '<div class="unsure-row">' + sayBtn(u.ar, true) +
+          '<div class="unsure-body">' +
+          '<div class="ar unsure-ar">' + esc(disp(u.ar)) + "</div>" +
+          '<div class="unsure-en">' + esc(englishFor(u.ar)) + "</div>" +
+          (lev ? '<div class="ar unsure-script">' + esc(lev[1]) + "</div>" : "") +
+          '<p class="unsure-why">' + u.why + "</p></div></div>";
+      }).join("") +
+      '<div class="btn-row"><button class="btn btn-ghost btn-wide" data-go="home">Back</button></div>';
+  }
+
   function wordsHTML() {
     var idx = wordsIndex();
 
@@ -14549,6 +14598,75 @@
       });
     }
     return ROOT_OF[word] || null;
+  }
+
+  /* ============================================================
+     NOT SURE - the Levantine in this course has never been read by
+     anyone who speaks it. Rather than pretend otherwise, the lines
+     whose dialect form or vocalisation is a judgement call carry a
+     mark, and they are collected here so a native speaker can be
+     asked about exactly these and nothing else. Everything not on
+     this list is either fus-ha out of a grammar or a Levantine form
+     with a precedent elsewhere in the file.
+     ============================================================ */
+
+  var UNSURE = [
+    { ar: "Anà qalìq", why: "The Levantine <b>ʾalʾàn</b> has two glottal stops in a row, which is unusual enough on the page that it may be written or said differently where you are." },
+    { ar: "Khudhi wàqtiki", why: "The Levantine feminine <b>khìdi</b> was built from the pattern rather than copied from anywhere; the masculine <b>khod</b> is solid." },
+    { ar: "Àbda' al-ʿàmal", why: "In real Levantine the b of <b>bàlish</b> is doubled, roughly <i>bballesh</i>. It is written single here to match the rest of the spelling." },
+    { ar: "Là atadhàkkar", why: "Many Levantine speakers say <b>anà mitzàkkar</b> rather than the b-verb <b>bìtzakkar</b> used here." },
+    { ar: "Hal tastatìʿ musàʿadati?", why: "Correct fus-ha, but a heavier construction than anything around it." },
+    { ar: "Burtuqàl", why: "Syria and Lebanon say <b>burdʾàn</b>; Jordan and Palestine lean towards <b>burtuʾàn</b>. Only one is on the card." },
+    { ar: "Tuffàh", why: "Some Levantine speakers raise it to <b>tiffàh</b>. It is filed here as unchanged." },
+    { ar: "Hàlwa", why: "The Levantine given is the plural <b>halawiyyàt</b>, the sweets you buy, against a singular headword." },
+    { ar: "Khudàr", why: "<b>Khùdra</b> and <b>khudàr</b> both circulate in the Levant; this is a soft preference, not a split." },
+    { ar: "Bittìkh", why: "Some dictionaries give <b>battìkh</b> as the fus-ha too, which would collapse the contrast with the Levantine on this card." },
+    { ar: "Bùza", why: "A Levantine word that written Arabic borrowed. The textbook fus-ha is <b>muthallajàt</b>, which nobody says." },
+    { ar: "Sàlata", why: "The stress is read as three light syllables. If the first vowel is long where you are, it would be <b>salàta</b>." },
+    { ar: "Siwàr", why: "The Levantine for one bracelet was corrected once already. <b>Iswàra</b> is the everyday word; <b>swàr</b> is closer to the fus-ha." },
+    { ar: "ʿÌqd", why: "Many Levantine speakers reach for <b>sìnsal</b>, a chain, for anything hanging round the neck." },
+    { ar: "Shàfrat hilàqa", why: "The Levantine <b>shàfra</b> is really the blade; the whole razor is <b>mùs hlàʾa</b>." },
+    { ar: "Wàraq tuwalèt", why: "The borrowed word is written three ways: <b>tuwalèt</b>, <b>tawalèt</b>, <b>twalèt</b>." },
+    { ar: "Al-màlha al-làili", why: "Correct written fus-ha and genuinely nobody says it. On the street it is <b>klub</b> or the name of the place." },
+    { ar: "Àina yà'kul an-nàs jàyyidan hùna?", why: "A slightly bookish sentence for a spoken question. The Levantine on the card is the one that will get used." },
+    { ar: "Là ghàla ʿalàik", why: "The Levantine shop formula is certain. The fus-ha on the card is a bridge built back from it; strict fus-ha would be <b>là ghalà'a ʿalàik</b>." },
+    { ar: "Hàdha bi rà's màli", why: "The idea is right and common. Whether this exact wording is the commonest shape across the whole Levant is not checked." },
+    { ar: "Salàmatuk", why: "Solid as the Levantine <b>salàmtak</b>. Whether the fus-ha form is used as a standalone exclamation the same way is not checked." },
+    { ar: "Mùndhu sàʿa wa anà antàdhir", why: "The Levantine <b>sàrli</b> is glossed as one word although it is <b>sàr</b> plus an ending, and the vocalisation of <b>ʿam ìstanna</b> is written two ways." },
+    { ar: "Ad-dukkàn", why: "<b>Al-mahàll</b> is offered as the Levantine. It is a different word rather than a sound change, so it is a judgement about what people reach for." },
+    { ar: "As-sifàra", why: "The Levantine keeps the -a ending here by analogy with <b>sayyàra</b>. There is no example in the course to check it against." },
+    { ar: "Al-hadìqa", why: "The mid-word q to glottal stop in <b>al-hadìʾa</b> follows the rule, but a small garden is often <b>jnaine</b> instead." },
+    { ar: "Ànf", why: "The Levantine was corrected once for stress. <b>Mankhàr</b> is the commoner Syrian and Lebanese word than the plural <b>manakhìr</b> given." },
+    { ar: "Khams daqà'iq min hùna", why: "The number-noun form <b>khams</b> is what a spoken answer sounds like, but it sits against the plain <b>khàmsa</b> taught earlier." },
+    { ar: "Kam al-masàfa?", why: "The Levantine <b>addèsh bìbʿed?</b> is what I have heard, but there is nothing in the course to check it against. <b>Addèsh al-masàfe?</b> is the safe literal fallback." },
+    { ar: "Hal hùwa baʿìd min hùna?", why: "Careful fus-ha takes <b>ʿan</b> after <b>baʿìd</b>, not <b>min</b>. <b>Min</b> is on the card because it is the word you already know." },
+    { ar: "Kam yastàghriq?", why: "Idiomatic fus-ha usually carries an explicit subject: <b>kam yastàghriq al-wàqt?</b>" },
+    { ar: "ʿÌndi hasasìyya min al-mukassaràt", why: "The one on this list with a real cost if it is wrong. The shape is standard; have somebody confirm it before you rely on it." },
+    { ar: "Ùtrukni, min fàdlik", why: "How hard this lands, and how it is taken from a foreigner, is a judgement rather than a fact." },
+    { ar: "Battàriyati fàrigha", why: "The Levantine says the battery finished, <b>khìlsit</b>, rather than emptied. The fus-ha on the card is built to match the English." },
+    { ar: "Urìd sharìhat hàtif", why: "The Levantine <b>khatt</b>, a line, is right for the shop. The fus-ha <b>sharìha</b> is the written word." },
+    { ar: "Mi'atàn", why: "Correct fus-ha, and in the Levant you will only ever hear <b>mìtein</b>." },
+    { ar: "Sa'aftàqiduk", why: "The Levantine <b>ishtàʾlak</b> is right. Whether the fus-ha future is what anybody would actually say here is another matter." },
+    { ar: "Ghàdan fi al-mìshmish", why: "The idiom is certain. The two-week apricot season is the usual explanation for it, not a checked fact." },
+    { ar: "Al-maidàn", why: "<b>As-sàha</b> is given as the Levantine, which is a different word rather than a sound change." },
+    { ar: "Sàraqu mahfàdhati", why: "Arabic reaching for a vague <i>they</i> where English says <i>someone</i> is right, but the exact verb form here is not checked." },
+    { ar: "Hal àkhlaʿ hidhà'i?", why: "The Levantine <b>shàlleh sabbàti</b> is the everyday phrasing; the fus-ha is built to match it." },
+    { ar: "Ahdàrtu làka shày' saghìr", why: "The Levantine <b>jibtìllak</b> fuses three pieces into one word, which is how it is said and not how it is written." },
+    { ar: "Yàjib an àdhhab, al-wàqt mut'àkhkhir", why: "The Levantine <b>sàr wàʾt</b>, literally it has become time, is idiomatic but regional." },
+  ];
+
+  var UNSURE_OF = null;
+
+  function unsureMark(ar) {
+    return unsureOf(ar) ? '<span class="unsure-dot" title="Not checked by a native speaker" aria-label="Not checked by a native speaker">&#183;?</span>' : "";
+  }
+
+  function unsureOf(ar) {
+    if (!UNSURE_OF) {
+      UNSURE_OF = {};
+      UNSURE.forEach(function (u) { UNSURE_OF[u.ar] = u; });
+    }
+    return UNSURE_OF[ar] || null;
   }
 
   var DICT_HITS = 60;
@@ -17133,6 +17251,14 @@
       esc(HOW.direct.why) + "</span></div>";
   }
 
+  function unsureNote(ar) {
+    var u = unsureOf(ar);
+    if (!u) return "";
+    return '<div class="flash-note is-unsure"><span><b>Take this one with a pinch of salt.</b> ' +
+      u.why + " Ask somebody who speaks it, and it is on the list under " +
+      "<b>Not sure about these</b> in the menu.</span></div>";
+  }
+
   function howNote(ar) {
     var k = howOf(ar);
     if (!k || !HOW[k]) return "";
@@ -17304,6 +17430,7 @@
     var note = "";
     if (p.note) note += '<div class="flash-note"><span>' + p.note + "</span></div>";
     note += howNote(p.ar);
+    note += unsureNote(p.ar);
     note += twinNote(p.ar);
     var rit = ritualFor(p.ar);
     if (rit) {
@@ -18548,6 +18675,7 @@
     if (view.name === "frame") return frameRunHTML();
     if (view.name === "answers") return answersHTML();
     if (view.name === "words") return wordsHTML();
+    if (view.name === "unsure") return unsureHTML();
     if (view.name === "dict") return dictHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -18821,6 +18949,7 @@
       if (dest === "home") { session = null; go({ name: "home" }); return; }
       if (dest === "phrasebook") { pbQuery = ""; go({ name: "phrasebook" }); return; }
       if (dest === "dict") { dictQuery = ""; dictKindKey = "all"; go({ name: "dict" }); return; }
+      if (dest === "unsure") { go({ name: "unsure" }); return; }
       if (dest === "words") { go({ name: "words" }); return; }
       if (dest === "make") { session = null; made = newMake(null); go({ name: "make" }); return; }
       if (dest === "you") { session = null; go({ name: "you" }); return; }
