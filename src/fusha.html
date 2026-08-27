@@ -12074,6 +12074,7 @@
     if (v.name === "answers") return "#/answers";
     if (v.name === "words") return "#/words";
     if (v.name === "unsure") return "#/unsure";
+    if (v.name === "yours") return "#/yours";
     if (v.name === "dict") return "#/dict" + (v.word ? "/" + encodeURIComponent(v.word) : "");
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -12154,6 +12155,14 @@
     if (parts[0] === "unsure") {
       session = null;
       view = { name: "unsure" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "yours") {
+      session = null;
+      yours = newYours(null);
+      view = { name: "yours" };
       render();
       return;
     }
@@ -13514,6 +13523,11 @@
       '<button class="nav-item" data-go="dict"><span class="nav-label">Dictionary</span>' +
       '<span class="nav-note">' + esc(dictIndex().list.length +
         " words, what each one means, and every line it turns up in") + "</span></button>" +
+      '<button class="nav-item' + (yoursOpen().length ? "" : " is-off") + '" data-go="yours"' +
+      (yoursOpen().length ? "" : " disabled") + '><span class="nav-label">In your own words</span>' +
+      '<span class="nav-note">' + (yoursOpen().length
+        ? "A question about you, answered with something true"
+        : "Pass a lesson or two to open this") + "</span></button>" +
       '<button class="nav-item" data-go="unsure"><span class="nav-label">Not sure about these</span>' +
       '<span class="nav-note">' + esc(UNSURE.length +
         " lines to put in front of somebody who actually speaks it") + "</span></button>" +
@@ -14106,6 +14120,70 @@
       '" data-lesson="' + it.lesson.id + '">' + esc(label) + "</button></div>";
   }
 
+  function yoursHTML() {
+    if (!yours) {
+      return topbarHTML("In your own words") +
+        '<p class="pb-lead">Pass a lesson or two first: there is nothing here it could ask you yet.</p>' +
+        '<div class="btn-row"><button class="btn" data-go="home">Back to the lessons</button></div>';
+    }
+    var q = yours.q;
+    var model = null;
+    if (q.field) {
+      yourLines().forEach(function (line) { if (line.field === q.field) model = line; });
+    }
+    var r = yours.read;
+    return topbarHTML("In your own words") +
+      '<p class="pb-lead">Somebody asks you this. Answer it with something true, in Arabic, ' +
+      "out of the words you have. Nothing is marked right or wrong - it cannot be. What it can " +
+      "tell you is which of the words you reached for are words the course actually gave you.</p>" +
+      '<div class="prompt"><div class="prompt-label">They ask</div>' +
+      '<div class="prompt-main ar">' + esc(disp(q.ask)) + "</div>" +
+      sayBtn(q.ask, true) +
+      '<div class="prompt-sub">' + esc(englishFor(q.ask)) + "</div></div>" +
+      (r
+        ? '<div class="verdict" tabindex="-1">' +
+          (r.echo
+            ? '<div class="verdict-msg no"><b>That is the question again.</b>&nbsp;' +
+              "<span>Answer it rather than repeat it.</span></div>"
+            : '<div class="verdict-msg ok"><b>' + r.mine.length + " of " + r.words +
+              (r.words === 1 ? " word" : " words") +
+              " came out of the course.</b></div>") +
+          (r.mine.length
+            ? '<div class="fam-words">' + r.mine.map(function (m) {
+                return '<button class="fam-word" data-act="dict-open" data-id="' + esc(m.word) + '">' +
+                  esc(m.word) + '<span class="fam-gloss">' + esc(m.gloss) + "</span></button>";
+              }).join("") + "</div>"
+            : "") +
+          (r.strange.length
+            ? '<p class="fold-lead">Not from here: <b>' + esc(r.strange.join(", ")) +
+              "</b>. That is fine if you meant it - a name, or something you picked up - and worth " +
+              "a look in the dictionary if you did not.</p>"
+            : "") +
+          (model
+            ? '<p class="fold-lead">What the app would say for you: <b class="ar">' +
+              esc(model.ar) + "</b>, " + esc(model.en) + ".</p>"
+            : "") +
+          '<div class="btn-row">' +
+          '<button class="btn btn-ghost" data-act="yours-keep">' +
+          (yours.kept ? "Kept" : "Keep this as my answer") + "</button>" +
+          '<button class="btn" data-act="yours-next">Another question</button></div></div>'
+        : '<div class="action-row"><div class="talk-input">' +
+          '<input class="type-in talk-field" data-act="yours-typing" type="text" value="' +
+          esc(yours.draft) + '" placeholder="answer it in Arabic" autocomplete="off"' +
+          ' autocorrect="off" autocapitalize="off" spellcheck="false"' +
+          ' aria-label="Answer it in Arabic">' +
+          "</div>" +
+          (yoursSaid(q.ask)
+            ? '<p class="fold-lead">Last time you said <b class="ar">' + esc(yoursSaid(q.ask)) +
+              "</b>. Change it or leave it." +
+              ' <button class="link-btn" data-act="yours-drop">Forget that</button></p>'
+            : "") +
+          '<div class="btn-row">' +
+          '<button class="btn btn-ghost" data-act="yours-next">Skip this one</button>' +
+          '<button class="btn" data-act="yours-read"' + (yours.draft.trim() ? "" : " disabled") +
+          ">See what you said</button></div></div>");
+  }
+
   function unsureHTML() {
     return topbarHTML("Not sure about these") +
       '<p class="pb-lead">The Levantine in this course has never been read by anybody who speaks it. ' +
@@ -14667,6 +14745,103 @@
       UNSURE.forEach(function (u) { UNSURE_OF[u.ar] = u; });
     }
     return UNSURE_OF[ar] || null;
+  }
+
+  /* ============================================================
+     IN YOUR OWN WORDS - every drill in the course runs English to
+     Arabic or Arabic to English. Not one of them asks you to answer a
+     question with something that is true about you, which is the whole
+     distance between remembering a phrase and saying one. Nothing is
+     marked right or wrong: what it can honestly tell you is which of
+     the words you reached for are words the course has given you, and
+     it keeps what you wrote, so the answers become yours.
+     ============================================================ */
+
+  var YOURS = [
+    { ask: "M\u00e0 \u00ecsmuk?", field: "name" },
+    { ask: "Min \u00e0ina \u00e0nta?", field: "from" },
+    { ask: "Kam \u02bf\u00f9mruk?", field: "age" },
+    { ask: "M\u00e0 m\u00echnatuk?", field: "job" },
+    { ask: "\u00c0ina taskun?" },
+    { ask: "\u00c0ina ta\u02bfmal?" },
+    { ask: "Hal \u00e0nta mutaz\u00e0wwij?" },
+    { ask: "Hal \u02bf\u00ecndak \u00eckhwa?" },
+    { ask: "Hal \u02bf\u00ecndak \u00e0tfal?" },
+    { ask: "Hal \u00e0nta h\u00f9na w\u00e0hdak?" },
+    { ask: "M\u00f9ndhu mat\u00e0 \u00e0nta h\u00f9na?" },
+    { ask: "Il\u00e0 mat\u00e0 \u00e0nta h\u00f9na?" },
+    { ask: "M\u00e0dha t\u00e0f\u02bfal al-l\u00e0ila?" },
+    { ask: "Hal \u02bf\u00ecndak hiway\u00e0t?" },
+    { ask: "\u00c0y n\u00e0u\u02bf min al-m\u00f9siqa?" },
+    { ask: "M\u00e0 f\u00eclmuk al-muf\u00e0ddal?" },
+    { ask: "Hal t\u00f9hib \u02bf\u00e0malak?" },
+    { ask: "K\u00e8ifa h\u00e0luk?" }
+  ];
+
+  var YOURS_WORDS = null;
+
+  // The dictionary, keyed the way you would type: no accents.
+  function yoursWord(w) {
+    if (!YOURS_WORDS) {
+      YOURS_WORDS = {};
+      dictIndex().list.forEach(function (r) {
+        var k = normalise(r.word);
+        if (k && !YOURS_WORDS[k]) YOURS_WORDS[k] = r;
+      });
+    }
+    var k = normalise(w);
+    return YOURS_WORDS[k] || YOURS_WORDS[bareWord(k)] || null;
+  }
+
+  function yoursOpen() {
+    return YOURS.filter(function (q) { return !!lessonTeaching(q.ask); })
+      .filter(function (q) {
+        var l = lessonById(lessonTeaching(q.ask));
+        return l && recordOf(l.id) && recordOf(l.id).done;
+      });
+  }
+
+  function yoursSaid(ask) { return (store.yours || {})[ask] || null; }
+
+  function keepYours(ask, text) {
+    if (!store.yours) store.yours = {};
+    store.yours[ask] = String(text).trim();
+    save();
+  }
+
+  function dropYours(ask) {
+    if (!store.yours) return;
+    delete store.yours[ask];
+    save();
+  }
+
+  // Nothing here is marked. It reports what it can actually see.
+  function yoursRead(text, ask) {
+    var words = String(text).split(/\s+/)
+      .map(function (w) { return w.replace(/[?!.,;:"]/g, "").trim(); })
+      .filter(Boolean);
+    var mine = [], strange = [];
+    words.forEach(function (w) {
+      var hit = yoursWord(w);
+      if (hit) mine.push({ word: w, gloss: hit.gloss });
+      else strange.push(w);
+    });
+    return {
+      words: words.length,
+      mine: mine,
+      strange: strange,
+      echo: words.length > 1 && normalise(text) === normalise(ask)
+    };
+  }
+
+  var yours = null;
+
+  function newYours(prev) {
+    var pool = yoursOpen();
+    if (!pool.length) return null;
+    var list = shuffle(pool);
+    if (prev && prev.q && list.length > 1 && list[0].ask === prev.q.ask) list.push(list.shift());
+    return { q: list[0], draft: yoursSaid(list[0].ask) || "", read: null, kept: false };
   }
 
   var DICT_HITS = 60;
@@ -18676,6 +18851,7 @@
     if (view.name === "answers") return answersHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "unsure") return unsureHTML();
+    if (view.name === "yours") return yoursHTML();
     if (view.name === "dict") return dictHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -18950,6 +19126,7 @@
       if (dest === "phrasebook") { pbQuery = ""; go({ name: "phrasebook" }); return; }
       if (dest === "dict") { dictQuery = ""; dictKindKey = "all"; go({ name: "dict" }); return; }
       if (dest === "unsure") { go({ name: "unsure" }); return; }
+      if (dest === "yours") { yours = newYours(yours); go({ name: "yours" }); return; }
       if (dest === "words") { go({ name: "words" }); return; }
       if (dest === "make") { session = null; made = newMake(null); go({ name: "make" }); return; }
       if (dest === "you") { session = null; go({ name: "you" }); return; }
@@ -19277,7 +19454,29 @@
     if (act === "today") { stopSpeech(); startToday(); return; }
     if (act === "restore") { restoreBackup(); return; }
     if (act === "save-file") { saveToFile(); return; }
-    if (act === "backup" || act === "search" || act === "dict-search" || act === "typing") return;
+    if (act === "backup" || act === "search" || act === "dict-search" || act === "typing"
+      || act === "yours-typing") return;
+    if (act === "yours-read") {
+      if (!yours || !yours.draft.trim()) return;
+      yours.read = yoursRead(yours.draft, yours.q.ask);
+      render();
+      return;
+    }
+    if (act === "yours-keep") {
+      if (!yours) return;
+      keepYours(yours.q.ask, yours.draft);
+      yours.kept = true;
+      render();
+      return;
+    }
+    if (act === "yours-drop") {
+      if (!yours) return;
+      dropYours(yours.q.ask);
+      yours.draft = "";
+      render();
+      return;
+    }
+    if (act === "yours-next") { yours = newYours(yours); render(); return; }
     if (act === "pace-play") { if (loud) { loud.played = true; pacePlay(); } return; }
     if (act === "pace-pick") { paceAnswer(el.getAttribute("data-value")); return; }
     if (act === "talk-role") {
@@ -19799,6 +19998,13 @@
       talk.draft = el.value;
       var send = app.querySelector('[data-act="talk-send"]');
       if (send) send.disabled = !el.value.trim();
+      return;
+    }
+    if (what === "yours-typing") {
+      if (yours && !yours.read) yours.draft = el.value;
+      var yb = app.querySelector && app.querySelector('[data-act="yours-read"]');
+      if (yb) { yb.disabled = !el.value.trim(); return; }
+      render();
       return;
     }
     if (what === "recall-typing") { if (recall && !recall.checked) recall.typed = el.value; return; }

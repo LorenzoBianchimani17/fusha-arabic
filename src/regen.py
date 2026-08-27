@@ -14,7 +14,7 @@ HOOKS = (
     '\n  global.__peek = function () { return { session: session, view: view, store: store,'
     ' learn: learn, talk: talk, ears: ears, navOpen: navOpen, people: people, made: made,'
     ' moment: moment, asked: asked, numbers: numbers, loud: loud, sounds: sounds, answers: answers,'
-    ' frameRun: frameRun }; };'
+    ' frameRun: frameRun, recall: recall, yours: yours }; };'
     '\n  global.__data = { LESSONS: LESSONS, SCRIPT: SCRIPT, CONVOS: CONVOS,'
     ' PHRASEBOOK: PHRASEBOOK, GAMES: GAMES, VARIETIES: VARIETIES, DIALECT: DIALECT,'
     ' SAME: SAME, GLOSS: GLOSS, GLOSS_LEV: GLOSS_LEV, glossesFor: glossesFor,'
@@ -64,7 +64,8 @@ HOOKS = (
     ' EAR_SOUNDS: EAR_SOUNDS, noteSounds: noteSounds, earReport: earReport,'
     ' EAR_ENOUGH: EAR_ENOUGH, PACE_FROM: PACE_FROM, PACE_STEP: PACE_STEP,'
     ' PACE_CEIL: PACE_CEIL, PACE_FLOOR: PACE_FLOOR, PACE_LENGTH: PACE_LENGTH,'
-    ' paceLabel: paceLabel, rateFor: rateFor, UNSURE: UNSURE, unsureOf: unsureOf, unsureMark: unsureMark };'
+    ' paceLabel: paceLabel, rateFor: rateFor, UNSURE: UNSURE, unsureOf: unsureOf, unsureMark: unsureMark,'
+    ' YOURS: YOURS, yoursOpen: yoursOpen, yoursRead: yoursRead, yoursSaid: yoursSaid };'
 )
 
 START = '\n  applyHash(typeof window.location !== "undefined" ? window.location.hash : "");'

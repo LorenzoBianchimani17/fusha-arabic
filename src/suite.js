@@ -6214,5 +6214,61 @@ section("the lines nobody who speaks it has read");
 }
 
 
+section("answering with something true about you");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.yours = {};
+
+  check(`there are questions it can ask about you (${D.YOURS.length})`, D.YOURS.length >= 10);
+  check("every one of them is a line the course teaches",
+    D.YOURS.every(q => !!SCRIPT[q.ask]));
+  check("and every one of them is a question", D.YOURS.every(q => /\?$/.test(q.ask)));
+  check("four of them line up with what the app already knows about you",
+    D.YOURS.filter(q => q.field).length === 4);
+  check("they open as the lessons that teach them are passed", D.yoursOpen().length > 0);
+
+  click({ "data-go": "yours" });
+  check("it asks one", /class="prompt-main ar"/.test(h));
+  check("with the English under it, since the point is the answer",
+    /class="prompt-sub"/.test(h));
+  check("and a box to answer in", /data-act="yours-typing"/.test(h));
+  check("with nothing to read until you have written something",
+    /data-act="yours-read" disabled/.test(h));
+
+  // what it can honestly say
+  const mixed = D.yoursRead("Ismì Lorenzo", "Mà ìsmuk?");
+  check("it counts the words that came out of the course", mixed.mine.length >= 1);
+  check("and names the ones that did not, without calling them wrong",
+    mixed.strange.indexOf("Lorenzo") !== -1);
+  const echo = D.yoursRead("Mà ìsmuk?", "Mà ìsmuk?");
+  check("repeating the question back is caught", echo.echo === true);
+  const own = D.yoursRead("Anà min Itàlya", "Min àina ànta?");
+  check("an answer entirely out of the course is all recognised",
+    own.strange.length === 0 && own.mine.length === 3);
+  check("and it is not mistaken for an echo", own.echo === false);
+
+  // it keeps what you wrote
+  const q = peek().yours.q;
+  type("yours-typing", "Anà min Itàlya");
+  click({ "data-act": "yours-read" });
+  check("reading it says how much of it was yours to use",
+    /came out of the course/.test(strip(screenOnly())));
+  check("and each word is a tap into the dictionary",
+    /class="fam-word" data-act="dict-open"/.test(h));
+  click({ "data-act": "yours-keep" });
+  check("keeping it writes it down", D.yoursSaid(q.ask) === "Anà min Itàlya");
+  check("and it says so", /Kept/.test(strip(screenOnly())));
+
+  click({ "data-act": "yours-next" });
+  check("there is always another question", !!peek().yours.q);
+  check("and it is not the same one twice running", peek().yours.q.ask !== q.ask);
+
+  st.yours = {};
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);
