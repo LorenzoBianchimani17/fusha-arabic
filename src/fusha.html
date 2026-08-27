@@ -10266,7 +10266,14 @@
   function graduated(lessonId, ar) {
     if (heldOut(lessonId, ar)) return false;
     var rec = rawStrength(lessonId, ar);
+    // Never on the strength alone. A phrase can stand at the top of the
+    // scale having only ever been recognised in a list of four, and for
+    // somebody learning this in order to speak it, letting that leave
+    // for good is the app agreeing with itself about nothing. It has to
+    // have come out of your mouth at least once. Setting it aside by
+    // hand is a different matter: that is you saying so, not the app.
     if (rec && rec.s >= MAX_STRENGTH && (rec.top || 0) >= GRADUATE_HITS &&
+      (rec.spoke || 0) > 0 &&
       rec.topFrom !== undefined && (today() - rec.topFrom) >= GRADUATE_DAYS) return true;
     var k = knownRec(lessonId, ar);
     return !!k && (k.passes || 0) >= GRADUATE_CHECKS;

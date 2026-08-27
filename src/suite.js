@@ -6618,7 +6618,12 @@ section("being finished with a phrase, which nothing here ever was");
     rec.s === D.MAX_STRENGTH && typeof rec.topFrom === "number" &&
     rec.top >= D.GRADUATE_HITS);
   rec.topFrom = D.today() - D.GRADUATE_DAYS;
-  check("held there long enough, it is finished with", D.graduated(1, ar));
+  check("held there long enough but never once said, it stays",
+    !D.graduated(1, ar));
+  check("and it is on the list of things you know by eye only",
+    D.eyeOnly().some(x => x.ar === ar));
+  D.noteSpoken(1, ar);
+  check("said once, it is finished with", D.graduated(1, ar));
 
   check("and it is out of the rotation", !D.studied().some(x => x.ar === ar));
   rec.top = 1;
