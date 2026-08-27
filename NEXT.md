@@ -43,6 +43,23 @@ consistent, not that the Arabic is right.
 
 ## Still to build
 
+**First, before anything else: pick lessons from the course list.**
+Asked for on 2026-08-27, from a phone, looking at the list. The
+machinery is already there and in the wrong place: `chosenLessons()`
+and `store.chosen` exist, `buildReview({only})` honours them, and
+`chooseHTML()` puts them behind `#/choose` as a grid of bare numbers
+reachable only from the review area. What is missing is the obvious
+thing: tick one or more lessons **on the course list itself**, where
+you are already looking at them, and act on the selection from there.
+Tapping a lesson must still open it, so the selection needs a way in
+that does not fight the tap.
+
+One decision to make before building it: what the selection does.
+Review drawn from those lessons only is what the existing plumbing
+already supports. Studying them back to back as one run is a different
+thing and needs new session code. Ask before choosing.
+
+
 - **Two-turn chains** in the conversations, a **weekly plan**, and the
   **same phrase from two voices**. All three were agreed and none is
   built.
