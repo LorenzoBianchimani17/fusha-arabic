@@ -5899,5 +5899,73 @@ section("free talk from all three sides of a conversation");
 }
 
 
+section("the families a word belongs to");
+{
+  const D = global.__data;
+  unlockAll();
+
+  check(`there are families (${D.ROOTS.length})`, D.ROOTS.length >= 60);
+  check("each has a skeleton, the Arabic for it, and what it is about",
+    D.ROOTS.every(f => /^[a-z'\u02bf-]+(-[a-z'\u02bf-]+)+$/.test(f.r) &&
+      /[\u0600-\u06ff]/.test(f.ar) && f.sense.length > 2));
+  check("and at least two words in it, or it is not a family",
+    D.ROOTS.every(f => f.words.length >= 2));
+
+  // the whole risk of the feature: a member that is not really a member
+  const idx = D.dictIndex();
+  const ghosts = D.ROOTS.flatMap(f => f.words.filter(w => !idx.by[w]));
+  check("every word in a family is a word the course actually teaches", ghosts.length === 0);
+  if (ghosts.length) console.log("   ", ghosts.slice(0, 8));
+
+  const twice = {};
+  const both = [];
+  D.ROOTS.forEach(f => f.words.forEach(w => {
+    if (twice[w]) both.push(w + " (" + twice[w] + " and " + f.r + ")");
+    twice[w] = f.r;
+  }));
+  check("and no word belongs to two families at once", both.length === 0);
+  if (both.length) console.log("   ", both.slice(0, 6));
+
+  check(`between them they cover a real slice of the dictionary (${Object.keys(twice).length})`,
+    Object.keys(twice).length >= 300);
+
+  // the ones the spelling would have got wrong, pinned down
+  check("travel and yellow are not relatives",
+    (D.rootOf("safar") || {}).r !== (D.rootOf("àsfar") || { r: "x" }).r);
+  check("your name and a fish are not relatives",
+    (D.rootOf("ìsmuk") || {}).r !== (D.rootOf("sàmak") || { r: "x" }).r);
+  check("but the book and I write are",
+    D.rootOf("kitàb") && D.rootOf("kitàb") === D.rootOf("àktub"));
+  check("and the friend and honest are",
+    D.rootOf("sadìq") && D.rootOf("sadìq") === D.rootOf("sàdiq"));
+  check("a word in no family says nothing rather than guessing",
+    D.rootOf("zzzqqq") === null);
+
+  click({ "data-go": "dict" });
+  check("the dictionary offers families as a way to look", /data-id="roots"/.test(h));
+  click({ "data-act": "dict-kind", "data-id": "roots" });
+  check("and lists them", /class="fam-head"/.test(h));
+  check("with the skeleton, the Arabic and the sense on each",
+    /class="fam-r"/.test(h) && /fam-ar/.test(h) && /class="fam-sense"/.test(h));
+  const k = D.ROOTS.find(f => f.r === "k-t-b");
+  check("searching a family by meaning works", (function () {
+    type("dict-search", "writing");
+    return /k-t-b/.test(strip(h));
+  })());
+  type("dict-search", "");
+
+  click({ "data-act": "dict-kind", "data-id": "all" });
+  click({ "data-act": "dict-open", "data-id": "kitàb" });
+  check("a word's own page names its family", /Its family/.test(strip(h)));
+  check("and lists the relatives, each one a tap away",
+    k.words.filter(w => w !== "kitàb").every(w => h.includes('data-act="dict-open" data-id="' + w + '"')));
+  check("without listing the word you are already on",
+    !/data-act="dict-open" data-id="kitàb"/.test(h));
+  click({ "data-act": "dict-open", "data-id": "àktub" });
+  check("and tapping a relative takes you to it", /I write/.test(strip(h)));
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);

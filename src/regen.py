@@ -59,7 +59,7 @@ HOOKS = (
     ' topbarHTML: topbarHTML, navHTML: navHTML, ARCS: ARCS,'
     ' arcLessons: arcLessons, pickedIds: pickedIds, buildRun: buildRun,'
     ' TALK_ROLES: TALK_ROLES, talkRole: talkRole, fromVisitor: fromVisitor,'
-    ' openersFor: openersFor, newTalk: newTalk };'
+    ' openersFor: openersFor, newTalk: newTalk, ROOTS: ROOTS, rootOf: rootOf };'
 )
 
 START = '\n  applyHash(typeof window.location !== "undefined" ? window.location.hash : "");'

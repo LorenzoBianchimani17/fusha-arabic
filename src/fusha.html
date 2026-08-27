@@ -1001,6 +1001,30 @@
   .chip.is-on { color: var(--accent-ink); background: var(--accent-soft); border-color: transparent; font-weight: 600; }
 
   .dict-row { width: 100%; text-align: left; cursor: pointer; }
+
+  .fam { padding: var(--s-4) 0; border-bottom: 1px solid var(--line); }
+  .fam:last-child { border-bottom: 0; }
+
+  .fam-head { display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap; }
+  .fam-r { font-weight: 600; letter-spacing: .06em; font-size: var(--t-4); }
+  .fam-ar { font-size: var(--t-6); color: var(--accent); }
+  .fam-sense { font-size: var(--t-2); color: var(--ink-3); }
+
+  .fam-words { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-3); }
+
+  .fam-word {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-2);
+    padding: var(--s-2) var(--s-4);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    font-size: var(--t-3);
+    background: var(--surface);
+  }
+
+  .fam-word:hover { border-color: var(--line-strong); }
+  .fam-gloss { color: var(--ink-3); font-size: var(--t-2); }
   .dict-count {
     flex: 0 0 auto; min-width: 1.9rem; text-align: right;
     color: var(--ink-3); font-size: 0.82rem; font-variant-numeric: tabular-nums;
@@ -14117,6 +14141,282 @@
     return DICT;
   }
 
+  /* ============================================================
+     FAMILIES - Arabic builds words on a skeleton of consonants, and
+     seeing the skeleton is the one thing that makes a new word
+     guessable rather than another thing to learn. Written by hand and
+     checked, because it cannot be worked out from the spelling: the
+     Latin alphabet the course is written in collapses the emphatic
+     consonants, so it cannot tell safar, travel, from asfar, yellow,
+     or ismuk, your name, from samak, fish. A family that is wrong
+     teaches a relationship that is not there, which is worse than
+     teaching none.
+     ============================================================ */
+
+  var ROOTS = [
+    {
+      r: "k-t-b", ar: "كتب", sense: "writing",
+      words: ["kitàb", "kitàbi", "kitàbuk", "kitàbuki", "kitàbuhu", "kitàbuha", "kitàbuna", "àktub", "ùktub", "ùktubi", "katàbtu", "màktab"]
+    },
+    {
+      r: "s-d-q", ar: "صدق", sense: "truth and friendship",
+      words: ["sadìq", "sadìqa", "sadìqi", "sàdiq", "sàdiqa"]
+    },
+    {
+      r: "ʿ-m-l", ar: "عمل", sense: "work and doing",
+      words: ["ʿàmal", "àʿmal", "taʿmal", "taʿmalìn", "ʿàmalak", "ʿàmaluk", "ʿàmaluki", "yàʿmal", "ʿmìlt"]
+    },
+    { r: "s-k-n", ar: "سكن", sense: "living somewhere", words: ["àskun", "taskun", "sàken"] },
+    { r: "k-b-r", ar: "كبر", sense: "bigness", words: ["kabìr", "kabìra", "àkbar", "kbìr"] },
+    {
+      r: "s-gh-r", ar: "صغر", sense: "smallness",
+      words: ["saghìr", "saghìra", "àsghar", "zghìr", "zghìre"]
+    },
+    {
+      r: "r-kh-s", ar: "رخص", sense: "cheapness",
+      words: ["ràkhis", "àrkhas", "al-àrkhas", "rkhìs"]
+    },
+    { r: "gh-l-w", ar: "غلو", sense: "dearness", words: ["ghàli", "àghla", "ghàla"] },
+    { r: "q-r-b", ar: "قرب", sense: "nearness", words: ["qarìb", "àqrab", "arìb", "aʾrab"] },
+    {
+      r: "b-ʿ-d", ar: "بعد", sense: "distance and after",
+      words: ["baʿìd", "àbʿad", "baʿìdan", "bʿìd", "baʿda", "baʿdèin", "bìbʿed"]
+    },
+    { r: "j-l-s", ar: "جلس", sense: "sitting", words: ["ijlis", "ijlisì", "àjlis"] },
+    {
+      r: "t-l-b", ar: "طلب", sense: "asking for",
+      words: ["àtlub", "tàlabt", "tàlib", "tàliba"]
+    },
+    {
+      r: "q-w-l", ar: "قول", sense: "saying",
+      words: ["aqùl", "taqùl", "bʾùl", "btʾùl", "ʾìlt"]
+    },
+    {
+      r: "f-h-m", ar: "فهم", sense: "understanding",
+      words: ["àfham", "fahìmtu", "fahìmt", "bèfham", "fhìmt", "ìfham"]
+    },
+    {
+      r: "ʿ-r-f", ar: "عرف", sense: "knowing",
+      words: ["àʿrif", "tàʿrif", "tàʿrifìn", "bàʿref", "btàʿref", "btàʿrfi", "ʿrìft"]
+    },
+    {
+      r: "dh-h-b", ar: "ذهب", sense: "going",
+      words: ["àdhhab", "tàdhhab", "dhahàbtu", "dhahàbta", "nàdhhab"]
+    },
+    {
+      r: "'-k-l", ar: "أكل", sense: "eating",
+      words: ["àkul", "tà'kul", "ta'kulì", "akàltu", "àkalta", "yà'kul", "al-àkl", "bòkol", "akàlt", "tòkol", "tòkli", "byòklu", "kùl", "kòl", "al-àkel"]
+    },
+    {
+      r: "sh-r-b", ar: "شرب", sense: "drinking",
+      words: ["àshrab", "nàshrab", "sharìbtu", "mashrùb", "bìshrab", "nìshrab", "shrìbt", "tìshrab", "tìshrabi"]
+    },
+    {
+      r: "k-t-r", ar: "كثر", sense: "muchness",
+      words: ["kathìr", "kathìran", "àkthar", "àktar"]
+    },
+    {
+      r: "s-l-m", ar: "سلم", sense: "peace and safety",
+      words: ["salàm", "salàma", "as-salàmu", "salàmatuk", "salàmatuki", "salàmtak", "salàmtik", "sàllim", "sàllemli", "yusàllimuk", "yusallìmuki", "tìslam", "yislàmak", "yislàmik"]
+    },
+    {
+      r: "h-b-b", ar: "حبب", sense: "loving",
+      words: ["ùhib", "tùhib", "tuhibbìn", "ùhibbu", "bhìb", "bhìbb", "bthèbb", "bithìbb", "bithìbbi", "bhìbbo", "bhèbb"]
+    },
+    {
+      r: "r-'-y", ar: "رأي", sense: "opinion and seeing",
+      words: ["rà'yuk", "rà'yuki", "rà'yak", "rà'yik", "arà", "aràk", "aràki", "àra", "ra'àitu", "arèit", "àrini"]
+    },
+    {
+      r: "s-f-r", ar: "سفر", sense: "travel",
+      words: ["safar", "sàfar", "safari", "safarik", "sàfari", "sàfarak", "sa'ughàdir", "sàfer", "bitsàfer", "bitsàfri"]
+    },
+    {
+      r: "'-kh-dh", ar: "أخذ", sense: "taking",
+      words: ["àkhudh", "sa'àkhudh", "khudh", "khudhi", "khudhni", "khudhìni", "khod", "khòd", "bòkhod", "khùdni", "khudìni", "àkhod"]
+    },
+    {
+      r: "n-dh-r", ar: "نظر", sense: "waiting and looking",
+      words: ["antàdhir", "intàdhir", "intàdhirni", "intàdhirìni", "nadhdhàra"]
+    },
+    { r: "m-r-d", ar: "مرض", sense: "illness", words: ["marìd", "marìda"] },
+    {
+      r: "t-b-b", ar: "طبب", sense: "medicine",
+      words: ["tabìb", "tabìba", "tibbìyya", "doktòr", "doktòra"]
+    },
+    {
+      r: "b-y-t", ar: "بيت", sense: "house",
+      words: ["bàit", "bàituk", "bàituki", "bàituna", "al-bèit", "bèitak", "bèitik", "bil-bèit", "ʿal-bèit", "hal-bèit", "bèitna"]
+    },
+    {
+      r: "gh-r-f", ar: "غرف", sense: "room",
+      words: ["ghùrfa", "ghùrfat", "ghùrfati", "ghùrfatik", "ghùrfe", "ghùrfet", "ghùrftak", "ghùrfti", "al-ghùrfe"]
+    },
+    {
+      r: "w-s-l", ar: "وصل", sense: "arriving",
+      words: ["wasàltu", "wasàlna", "wsìlt", "wsìlna", "wàsl", "wàsel", "ìttasil", "ìttasili", "ittàsel", "sa'àttasil", "àttasel"]
+    },
+    {
+      r: "ʿ-t-y", ar: "عطي", sense: "giving",
+      words: ["uʿtìka", "àʿtini", "ʿatìni", "baʿtìk", "yuʿtìk", "yuʿtìki", "yaʿtìk", "yaʿtìki"]
+    },
+    {
+      r: "s-ʿ-d", ar: "سعد", sense: "help and happiness",
+      words: ["sàʿidni", "sàʿedni", "musàʿada", "musàʿade", "musàʿadati", "usàʿiduk", "usàʿiduki", "sàʿdak", "sàʿdik", "tsàʿidni", "saʿìd", "saʿìda"]
+    },
+    { r: "d-kh-l", ar: "دخل", sense: "going in", words: ["dàkhil", "dukhùl"] },
+    {
+      r: "'-kh-r", ar: "أخر", sense: "lateness and lastness",
+      words: ["àkhir", "àkher", "mut'àkhkhir", "mit'àkhkhir", "at-ta'khìr", "ʿat-ta'khìr", "ùkhra", "al-àkhar"]
+    },
+    { r: "'-w-l", ar: "أول", sense: "firstness", words: ["àwwal", "àwwalan"] },
+    {
+      r: "th-n-y", ar: "ثني", sense: "twoness",
+      words: ["thàniya", "ath-thàni", "tàni", "tànye", "t-tànye", "ithnàn", "ithnà", "at-tnèin", "tnèin", "al-ithnàin"]
+    },
+    {
+      r: "m-r-r", ar: "مرر", sense: "times",
+      words: ["marra", "màrra", "marratàin", "marratèin"]
+    },
+    {
+      r: "y-w-m", ar: "يوم", sense: "day",
+      words: ["yàum", "al-yàum", "yòm", "al-yòm", "ayyàm", "iyyàm", "bil-yòm"]
+    },
+    { r: "l-y-l", ar: "ليل", sense: "night", words: ["làila", "al-lèile", "lèile", "làili"] },
+    {
+      r: "h-s-b", ar: "حسب", sense: "reckoning",
+      words: ["hisàb", "al-hsàb", "bil-hsàb", "hàsab"]
+    },
+    {
+      r: "sh-gh-l", ar: "شغل", sense: "work and being busy",
+      words: ["mashghùl", "mashghùla", "mashghùle", "ash-shùghel", "shùghlak", "shùghlik", "bìshtighel", "btìshtighel", "btìshtighli", "byìshtighel", "bitìshtighel", "bitìshtighli"]
+    },
+    {
+      r: "ʿ-y-n", ar: "عين", sense: "eye",
+      words: ["ʿàinuk", "ʿàinuki", "ʿèinak", "ʿèinik", "ʿuyùni", "ʿuyùnak", "ʿuyùnik", "ʿyùni", "ʿyùnak", "ʿwaynàt"]
+    },
+    {
+      r: "y-d", ar: "يد", sense: "hand",
+      words: ["yad", "yadàk", "yadàki", "yadàik", "yadàiki", "yàdak", "ìd", "ìdak", "ìdeik", "ìdeiki"]
+    },
+    { r: "r-'-s", ar: "رأس", sense: "head", words: ["rà's", "ràsi", "ràs"] },
+    {
+      r: "kh-w-f", ar: "خوف", sense: "fear",
+      words: ["khà'if", "khà'ifa", "tàkhaf", "takhàfi", "khàyef", "tkhàf"]
+    },
+    { r: "q-l-q", ar: "قلق", sense: "worry", words: ["qalìq", "qalìqa", "tàqlaq", "ʾalʾàn"] },
+    {
+      r: "f-d-l", ar: "فضل", sense: "kindness and preference",
+      words: ["fàdlik", "fàdliki", "fàdlak", "tafàddal", "tafàddali", "tfàddal", "al-mufàddal", "al-àfdal"]
+    },
+    { r: "sh-k-r", ar: "شكر", sense: "thanks", words: ["shùkran", "jazìlan"] },
+    {
+      r: "s-h-h", ar: "صحح", sense: "health and correctness",
+      words: ["sàhha", "sahìh", "sahhìhni", "sahhihìni", "sahhèhni", "sahhehìni", "sàhtein"]
+    },
+    {
+      r: "ʿ-j-b", ar: "عجب", sense: "liking",
+      words: ["àʿjabani", "àʿjabak", "yùʿjibni", "yùʿjibuni", "ʿàjabni", "ʿàjabak", "byìʿjibni"]
+    },
+    { r: "s-h-l", ar: "سهل", sense: "easiness", words: ["sàhl", "sàhel", "sàhlan"] },
+    { r: "j-m-l", ar: "جمل", sense: "beauty", words: ["jamìl", "jamìla", "jamìlan"] },
+    {
+      r: "h-l-w", ar: "حلو", sense: "sweetness",
+      words: ["hàlwa", "halawiyyàt", "hìlu", "hìlwe"]
+    },
+    {
+      r: "ʿ-n-d", ar: "عند", sense: "having",
+      words: ["ʿìndi", "ʿìndak", "ʿìndaki", "ʿìndakum", "ʿìndana", "ʿàndi", "ʿàndak", "ʿàndik", "ʿàndkun", "ʿànna"]
+    },
+    { r: "ʿ-m-r", ar: "عمر", sense: "age", words: ["ʿùmri", "ʿùmruk", "ʿùmruki", "ʿùmrak"] },
+    {
+      r: "'-s-m", ar: "اسم", sense: "name",
+      words: ["ìsmi", "ìsmuk", "ìsmuki", "ìsmu", "ìsmuhu", "ìsmuha", "ìsem", "ìsmak", "ìsmik", "ìsmo", "ìsma", "ismì"]
+    },
+    {
+      r: "'-h-l", ar: "أهل", sense: "family and welcome",
+      words: ["àhlan", "àhluk", "àhluki", "àhlak", "àhlik", "àhlo"]
+    },
+    { r: "'-b", ar: "أب", sense: "father", words: ["àbi", "àbik", "abùk", "bàyyi"] },
+    { r: "'-m-m", ar: "أم", sense: "mother", words: ["ùmmi", "ùmmik", "ìmmi", "ìmmak"] },
+    {
+      r: "'-kh", ar: "أخ", sense: "brother",
+      words: ["àkh", "àkhi", "khàyyi", "ìkhwa", "ìkhwe", "ùkht", "ùkhti"]
+    },
+    { r: "b-n", ar: "بن", sense: "child", words: ["ìbni", "ìbnati", "bint", "bìnti"] },
+    {
+      r: "z-w-j", ar: "زوج", sense: "marriage",
+      words: ["zàuji", "zàujati", "mutazàwwij", "mutazàwwija", "mitzàwwej", "mitzàwwje", "jòzi", "màrti"]
+    },
+    { r: "ʿ-y-l", ar: "عيل", sense: "household", words: ["al-ʿà'ila", "al-ʿèile", "ʿèilti"] },
+    {
+      r: "k-r-m", ar: "كرم", sense: "generosity",
+      words: ["kàrim", "karìm", "karìma", "karìme", "tikràm"]
+    },
+    {
+      r: "h-q-q", ar: "حقق", sense: "truth and reality",
+      words: ["haqqan", "haqìqi", "haqiqìya", "haʾìʾi", "haʾiʾìyye"]
+    },
+    { r: "n-w-m", ar: "نوم", sense: "sleep", words: ["nàum", "an-nòm"] },
+    { r: "l-b-s", ar: "لبس", sense: "wearing", words: ["àlbas", "talbas", "malàbis", "làbes"] },
+    {
+      r: "l-w-n", ar: "لون", sense: "colour",
+      words: ["làun", "làunuh", "al-lòn", "lòn", "lòno"]
+    },
+    { r: "m-t-r", ar: "مطر", sense: "rain", words: ["màtar", "mùmtir"] },
+    { r: "b-r-d", ar: "برد", sense: "cold", words: ["bàrid", "bàred", "bard"] },
+    { r: "l-ʿ-b", ar: "لعب", sense: "playing", words: ["àlʿab", "bìlʿab"] },
+    {
+      r: "d-r-s", ar: "درس", sense: "study",
+      words: ["mudàrris", "mudàrrisa", "àdrus", "tàdrus", "tadrusìn", "bàdrus", "bitìdrus", "bitìdrusi", "màdrasa", "màdrase"]
+    },
+    { r: "h-n-d-s", ar: "هندس", sense: "engineering", words: ["muhàndis", "muhàndisa"] },
+    { r: "s-w-q", ar: "سوق", sense: "market and driving", words: ["sùq", "ʿas-sùq", "sà'iq"] },
+    { r: "l-h-m", ar: "لحم", sense: "meat", words: ["làhm", "làhem", "làhme"] },
+    { r: "ʿ-t-r", ar: "عطر", sense: "perfume", words: ["ʿìtr", "ʿìter"] },
+    { r: "gh-s-l", ar: "غسل", sense: "washing", words: ["ìghsil", "ìghsili"] },
+    {
+      r: "ʿ-l-m", ar: "علم", sense: "learning and teaching",
+      words: ["ìtʿallam", "àtaʿallam", "ʿallìmni", "ʿallimìni", "mʿàllem", "mùʿallim", "ustàdh", "ustàdhi", "ustàdhati", "ustàz", "ustàzi", "ustàzti"]
+    },
+    {
+      r: "h-w-l", ar: "حول", sense: "trying and state",
+      words: ["uhàwil", "bhàwel", "hàl", "hàluk", "hàluki", "al-hàl"]
+    },
+    { r: "q-d-r", ar: "قدر", sense: "being able", words: ["bàʾder", "bitʾder"] },
+    { r: "t-w-ʿ", ar: "طوع", sense: "being able", words: ["astatìʿ", "àstatìʿ", "tastatìʿ"] },
+    { r: "dh-k-r", ar: "ذكر", sense: "remembering", words: ["atadhàkkar", "bìtzakkar"] },
+    { r: "n-s-y", ar: "نسي", sense: "forgetting", words: ["nasìtu", "ànsa", "nsìt", "bànsa"] },
+    {
+      r: "k-l-m", ar: "كلم", sense: "words and speaking",
+      words: ["kàlima", "kàlimat", "kàlmet", "al-kìlme", "kìlme", "takàllam", "tatakàllam", "tatakàllamìn"]
+    },
+    { r: "s-'-r", ar: "سعر", sense: "price", words: ["sìʿr", "sìʿer"] },
+    { r: "n-q-d", ar: "نقد", sense: "money", words: ["nùqud", "nàqdan"] },
+    { r: "h-d-y", ar: "هدي", sense: "gift and calm", words: ["hadìyya", "hdìyye"] },
+    {
+      r: "d-ʿ-w", ar: "دعو", sense: "invitation",
+      words: ["ad-dàʿwa", "ʿad-dàʿwa", "àdʿuk", "àdʿuki"]
+    },
+    { r: "b-r-k", ar: "برك", sense: "blessing", words: ["mabrùk", "yubàrik", "ybàrek"] },
+    {
+      r: "ʿ-f-w", ar: "عفو", sense: "pardon and health",
+      words: ["ʿàfwan", "al-ʿàfye", "yuʿàfìk", "yuʿafìki", "yʿàfik", "yʿàfiki"]
+    },
+  ];
+
+  var ROOT_OF = null;
+
+  function rootOf(word) {
+    if (!ROOT_OF) {
+      ROOT_OF = {};
+      ROOTS.forEach(function (f) {
+        f.words.forEach(function (w) { ROOT_OF[w] = f; });
+      });
+    }
+    return ROOT_OF[word] || null;
+  }
+
   var DICT_HITS = 60;
   var dictQuery = "";
   var dictKindKey = "all";
@@ -14136,7 +14436,36 @@
     });
   }
 
+  function familyRowsHTML() {
+    var q = normalise(dictQuery);
+    var list = ROOTS.filter(function (f) {
+      if (!q) return true;
+      if (normalise(f.r).indexOf(q) !== -1) return true;
+      if (normalise(f.sense).indexOf(q) !== -1) return true;
+      return f.words.some(function (w) { return normalise(w).indexOf(q) !== -1; });
+    });
+    if (!list.length) {
+      return '<p class="fold-lead">No family under that. The families are hand-written and there ' +
+        "are " + ROOTS.length + " of them, so most words are not in one.</p>";
+    }
+    return '<p class="pb-italian">' + list.length +
+      (list.length === 1 ? " family" : " families") + ", " +
+      list.reduce(function (n, f) { return n + f.words.length; }, 0) + " words between them.</p>" +
+      list.map(function (f) {
+        return '<div class="fam"><div class="fam-head">' +
+          '<span class="fam-r">' + esc(f.r) + "</span>" +
+          '<span class="ar fam-ar">' + esc(f.ar) + "</span>" +
+          '<span class="fam-sense">' + esc(f.sense) + "</span></div>" +
+          '<div class="fam-words">' + f.words.map(function (w) {
+            var row = dictIndex().by[w];
+            return '<button class="fam-word" data-act="dict-open" data-id="' + esc(w) + '">' +
+              esc(w) + '<span class="fam-gloss">' + esc(row ? row.gloss : "") + "</span></button>";
+          }).join("") + "</div></div>";
+      }).join("");
+  }
+
   function dictRowsHTML() {
+    if (dictKindKey === "roots") return familyRowsHTML();
     var hits = dictSearch();
     var shown = hits.slice(0, DICT_HITS);
     if (!shown.length) {
@@ -14164,6 +14493,8 @@
       '<div class="chips">' +
       '<button class="pill pill--md chip' + (dictKindKey === "all" ? " is-on" : "") +
       '" data-act="dict-kind" data-id="all">All</button>' +
+      '<button class="pill pill--md chip' + (dictKindKey === "roots" ? " is-on" : "") +
+      '" data-act="dict-kind" data-id="roots">Families</button>' +
       KINDS.map(function (k) {
         return '<button class="pill pill--md chip' + (dictKindKey === k.key ? " is-on" : "") +
           '" data-act="dict-kind" data-id="' + k.key + '">' + esc(k.label) + "</button>";
@@ -14181,9 +14512,26 @@
     var r = dictIndex().by[word];
     if (!r) { view = { name: "dict" }; return dictHTML(); }
     var ready = wordPool(r).length;
+    var fam = rootOf(word);
+    var famHTML = fam
+      ? '<div class="pb-group"><h3>Its family &#183; ' + esc(fam.r) + "</h3>" +
+        '<p class="fold-lead">Arabic hangs words on a skeleton of consonants. These ' +
+        (fam.words.length - 1 === 1 ? "is the other word" : "are the other " +
+          (fam.words.length - 1) + " words") + " in the course built on <b>" + esc(fam.r) +
+        '</b>, <span class="ar">' + esc(fam.ar) + "</span>, which is about " +
+        esc(fam.sense) + ". Knowing one of them is most of knowing the rest.</p>" +
+        '<div class="fam-words">' + fam.words.filter(function (w) { return w !== word; })
+          .map(function (w) {
+            var row = dictIndex().by[w];
+            return '<button class="fam-word" data-act="dict-open" data-id="' + esc(w) + '">' +
+              esc(w) + '<span class="fam-gloss">' + esc(row ? row.gloss : "") + "</span></button>";
+          }).join("") + "</div></div>"
+      : "";
     return topbarHTML(r.word) +
       '<p class="pb-lead"><b>' + esc(r.gloss) + "</b> &#183; " + esc(kindLabel(r.kind)) +
-      (r.lev ? " &#183; a Levantine word" : "") + "</p>" +
+      (r.lev ? " &#183; a Levantine word" : "") +
+      (fam ? " &#183; " + esc(fam.r) : "") + "</p>" +
+      famHTML +
       '<div class="pb-group"><h3>' + r.lines.length +
       (r.lines.length === 1 ? " line in the course" : " lines in the course") + "</h3>" +
       r.lines.map(function (ar) {
