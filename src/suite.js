@@ -6340,5 +6340,76 @@ section("conversations you had, kept and drilled");
 }
 
 
+section("before you go, and only if you say so");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  delete st.trip;
+  delete st.packed;
+
+  // the whole condition it was agreed on
+  check("no date is set to begin with", D.daysToTrip() === null);
+  check("and nothing is being put aside", D.packing() === false);
+  const before = D.visiblePhrases(LESSONS[0]).length;
+  const studiedBefore = D.studied().length;
+  const poolBefore = D.poolFits();
+
+  click({ "data-go": "trip" });
+  check("the screen says it does nothing until you say",
+    /does\s+nothing until you say/.test(strip(screenOnly())));
+  check("and never asks anywhere else", !/data-go="trip"/.test(screenOnly()));
+
+  click({ "data-act": "trip-set", "data-id": "3" });
+  check("giving three weeks sets a date", D.daysToTrip() === 21);
+  check("but still puts nothing aside on its own", D.packing() === false);
+  check("it says what it would keep and what it would not",
+    /What it would put aside/.test(strip(screenOnly())));
+
+  const c = D.packCounts();
+  check("the backbone it would keep is a real fraction, not everything",
+    c.keep > 100 && c.keep < c.aside);
+  check("every core phrase survives the cut", (function () {
+    const set = D.packedSet();
+    return LESSONS.flatMap(l => l.phrases).filter(p => p.core).every(p => set[p.ar]);
+  })());
+  check("and so does everything a capability needs",
+    D.CAN.every(x => (x.needs || []).every(ar => D.packedSet()[ar])));
+
+  click({ "data-act": "trip-pack", "data-id": "on" });
+  check("asking for it puts the rest aside", D.packing() === true);
+  const poolAfter = D.poolFits();
+  check("which is the point: the daily pool falls",
+    poolAfter && poolBefore && poolAfter.need < poolBefore.need);
+  check("far enough that a session can carry it", poolAfter.ok === true);
+  check("but a lesson you open still shows you all of it",
+    D.visiblePhrases(LESSONS[0]).length === before);
+  check("what changed is what comes round: the rotation is smaller",
+    D.studied().length < studiedBefore);
+  click({ "data-go": "home" });
+  check("and the home screen says so once, with the way out",
+    /put aside until/.test(strip(screenOnly())) && /Change that/.test(strip(screenOnly())));
+
+  click({ "data-go": "trip" });
+  click({ "data-act": "trip-pack", "data-id": "off" });
+  check("one tap puts it all back", D.packing() === false);
+  check("with nothing lost", D.studied().length === studiedBefore);
+
+  click({ "data-act": "trip-set", "data-id": "0" });
+  check("and the date can be taken off entirely", D.daysToTrip() === null);
+  click({ "data-go": "home" });
+  check("after which the home screen is as it was", !/put aside until/.test(strip(screenOnly())));
+
+  // it lets go on its own
+  st.trip = D.today() - 1;
+  st.packed = 1;
+  check("a date that has passed stops putting anything aside", D.packing() === false);
+
+  delete st.trip;
+  delete st.packed;
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);

@@ -43,87 +43,58 @@ consistent, not that the Arabic is right.
 
 ## Still to build
 
-## Agreed on 2026-08-27, in the order they were agreed
+## Agreed on 2026-08-27, and all of it built the same day
 
-1. ~~Pick lessons from the course list.~~ **Built 2026-08-27.** The
-   course list is grouped into seven named arcs, Pick several turns
-   every row into something you tick, an arc's All takes the whole
-   stretch, and the bar at the bottom offers Review these (drawn from
-   those alone) or Study in a row (a run through them in course order,
-   which is practice and does not pass a lesson). The selection lives
-   in `store.chosen`, the same list `#/choose` reads, so the two cannot
-   disagree.
-2. ~~Free talk that opens the other way round.~~ **Built 2026-08-27.**
-   Three roles behind chips at the top of the screen: they start (as
-   before), you start (the screen is empty until you speak, and the
-   openers become the ways in), and you are the local (a visitor asks
-   you where something is, what it costs, when it goes, and you give
-   the answer). Which side a question comes from is worked out from
-   data already there: its kind, from the listening drill, and whether
-   it names a thing at all - where is the bathroom points at
-   something, where are you from does not.
+1. **Pick lessons from the course list.** Seven named arcs, tick any of
+   them, an arc's All takes a whole stretch, and a bar at the bottom
+   offers Review these or Study in a row.
+2. **Free talk from all three sides.** They start, you start, and you
+   are the local. Which side a question comes from is worked out from
+   its kind and whether it names a thing.
+3. **Families.** Ninety hand-checked roots, 523 words, a Families
+   filter in the dictionary and the relatives on every word's page.
+   Written by hand because the Latin spelling collapses the emphatic
+   consonants and half of a derived grouping would be false.
+4. **Keeping up.** Twelve phrases at a speed that climbs when you
+   follow and falls when you do not, reporting the fastest you managed
+   rather than a score.
+5. **Which sound you lose.** The mic comparison read one consonant at a
+   time, four goes before it will say anything, on the drill screen
+   that exists to fix them.
+6. **In your own words.** Eighteen questions about you, answered in
+   Arabic with something true, nothing marked, and what you wrote kept.
+7. **The phrase that commits you**, said once in a session the first
+   time you get it right, then never again.
+8. **Not sure about these.** Forty-two lines where the dialect or the
+   vocalisation was a judgement, marked on the card and collected on a
+   screen with the Arabic to show somebody.
+9. **Conversations you had.** Keep a free talk, drill it later out of
+   your own lines.
+10. **The screen stays on** while a session is running.
+11. **Before you go.** Give a departure date and it will put aside
+   everything outside the backbone: 215 phrases stay in the rotation
+   against 829, and the pool falls from 28 a day to 8. Never asked
+   for, never on by itself, undone in a tap, and it lets go by itself
+   when the date passes.
 
-   Old note, kept because it explains the shape:
-   **Free talk that opens the other way round.** `talkScope()` and
-   `setTalkScope()` already exist and already take several lessons, and
-   the scope picker is already on the screen: that half is built. What
-   is missing is who starts. Today the other side always opens and you
-   always answer. Decided: all three roles behind a selector - they
-   open and you answer (as now), you open as the foreigner, and you
-   play the local answering a tourist. The third is the one that makes
-   you produce answers instead of questions. Held to the lessons fed in.
-3. **Roots.** Group the dictionary by consonantal skeleton, so k-t-b
-   shows kitàb, àktub, màktab together. Vocabulary that costs the
-   review pool nothing, which is the only kind left worth having.
-4. **A speed drill.** Today the voice has one slow/normal switch. Want
-   a drill that starts near 0.7 and ratchets towards 1.15 as you get it
-   right, and tells you where you stopped. Comprehension speed is what
-   fails in the street, not vocabulary.
-5. **Which sound you personally get wrong.** The mic compares whole
-   phrases. Aggregate what the recogniser returns by sound and report
-   it: your ح is heard as h eight times in ten, your ع is fine.
-6. **Answer in your own words.** Every drill runs English to Arabic or
-   back. Nothing asks you to answer a question with your own true
-   information. Ilà matà ànta hùna? and you type the real answer.
-7. **A warning before a phrase that commits you.** The `how: "direct"`
-   tag exists and is never surfaced in a session. Show it once, the
-   first time.
-8. **Words the author is not sure of, marked in the app.** Replaces the
-   idea of a printable sheet for a native speaker, which was rejected
-   on 2026-08-27 as too slow: he wants to be speaking it when he lands.
-   Instead, flag the entries whose Levantine or vocalisation is a
-   judgement call, verify the ones that can be verified, and leave the
-   rest carrying a visible mark so a native can be asked about exactly
-   those and nothing else. Decided: a quiet mark on the card while you
-   study **and** a screen that collects them all. Every agent draft in
-   this repo ended with a "least sure about" list; that is the raw
-   material and it is currently thrown away.
-9. **Conversations you had.** A finished free talk is saved and comes
-   back days later as a drill. You revise your own real sentences
-   rather than the ones I chose for you.
-10. **The screen stays on during a session.** It dims while you are
-   thinking about an answer. Ten lines. Icon shortcuts and a
-   one-handed reachability audit were offered and turned down.
-11. **Trip triage, opt in only.** Naming a departure date lets the app
-   put everything you will not need in the first week below the line
-   and bring the daily pool back under what a session can carry.
-   Agreed on condition it is **never the default**: the app must not
-   ask for a date, and must work exactly as now until one is given.
+## Still to build
 
+Nothing agreed is outstanding.
 
-- **Two-turn chains** in the conversations, a **weekly plan**, and the
-  **same phrase from two voices**. All three were agreed and none is
-  built.
-- **The search remembering what it could not find**, and a
-  **circumlocution drill** (no word for it, so describe it with the
-  words you have). Agreed, not built.
-- The dictionary builds a session from a word. It does **not** invent
-  new dialogue on it, and it cannot: there is no model in a static
-  file, only `FRAMES` recombination. Extending `FRAMES` is the honest
-  version of that idea.
-- `numberWords()` still stops at 99. It only powers ages and the
-  counting drill, so nothing is broken; the hundreds and thousands are
-  taught as phrases in lesson 56 instead.
+Three ideas were raised on 2026-08-27 and not judged:
+
+- **The register cap is now working against the course.** A test holds
+  `how:`-tagged phrases under a tenth of the total. That ratio was set
+  at about 400 phrases; at 829 it means every lesson about register
+  forces a tag off a good card. What it was protecting is that the tag
+  should mean something, which is a claim about distribution, not a
+  ratio.
+- **Nothing says what you can do now that you could not last week.**
+  The diary and the capability list both exist; a capability flipping
+  to ready is the strongest thing the app could say and it is never
+  said on the home screen.
+- **No repair for a phrase that landed badly.** The course teaches
+  `Ànti jamìla` with a warning and nothing for the moment after.
 
 ## One thing to watch, not a task
 

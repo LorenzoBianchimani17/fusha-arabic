@@ -8453,11 +8453,86 @@
   // bigger than the second, some of the course is going to slip however
   // diligent you are, and no amount of scheduling can fix it: the only
   // levers are a longer session or a smaller pool.
+  /* ============================================================
+     BEFORE YOU GO - the pool is 829 phrases and needs 28 reviews a
+     day; the longest session gives 30 and a normal one gives 12.
+     Every lesson added from here costs you mastery rather than
+     buying it. The way out is not another scheduler: it is to say
+     when you are going and let the app put aside what you will not
+     need in the first week.
+
+     Never asked for. The app must work exactly as it does now until
+     a date is given, and giving one must be undoable in a tap.
+     ============================================================ */
+
+  var TRIP_WEEKS = [1, 2, 3, 4, 6, 8];
+
+  function tripDay() {
+    var d = store.trip;
+    return typeof d === "number" ? d : null;
+  }
+
+  function daysToTrip() {
+    var d = tripDay();
+    return d === null ? null : d - today();
+  }
+
+  function setTrip(weeks) {
+    if (!weeks) { delete store.trip; delete store.packed; save(); return; }
+    store.trip = today() + weeks * 7;
+    save();
+  }
+
+  function tripOn() { return daysToTrip() !== null && daysToTrip() >= 0; }
+
+  // What survives the cut, worked out every time rather than frozen
+  // into a list, so it stays right when a lesson goes in.
+  var PACKED = null, PACKED_AT = null;
+
+  function packedSet() {
+    var key = LESSONS.length + "|" + (store.packed ? 1 : 0);
+    if (PACKED && PACKED_AT === key) return PACKED;
+    var keep = {};
+    LESSONS.forEach(function (l) {
+      l.phrases.forEach(function (p) { if (p.core) keep[p.ar] = 1; });
+    });
+    CAN.forEach(function (c) { (c.needs || []).forEach(function (ar) { keep[ar] = 1; }); });
+    NOW.forEach(function (g) { (g.lines || []).forEach(function (ar) { keep[ar] = 1; }); });
+    PACKED = keep;
+    PACKED_AT = key;
+    return keep;
+  }
+
+  function packing() { return !!store.packed && tripOn(); }
+
+  function setPacked(on) {
+    if (on) store.packed = 1;
+    else delete store.packed;
+    PACKED = null;
+    save();
+  }
+
+  function packedAside(ar) { return packing() && !packedSet()[ar]; }
+
+  function packCounts() {
+    var keep = 0, aside = 0;
+    finishedLessons().forEach(function (l) {
+      l.phrases.forEach(function (p) {
+        if (isHidden(l.id, p.ar)) return;
+        if (packedSet()[p.ar]) keep++;
+        else aside++;
+      });
+    });
+    return { keep: keep, aside: aside };
+  }
+
   function poolFits() {
     var pool = 0;
     finishedLessons().forEach(function (l) {
       visiblePhrases(l).forEach(function (p) {
-        if (!knownRec(l.id, p.ar)) pool++;
+        if (knownRec(l.id, p.ar)) return;
+        if (packedAside(p.ar)) return;
+        pool++;
       });
     });
     if (!pool) return null;
@@ -9959,9 +10034,13 @@
   // Everything in the lessons you have passed, with how well you know it.
   function studied() {
     var out = [];
+    var packedOut = 0;
     finishedLessons().forEach(function (l) {
       phrasesOf(l).forEach(function (item) {
         if (isHidden(l.id, item.ar)) return;
+        // Put aside for the trip: still in the lesson, still readable,
+        // simply not what comes round while the days are short.
+        if (packedAside(item.ar)) { packedOut++; return; }
         item.s = strengthOf(l.id, item.ar);
         item.fading = isFading(l.id, item.ar);
         var rec = knownRec(l.id, item.ar);
@@ -9970,6 +10049,21 @@
         out.push(item);
       });
     });
+    // Never leave the rotation empty: a cut that takes everything is a
+    // cut that has gone wrong.
+    if (!out.length && packedOut) {
+      finishedLessons().forEach(function (l) {
+        phrasesOf(l).forEach(function (item) {
+          if (isHidden(l.id, item.ar)) return;
+          item.s = strengthOf(l.id, item.ar);
+          item.fading = isFading(l.id, item.ar);
+          var rec = knownRec(l.id, item.ar);
+          item.known = !!rec;
+          item.dueCheck = isDueCheck(rec);
+          out.push(item);
+        });
+      });
+    }
     return out;
   }
 
@@ -12160,6 +12254,7 @@
     if (v.name === "unsure") return "#/unsure";
     if (v.name === "yours") return "#/yours";
     if (v.name === "kept") return "#/kept";
+    if (v.name === "trip") return "#/trip";
     if (v.name === "dict") return "#/dict" + (v.word ? "/" + encodeURIComponent(v.word) : "");
     if (v.name === "talk") return "#/freetalk";
     if (v.name === "lesson") return "#/lesson/" + v.lesson.id;
@@ -12255,6 +12350,13 @@
     if (parts[0] === "kept") {
       session = null;
       view = { name: "kept" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "trip") {
+      session = null;
+      view = { name: "trip" };
       render();
       return;
     }
@@ -13615,6 +13717,10 @@
       '<button class="nav-item" data-go="dict"><span class="nav-label">Dictionary</span>' +
       '<span class="nav-note">' + esc(dictIndex().list.length +
         " words, what each one means, and every line it turns up in") + "</span></button>" +
+      '<button class="nav-item" data-go="trip"><span class="nav-label">Before you go</span>' +
+      '<span class="nav-note">' + esc(tripOn()
+        ? daysToTrip() + " days out" + (packing() ? ", " + packCounts().aside + " put aside" : "")
+        : "Say when you are going and it will put aside what can wait") + "</span></button>" +
       '<button class="nav-item' + (keptTalks().length ? "" : " is-off") + '" data-go="kept"' +
       (keptTalks().length ? "" : " disabled") + '><span class="nav-label">Conversations you had</span>' +
       '<span class="nav-note">' + esc(keptTalks().length
@@ -13946,6 +14052,12 @@
           '<button class="pill pill--md chip" data-go="words">See what I have set aside</button>' +
           "</div></div>";
       })() +
+      (packing()
+        ? '<div class="notice"><b>' + packCounts().aside + " phrases are put aside until " +
+          (daysToTrip() <= 0 ? "you get back" : "you go, in " + daysToTrip() + " days") + ".</b>" +
+          '<p class="want-why">The backbone is what comes round. ' +
+          '<button class="link-btn" data-go="trip">Change that</button></p></div>'
+        : "") +
       (openSession()
         ? '<div class="notice notice-open">You left a session at round ' + openSession().i +
           " of " + openSession().of + " today. " +
@@ -14315,6 +14427,53 @@
           '<button class="btn btn-ghost" data-act="yours-next">Skip this one</button>' +
           '<button class="btn" data-act="yours-read"' + (yours.draft.trim() ? "" : " disabled") +
           ">See what you said</button></div></div>");
+  }
+
+  function tripHTML() {
+    var left = daysToTrip();
+    var c = packCounts();
+    var fit = poolFits();
+    return topbarHTML("Before you go") +
+      '<p class="pb-lead">The course has more in it than a day can keep alive. If you know roughly ' +
+      "when you are going, it can put aside what you will not need in the first week and leave you " +
+      "with a backbone you actually hold. Nothing is deleted and one tap puts it all back.</p>" +
+      (left === null
+        ? '<p class="pb-italian">No date set, and nothing is being put aside. This screen does ' +
+          "nothing until you say.</p>"
+        : '<div class="notice"><b>' + (left < 0
+            ? "You went " + (-left) + (left === -1 ? " day" : " days") + " ago."
+            : left === 0 ? "You go today."
+            : left + (left === 1 ? " day" : " days") + " to go.") + "</b>" +
+          '<p class="want-why">' + (packing()
+            ? c.keep + " phrases in the rotation, " + c.aside + " put aside until you are back."
+            : "Nothing is being put aside yet.") + "</p></div>") +
+      '<div class="pb-group"><h3>When are you going?</h3>' +
+      '<div class="chips">' + TRIP_WEEKS.map(function (w) {
+        var on = left !== null && Math.abs(left - w * 7) < 4;
+        return '<button class="pill pill--md chip' + (on ? " is-on" : "") +
+          '" data-act="trip-set" data-id="' + w + '">' + w +
+          (w === 1 ? " week" : " weeks") + "</button>";
+      }).join("") +
+      (left !== null
+        ? '<button class="pill pill--md chip" data-act="trip-set" data-id="0">Not going yet</button>'
+        : "") + "</div></div>" +
+      (left !== null && left >= 0
+        ? '<div class="pb-group"><h3>What it would put aside</h3>' +
+          '<p class="fold-lead">It keeps the backbone - every phrase marked core - plus every line ' +
+          "the capability list needs to get you through a situation, plus everything under " +
+          "<b>Right now</b>. That is " + c.keep + " phrases. The other " + c.aside +
+          " go quiet until the date passes, and come back on their own.</p>" +
+          (fit
+            ? '<p class="fold-lead">As it stands the pool needs about ' + fit.need +
+              " rounds a day to hold; a session gives you " + fit.have + ".</p>"
+            : "") +
+          '<div class="btn-row">' + (packing()
+            ? '<button class="btn btn-ghost btn-wide" data-act="trip-pack" data-id="off">' +
+              "Put it all back</button>"
+            : '<button class="btn btn-wide" data-act="trip-pack" data-id="on">' +
+              "Put the rest aside until I am back</button>") + "</div></div>"
+        : "") +
+      '<div class="btn-row"><button class="btn btn-ghost btn-wide" data-go="home">Back</button></div>';
   }
 
   function unsureHTML() {
@@ -18991,6 +19150,7 @@
     if (view.name === "unsure") return unsureHTML();
     if (view.name === "yours") return yoursHTML();
     if (view.name === "kept") return keptHTML();
+    if (view.name === "trip") return tripHTML();
     if (view.name === "dict") return dictHTML();
     if (view.name === "talk") return talkHTML();
     return "";
@@ -19267,6 +19427,7 @@
       if (dest === "unsure") { go({ name: "unsure" }); return; }
       if (dest === "yours") { yours = newYours(yours); go({ name: "yours" }); return; }
       if (dest === "kept") { go({ name: "kept" }); return; }
+      if (dest === "trip") { go({ name: "trip" }); return; }
       if (dest === "words") { go({ name: "words" }); return; }
       if (dest === "make") { session = null; made = newMake(null); go({ name: "make" }); return; }
       if (dest === "you") { session = null; go({ name: "you" }); return; }
@@ -19596,6 +19757,16 @@
     if (act === "save-file") { saveToFile(); return; }
     if (act === "backup" || act === "search" || act === "dict-search" || act === "typing"
       || act === "yours-typing") return;
+    if (act === "trip-set") {
+      setTrip(Number(el.getAttribute("data-id")));
+      render();
+      return;
+    }
+    if (act === "trip-pack") {
+      setPacked(el.getAttribute("data-id") === "on");
+      render();
+      return;
+    }
     if (act === "talk-keep") {
       if (keepTalk()) talk.kept = true;
       render();

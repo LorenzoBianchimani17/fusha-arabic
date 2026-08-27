@@ -67,7 +67,11 @@ HOOKS = (
     ' paceLabel: paceLabel, rateFor: rateFor, UNSURE: UNSURE, unsureOf: unsureOf, unsureMark: unsureMark,'
     ' YOURS: YOURS, yoursOpen: yoursOpen, yoursRead: yoursRead, yoursSaid: yoursSaid,'
     ' keptTalks: keptTalks, keepTalk: keepTalk, talkDrill: talkDrill,'
-    ' TALK_KEEPABLE: TALK_KEEPABLE, TALKS_KEPT: TALKS_KEPT };'
+    ' TALK_KEEPABLE: TALK_KEEPABLE, TALKS_KEPT: TALKS_KEPT,'
+    ' TRIP_WEEKS: TRIP_WEEKS, daysToTrip: daysToTrip, setTrip: setTrip, tripOn: tripOn,'
+    ' packing: packing, packedSet: packedSet, packedAside: packedAside,'
+    ' packCounts: packCounts, setPacked: setPacked, visiblePhrases: visiblePhrases,'
+    ' studied: studied };'
 )
 
 START = '\n  applyHash(typeof window.location !== "undefined" ? window.location.hash : "");'
