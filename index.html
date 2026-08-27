@@ -738,6 +738,7 @@
   .street-arrow { color: var(--ink-3); }
   .street-en { flex: 1 0 100%; color: var(--ink-3); font-size: var(--t-1); }
   .verdict-msg.warn { color: var(--amber); background: var(--surface-2); }
+  .flash-note.is-warn { border-color: var(--amber); }
   .flash-alt { margin-top: var(--s-3); color: var(--ink-3); font-size: var(--t-2);
     display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
   .flash-alt .ar { color: var(--ink-2); font-size: var(--t-4); }
@@ -1020,6 +1021,21 @@
   .chip.is-on { color: var(--accent-ink); background: var(--accent-soft); border-color: transparent; font-weight: 600; }
 
   .dict-row { width: 100%; text-align: left; cursor: pointer; }
+
+  .ear-row {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ear-row:last-child { border-bottom: 0; }
+  .ear-ar { font-size: var(--t-8); color: var(--accent); width: 1.4em; text-align: center; }
+  .ear-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .ear-head { font-size: var(--t-3); }
+  .ear-say { font-size: var(--t-2); color: var(--ink-3); line-height: 1.35; }
+  .ear-pct { font-size: var(--t-3); font-variant-numeric: tabular-nums; color: var(--ink-3); }
 
   .fam { padding: var(--s-4) 0; border-bottom: 1px solid var(--line); }
   .fam:last-child { border-bottom: 0; }
@@ -9102,6 +9118,85 @@
     return best;
   }
 
+  /* ============================================================
+     THE SOUNDS YOU LOSE - the microphone already compares what you
+     said against what was wanted, word by whole word, and reports a
+     score for the phrase. Read the same comparison one consonant at a
+     time and it says something the score never could: which sounds are
+     going missing in your mouth. Nothing new is recorded; it is the
+     same two strings, counted differently.
+     ============================================================ */
+
+  // The ten Italian does not have, which are the ten that go.
+  var EAR_SOUNDS = [
+    { ar: "\u062d", as: "h", say: "a hard whisper from the bottom of the throat, with no rasp in it" },
+    { ar: "\u062e", as: "kh", say: "the rasp in Scottish loch" },
+    { ar: "\u0639", as: "\u02bf", say: "a tightening deep in the throat, under the voice" },
+    { ar: "\u063a", as: "gh", say: "the same place as kh, but voiced - close to a Parisian r" },
+    { ar: "\u0642", as: "q", say: "a k made far back, against the soft palate" },
+    { ar: "\u0637", as: "t", say: "a t with the tongue flat and the mouth held open" },
+    { ar: "\u0635", as: "s", say: "an s with the tongue flat and the mouth held open" },
+    { ar: "\u0636", as: "d", say: "a d with the tongue flat and the mouth held open" },
+    { ar: "\u0638", as: "dh", say: "a th with the tongue flat and the mouth held open" },
+    { ar: "\u062b", as: "th", say: "the soft th in three" }
+  ];
+
+  function countIn(text, letter) {
+    return String(text).split(letter).length - 1;
+  }
+
+  // Only ever called where you were saying one known phrase on purpose.
+  function noteSounds(heard, expectedAr) {
+    if (!heard || !expectedAr) return;
+    var want = flattenArabic(expectedAr);
+    var got = flattenArabic(heard);
+    if (!want) return;
+    var touched = false;
+    var ears = store.ears || {};
+    EAR_SOUNDS.forEach(function (snd) {
+      var n = countIn(want, snd.ar);
+      if (!n) return;
+      var rec = ears[snd.ar] || { said: 0, kept: 0 };
+      rec.said += n;
+      rec.kept += Math.min(n, countIn(got, snd.ar));
+      ears[snd.ar] = rec;
+      touched = true;
+    });
+    if (!touched) return;
+    store.ears = ears;
+    save();
+  }
+
+  // Worst first, and only what there is real evidence for: one attempt
+  // is not a diagnosis.
+  var EAR_ENOUGH = 4;
+
+  function earReport() {
+    var ears = store.ears || {};
+    var out = [];
+    EAR_SOUNDS.forEach(function (snd) {
+      var rec = ears[snd.ar];
+      if (!rec || rec.said < EAR_ENOUGH) return;
+      out.push({
+        ar: snd.ar, as: snd.as, say: snd.say,
+        said: rec.said, kept: rec.kept,
+        pct: Math.round(rec.kept / rec.said * 100)
+      });
+    });
+    out.sort(function (a, b) { return a.pct - b.pct; });
+    return out;
+  }
+
+  function earWaiting() {
+    var ears = store.ears || {};
+    var n = 0;
+    EAR_SOUNDS.forEach(function (snd) {
+      var rec = ears[snd.ar];
+      if (rec && rec.said && rec.said < EAR_ENOUGH) n++;
+    });
+    return n;
+  }
+
   var HEARD_OK = 0.6;
 
   // The whole course is built on not having to read the alphabet, so
@@ -12936,11 +13031,40 @@
       "</div>";
   }
 
+  // What the microphone has been quietly noticing while you used it.
+  function earsHTML() {
+    var rows = earReport();
+    var waiting = earWaiting();
+    if (!rows.length) {
+      return '<div class="pb-group"><h3>Which of them you lose</h3>' +
+        '<p class="fold-lead">Nothing to say yet. Use the microphone on <b>Out loud</b> or on a ' +
+        "card and this fills itself in: every time you say a phrase, what came back is checked " +
+        "one consonant at a time, and after " + EAR_ENOUGH + " goes at a sound it will tell you " +
+        "which ones are not surviving your mouth." +
+        (waiting ? " " + waiting + " of them are part way there." : "") + "</p></div>";
+    }
+    return '<div class="pb-group"><h3>Which of them you lose</h3>' +
+      '<p class="fold-lead">Not how well you know a phrase - which sound goes missing when you say ' +
+      "one. Worst first. It is the recogniser's opinion, not a teacher's, so read it as a hint " +
+      "about where to listen rather than a verdict.</p>" +
+      rows.map(function (r) {
+        var band = r.pct >= 75 ? "is-solid" : r.pct >= 45 ? "is-warm" : "is-cold";
+        return '<div class="ear-row"><span class="ar ear-ar">' + esc(r.ar) + "</span>" +
+          '<span class="ear-body"><span class="ear-head"><b>' + esc(r.as) + "</b> &#183; " +
+          r.kept + " of " + r.said + " came back</span>" +
+          '<span class="ear-say">' + esc(r.say) + "</span>" +
+          '<span class="strip"><i class="' + band + '" style="flex:' + Math.max(r.pct, 1) + '"></i>' +
+          '<i class="is-unmet" style="flex:' + Math.max(100 - r.pct, 1) + '"></i></span></span>' +
+          '<span class="ear-pct">' + r.pct + "%</span></div>";
+      }).join("") + "</div>";
+  }
+
   function soundsHTML() {
     return topbarHTML("The sounds you cannot hear yet") +
       '<p class="pb-lead">Six of these consonants do not exist in Italian, and the trouble is not saying ' +
       "them: it is that two different words arrive at your ear as one. Every pair below is one letter or " +
       "one vowel length apart, and half the words are already in the course.</p>" +
+      earsHTML() +
       (sounds ? soundsDrillHTML() : '<div class="btn-row"><button class="btn btn-wide" data-act="sounds-start">' +
         (canSpeak() ? "Start the drill" : "The drill needs a voice") + "</button></div>") +
       MINIMAL.map(function (p) {
@@ -16667,6 +16791,7 @@
     var p = loudNow();
     if (!p) return;
     var best = bestHeard(list, spk(p.ar) || "");
+    noteSounds(best.text, spk(p.ar) || SCRIPT[p.ar] || "");
     loud.heard = best;
     loud.score = best.score;
     loud.run += 1;
@@ -16867,6 +16992,29 @@
     var k = howOf(ar);
     if (!k || !HOW[k]) return "";
     return '<span class="pill pill--tag how-tag is-' + k + '">' + esc(HOW[k].label) + "</span>";
+  }
+
+  // The register label is on the flashcard, which is where you meet a
+  // phrase. It is not where you are about to use it. The first time you
+  // get one right in a session - the first time you could actually say
+  // it to somebody - it says so once, and then never again.
+  function saidBefore(ar) { return !!(store.said || {})[ar]; }
+
+  function markSaid(ar) {
+    if (!store.said) store.said = {};
+    if (store.said[ar]) return;
+    store.said[ar] = 1;
+    save();
+  }
+
+  function commitNote(t) {
+    if (!session.lastRight) return "";
+    var ar = t.phrase ? t.phrase.ar : null;
+    if (!ar || howOf(ar) !== "direct") return "";
+    if (saidBefore(ar)) return "";
+    markSaid(ar);
+    return '<div class="flash-note is-warn"><span><b>Before you use it.</b> ' +
+      esc(HOW.direct.why) + "</span></div>";
   }
 
   function howNote(ar) {
@@ -17703,7 +17851,7 @@
     return '<div class="verdict" tabindex="-1">' + msg +
       (session.lastRight ? "" : confusedWith(t)) +
       (session.lastRight ? "" : insteadWith(t)) + leechOut(t) + anchorHTML(t) +
-      (session.lastRight ? "" : whyHTML(t)) + twinPickHTML(t) + roundControls(t) +
+      (session.lastRight ? "" : whyHTML(t)) + commitNote(t) + twinPickHTML(t) + roundControls(t) +
       '<button class="btn btn-wide" data-act="next">' +
       (session.isOne ? "Another one" : ending ? "See your score" : "Continue") + "</button>" +
       (session.isOne
@@ -18357,7 +18505,45 @@
     afterRender();
   }
 
+  // The phone dims while you are working out an answer, which is
+  // exactly the moment you are not touching it. Held only while
+  // something is running, let go the moment it is not, and absent
+  // where the browser has no such thing, where nothing changes.
+  var awake = null;
+
+  function wakeApi() {
+    if (typeof navigator === "undefined" || !navigator) return null;
+    var w = navigator.wakeLock;
+    return w && typeof w.request === "function" ? w : null;
+  }
+
+  function holdScreen(on) {
+    var api = wakeApi();
+    if (!api) return;
+    if (on) {
+      if (awake) return;
+      try {
+        var p = api.request("screen");
+        if (p && typeof p.then === "function") {
+          p.then(function (lock) {
+            awake = lock;
+            if (lock && typeof lock.addEventListener === "function") {
+              lock.addEventListener("release", function () { awake = null; });
+            }
+          }, function () { /* refused, or the tab is not in front */ });
+        }
+      } catch (e) { /* an older Safari */ }
+      return;
+    }
+    if (!awake) return;
+    try { if (typeof awake.release === "function") awake.release(); } catch (e) { /* gone already */ }
+    awake = null;
+  }
+
+  var AWAKE_ON = { play: 1, learn: 1, talk: 1, loud: 1, recall: 1, moment: 1 };
+
   function afterRender() {
+    holdScreen(!!AWAKE_ON[view.name]);
     if (view.name === "talk") {
       var tf = app.querySelector('[data-act="talk-typing"]');
       if (tf && talk.draft && !ears.busy && typeof tf.focus === "function") {
@@ -19150,6 +19336,7 @@
       listenOnce(function (list) {
         var expect = tm.type === "convoturn" ? SCRIPT[tm.answer] : SCRIPT[tm.phrase.ar];
         tm.heard = bestHeard(list, expect || "");
+        noteSounds(tm.heard.text, expect || "");
         // On a conversation turn, a clear match answers for you.
         if (tm.type === "convoturn" && tm.heard.score >= HEARD_OK) {
           render();
@@ -19485,6 +19672,16 @@
       // a real edge swipe: mostly sideways, far enough, and not a slow drag
       if (dx > 70 && dy < 60 && Date.now() - was.at < 700) goBack();
     }, { passive: true });
+  }
+
+  // Every browser drops a screen lock when the tab goes to the back.
+  // Coming back to a half-finished round should not mean a dimming
+  // screen again.
+  if (typeof document.addEventListener === "function") {
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") holdScreen(!!AWAKE_ON[view.name]);
+      else holdScreen(false);
+    });
   }
 
   document.addEventListener("keydown", function (ev) {

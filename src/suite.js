@@ -5967,5 +5967,136 @@ section("the families a word belongs to");
 }
 
 
+section("two small ones the phone needed");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+
+  // the screen stops dimming while you are working something out
+  let asked = 0, released = 0;
+  const lock = { release() { released++; }, addEventListener() {} };
+  global.navigator = global.navigator || {};
+  global.navigator.wakeLock = { request() { asked++; return { then(ok) { ok(lock); return { catch() {} }; } }; } };
+
+  check("nothing is held on the home screen", (function () {
+    click({ "data-go": "home" });
+    return asked === 0;
+  })());
+  click({ "data-go": "play", "data-id": "1" });
+  check("a running session holds the screen awake", asked === 1);
+  click({ "data-go": "play", "data-id": "1" });
+  check("and it is asked for once, not once a round", asked === 1);
+  st.str = {};
+  click({ "data-go": "home" });
+  check("leaving lets it go again", released === 1);
+  check("the screens that hold it are the ones you look at without touching",
+    ["play", "learn", "talk", "loud"].every(k => D.AWAKE_ON[k]) && !D.AWAKE_ON.home);
+  check("and a browser without the thing at all is simply left alone", (function () {
+    const had = global.navigator.wakeLock;
+    delete global.navigator.wakeLock;
+    let threw = false;
+    try { D.holdScreen(true); D.holdScreen(false); } catch (e) { threw = true; }
+    global.navigator.wakeLock = had;
+    return !threw;
+  })());
+
+  // the phrase that commits you says so the first time you could say it
+  const risky = LESSONS.flatMap(l => l.phrases).filter(p => p.how === "direct").map(p => p.ar);
+  check(`the course marks some phrases as committing you (${risky.length})`, risky.length >= 3);
+  st.said = {};
+  const one = risky[0];
+  check("and until you have got one right, nothing has been said about it",
+    !D.saidBefore(one));
+
+  const owner = LESSONS.find(l => l.phrases.some(p => p.ar === one));
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
+
+  // Built rather than waited for: a session is a random draw, and a
+  // test that waits for one particular card to come up is a test that
+  // sometimes does not run at all.
+  let seen = false, again = false, found = false, guard = 0;
+  while (guard++ < 8 && !found) {
+    click({ "data-go": "home" });
+    click({ "data-go": "play", "data-id": String(owner.id) });
+    const s = peek().session;
+    if (!s) break;
+    const at = s.tasks.findIndex(x => x.phrase && x.phrase.ar === one);
+    if (at === -1) { s.i = s.tasks.length - 1; continue; }
+    found = true;
+    s.i = at;
+    s.state = "asking";
+    answerCurrent(true);
+    seen = /Before you use it/.test(h);
+    // and when the same card comes round again it stays quiet
+    s.tasks[at].settled = false;
+    s.tasks[at].typed = "";
+    s.i = at;
+    s.state = "asking";
+    answerCurrent(true);
+    again = /Before you use it/.test(h);
+  }
+  check("the card can be put in front of you", found);
+  check("getting it right in a session says it once, where you could actually use it", seen);
+  check("and the next time the same card comes round it stays quiet", !again);
+  check("and it is written down so it never says it again", D.saidBefore(one));
+
+  st.games = undefined;
+  st.said = {};
+  st.str = {};
+  click({ "data-go": "home" });
+}
+
+
+section("which of the sounds you personally lose");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.ears = {};
+
+  check(`the ten Italian does not have are the ones watched (${D.EAR_SOUNDS.length})`,
+    D.EAR_SOUNDS.length === 10);
+  check("each one says how to make it", D.EAR_SOUNDS.every(s => s.say.length > 10));
+
+  click({ "data-go": "sounds" });
+  check("with nothing recorded it says so instead of showing a blank",
+    /Nothing to say yet/.test(strip(h)));
+  check("and says how to fill it in", /microphone/.test(strip(h)));
+
+  // said perfectly: every consonant survives
+  const good = "\u0635\u0628\u0627\u062d \u0627\u0644\u062e\u064a\u0631";
+  for (let i = 0; i < D.EAR_ENOUGH; i++) D.noteSounds(good, good);
+  check("saying it back exactly is counted as keeping the sounds",
+    st.ears["\u0635"].said === D.EAR_ENOUGH && st.ears["\u0635"].kept === D.EAR_ENOUGH);
+
+  // and now one that keeps the kh but drops the s-emphatic
+  const lost = "\u0633\u0628\u0627\u062d \u0627\u0644\u062e\u064a\u0631";
+  for (let i = 0; i < D.EAR_ENOUGH; i++) D.noteSounds(lost, good);
+  const rep = D.earReport();
+  const sad = rep.find(r => r.ar === "\u0635");
+  const kh = rep.find(r => r.ar === "\u062e");
+  check("a sound that keeps coming back wrong is counted as lost",
+    sad && sad.said === D.EAR_ENOUGH * 2 && sad.kept === D.EAR_ENOUGH);
+  check("and one that survives is not", kh && kh.kept === kh.said);
+  check("the worst is put first", rep[0].pct <= rep[rep.length - 1].pct);
+
+  click({ "data-go": "sounds" });
+  check("the drill screen now carries the diagnosis", /Which of them you lose/.test(strip(h)));
+  check("naming the sound, how it went, and how to make it",
+    /class="ear-row"/.test(h) && /of 8 came back/.test(strip(h)));
+
+  // one go is not a diagnosis
+  st.ears = {};
+  D.noteSounds(lost, good);
+  check("a single attempt is not enough to accuse you of anything",
+    D.earReport().length === 0);
+  check("but it is remembered until there is enough", st.ears["\u0635"].said === 1);
+
+  st.ears = {};
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);
