@@ -295,7 +295,7 @@ section("no unexplained synonyms");
   // the greeting distinctions the whole of lesson 1 turns on
   const L1 = LESSONS[0];
   const noted = ar => (L1.phrases.find(p => p.ar === ar) || {}).note || "";
-  check("marhaban is marked as the safe default", /keep this one/i.test(noted("Marhàban")));
+  check("marhaban is marked as the safe default", /keep this one/i.test(noted("Màrhaban")));
   check("ahlan is explained as a reply, not an opener", /back/i.test(noted("Àhlan")));
   check("ahlan wa sahlan is explained as something said to you", /hear this far more/i.test(noted("Àhlan wa sàhlan")));
 }
@@ -1534,7 +1534,7 @@ section("typed answers");
   check('accents optional', same("sabah al-kheir", "Sabàh al-khèir"));
   check('case ignored', same("SHUKRAN", "Shùkran"));
   check('ayn mark optional', same("afwan", "ʿÀfwan"));
-  check('hyphen or space', same("as salamu alaikum", "As-salàmu ʿaláikum"));
+  check('hyphen or space', same("as salamu alaikum", "As-salàmu ʿalàikum"));
   check('question mark optional', same("ma ismuk", "Mà ìsmuk?"));
   check('extra spaces collapse', same("  ana   bikheir ", "Anà bikhèir"));
   check('a different word is wrong', !same("shukran", "ʿÀfwan"));
@@ -1834,7 +1834,7 @@ section("making sentences the course never taught");
   check("and the pattern itself is in the dialect, not fus-ha",
     lev.every(x => !/^Urìd |^Àina |^Khudhni |^Bikàm |^Àdhhab /.test(x.ar)));
   check("ʿa is glued to the article the way Levantine writes it",
-    lev.filter(x => /^Khùdni |^Bròh |^Addèsh /.test(x.ar)).every(x => !/ ʿa /.test(x.ar)) &&
+    lev.filter(x => /^Khùdni |^Brùh |^Addèsh /.test(x.ar)).every(x => !/ ʿa /.test(x.ar)) &&
     lev.some(x => /ʿal-|ʿas-/.test(x.ar)));
   check("and the script is glued in the same place",
     lev.filter(x => /ʿal-|ʿas-/.test(x.ar)).every(x => /ع[ا-ي]/.test(D.spk(x.ar))));
@@ -1871,9 +1871,9 @@ section("your own answers, not Marco's");
   click({ "data-go": "you" });
   check("it has its own address", location.hash === "#/you");
   click({ "data-act": "you-name" });
-  check("the app now says your name", D.disp("Ismì Marco") === "Ismì Lorenzo");
-  check("and can speak it", D.spk("Ismì Marco").indexOf(D.nameScript("Lorenzo")) !== -1);
-  check("the English follows it", D.englishFor("Ismì Marco") === "My name is Lorenzo");
+  check("the app now says your name", D.disp("Ìsmi Marco") === "Ìsmi Lorenzo");
+  check("and can speak it", D.spk("Ìsmi Marco").indexOf(D.nameScript("Lorenzo")) !== -1);
+  check("the English follows it", D.englishFor("Ìsmi Marco") === "My name is Lorenzo");
 
   click({ "data-act": "you-from", "data-id": "de" });
   click({ "data-act": "you-job", "data-id": "programmer" });
@@ -1895,37 +1895,37 @@ section("your own answers, not Marco's");
   click({ "data-go": "home" });
   click({ "data-go": "learn", "data-id": "3" });
   let guard = 0;
-  while (guard++ < 30 && !visible(h).includes("Ismì Lorenzo")) click({ "data-act": "learn-next" });
-  check("the flashcards say it", visible(h).includes("Ismì Lorenzo"));
+  while (guard++ < 30 && !visible(h).includes("Ìsmi Lorenzo")) click({ "data-act": "learn-next" });
+  check("the flashcards say it", visible(h).includes("Ìsmi Lorenzo"));
   click({ "data-act": "learn-reveal" });
   check("with your English under it", visible(h).includes("My name is Lorenzo"));
 
-  const convo = CONVOS.find(c => c.turns.some(t => t.reply === "Ismì Marco"));
+  const convo = CONVOS.find(c => c.turns.some(t => t.reply === "Ìsmi Marco"));
   if (convo) {
     click({ "data-go": "home" });
     click({ "data-go": "convo", "data-id": convo.id });
     let g2 = 0;
-    while (g2++ < 40 && !h.includes("result-score") && !visible(h).includes("Ismì Lorenzo")) playRound(true);
-    check("so do the conversations", visible(h).includes("Ismì Lorenzo"));
+    while (g2++ < 40 && !h.includes("result-score") && !visible(h).includes("Ìsmi Lorenzo")) playRound(true);
+    check("so do the conversations", visible(h).includes("Ìsmi Lorenzo"));
   }
 
   // the phrase keys never move, so no progress is lost by changing your mind
   click({ "data-go": "home" });
   click({ "data-go": "play", "data-id": "3" });
   playToEnd(true);
-  const before = Object.keys(peek().store.str || {}).filter(k => k.indexOf("3|Ismì Marco") === 0).length;
+  const before = Object.keys(peek().store.str || {}).filter(k => k.indexOf("3|Ìsmi Marco") === 0).length;
   promptAnswer = "Giulia";
   click({ "data-go": "you" });
   click({ "data-act": "you-name" });
   check("changing your name does not move the phrase key",
-    Object.keys(peek().store.str || {}).filter(k => k.indexOf("3|Ismì Marco") === 0).length === before);
-  check("but it does change what is shown", D.disp("Ismì Marco") === "Ismì Giulia");
+    Object.keys(peek().store.str || {}).filter(k => k.indexOf("3|Ìsmi Marco") === 0).length === before);
+  check("but it does change what is shown", D.disp("Ìsmi Marco") === "Ìsmi Giulia");
 
   // a collision with something the course already teaches is refused
   promptAnswer = "Sara";
   click({ "data-act": "you-name" });
-  check("a name the course already uses is left alone", D.disp("Ismì Marco") === "Ismì Marco");
-  check("and the English goes back with it", D.englishFor("Ismì Marco") === "My name is Marco");
+  check("a name the course already uses is left alone", D.disp("Ìsmi Marco") === "Ìsmi Marco");
+  check("and the English goes back with it", D.englishFor("Ìsmi Marco") === "My name is Marco");
   click({ "data-act": "you-from", "data-id": "eg" });
   check("nor is a country it already teaches", D.disp("Anà min Itàlya") === "Anà min Itàlya");
 
@@ -1943,11 +1943,11 @@ section("your own answers, not Marco's");
   click({ "data-act": "you-age" });
   st.variety = "lev";
   click({ "data-go": "home" });
-  check("your name is said the Levantine way", D.disp("Ismì Marco") === "Ìsmi Lorenzo");
+  check("your name is said the Levantine way", D.disp("Ìsmi Marco") === "Ìsmi Lorenzo");
   check("and your age counted the Levantine way",
     D.disp("ʿÙmri thalathùn") === "ʿÙmri khàmse w tlatìn");
   check("thirty-five is built from the words the course teaches there",
-    D.numberWords(35, "lev").ar === "khàmse w tlatìn" && D.numberWords(21, "lev").ar === "wàhid w ʿìshrin");
+    D.numberWords(35, "lev").ar === "khàmse w tlatìn" && D.numberWords(21, "lev").ar === "wàhid w ʿishrìn");
   check("a job the course already says is refused in the dialect too, not doubled",
     !D.yourLines().some(l => l.field === "job"));
   check("and nothing of yours collides with a phrase already on screen",
@@ -1955,16 +1955,16 @@ section("your own answers, not Marco's");
     new Set(LESSONS.flatMap(l => l.phrases).map(p => p.ar)).size);
   st.variety = "msa";
   click({ "data-go": "home" });
-  check("back in fus-ha it is the fus-ha again", D.disp("Ismì Marco") === "Ismì Lorenzo");
+  check("back in fus-ha it is the fus-ha again", D.disp("Ìsmi Marco") === "Ìsmi Lorenzo");
   click({ "data-act": "you-clear" });
 
   // clearing puts Marco back everywhere
   promptAnswer = "Lorenzo";
   click({ "data-act": "you-name" });
-  check("set again", D.disp("Ismì Marco") === "Ismì Lorenzo");
+  check("set again", D.disp("Ìsmi Marco") === "Ìsmi Lorenzo");
   click({ "data-act": "you-clear" });
-  check("clearing gives the course back", D.disp("Ismì Marco") === "Ismì Marco");
-  check("English and all", D.englishFor("Ismì Marco") === "My name is Marco");
+  check("clearing gives the course back", D.disp("Ìsmi Marco") === "Ìsmi Marco");
+  check("English and all", D.englishFor("Ìsmi Marco") === "My name is Marco");
   check("and nothing of yours is left", D.yourLines().length === 0);
 
   promptAnswer = "";
@@ -2046,8 +2046,8 @@ section("what would you say?");
   click({ "data-act": "you-name" });
   click({ "data-go": "moment" });
   let g = 0;
-  while (g++ < 60 && peek().moment.m.ok.indexOf("Ismì Marco") === -1) click({ "data-act": "moment-next" });
-  if (peek().moment.m.ok.indexOf("Ismì Marco") !== -1) {
+  while (g++ < 60 && peek().moment.m.ok.indexOf("Ìsmi Marco") === -1) click({ "data-act": "moment-next" });
+  if (peek().moment.m.ok.indexOf("Ìsmi Marco") !== -1) {
     type("moment-typing", "ismi lorenzo");
     click({ "data-act": "moment-check" });
     check("asked your name, your own answer is the right one", /verdict-msg ok/.test(h));
@@ -2211,7 +2211,7 @@ section("what are they asking?");
   check(`every question in the course is understood (${qs.length})`, unknown.length === 0);
   if (unknown.length) console.log("   ", unknown.slice(0, 5));
   check("nothing without a question mark counts as one",
-    !D.askKind("Marhàban") && !D.askKind("Min fàdlik"));
+    !D.askKind("Màrhaban") && !D.askKind("Min fàdlik"));
   check("the polite opener does not hide the question",
     D.askKind("Lau samàht, àina al-hammàm?") === "where");
   check("where from is not the same as where", D.askKind("Min àina ànta?") === "wherefrom");
@@ -2518,14 +2518,14 @@ section("how a phrase arrives");
   check("the next card asks again", /data-act="learn-guess"/.test(h) && peek().learn.guessed === null);
 
   // met next to the one it will be confused with
-  st.str = { "1|Marhàban": { s: 2, n: 3, day: D.today() } };
+  st.str = { "1|Màrhaban": { s: 2, n: 3, day: D.today() } };
   click({ "data-go": "home" });
   click({ "data-go": "learn", "data-id": "1" });
   let g = 0;
   while (g++ < 20 && peek().learn.lesson.phrases[peek().learn.i].ar !== "Àhlan") click({ "data-act": "learn-fwd" });
   click({ "data-act": "learn-reveal" });
   check("a phrase is introduced against the one you already know", /Not the same as/.test(h));
-  check("naming it", visible(h).includes("Marhàban"));
+  check("naming it", visible(h).includes("Màrhaban"));
   st.str = {};
   click({ "data-go": "home" });
   click({ "data-go": "learn", "data-id": "1" });
@@ -2603,12 +2603,12 @@ section("difficulty that follows your strength");
 
   const optionsAt = s2 => {
     st.str = {};
-    if (s2 !== null) st.str["1|Marhàban"] = { s: s2, n: 3, day: D.today() };
+    if (s2 !== null) st.str["1|Màrhaban"] = { s: s2, n: 3, day: D.today() };
     let t = null, g = 0;
     while (g++ < 60 && !t) {
       click({ "data-go": "home" });
       click({ "data-go": "play", "data-id": "1" });
-      t = peek().session.tasks.find(x => x.phrase && x.phrase.ar === "Marhàban");
+      t = peek().session.tasks.find(x => x.phrase && x.phrase.ar === "Màrhaban");
     }
     return t ? t.options.length : 0;
   };
@@ -2618,30 +2618,30 @@ section("difficulty that follows your strength");
   check("and the support never disappears entirely", optionsAt(5) >= 2);
 
   // right, but you had to dig for it
-  st.str = { "1|Marhàban": { s: 2, n: 3, day: D.today() - 20 } };
+  st.str = { "1|Màrhaban": { s: 2, n: 3, day: D.today() - 20 } };
   let t = null, g = 0;
   while (g++ < 60 && !t) {
     click({ "data-go": "home" });
     click({ "data-go": "play", "data-id": "1" });
     const s2 = peek().session;
-    const i = s2.tasks.findIndex(x => x.phrase && x.phrase.ar === "Marhàban");
+    const i = s2.tasks.findIndex(x => x.phrase && x.phrase.ar === "Màrhaban");
     if (i >= 0) { s2.i = i; s2.state = "asking"; t = s2.tasks[i]; }
   }
   click({ "data-act": "answer", "data-value": t.answer });
-  check("a right answer climbs", st.str["1|Marhàban"].s === 2);
+  check("a right answer climbs", st.str["1|Màrhaban"].s === 2);
   check("and offers to say it was a struggle", /data-act="only-just"/.test(h));
   click({ "data-act": "only-just" });
-  check("saying so takes the climb back", st.str["1|Marhàban"].s === 1);
+  check("saying so takes the climb back", st.str["1|Màrhaban"].s === 1);
   check("and carries on to the next round", peek().session.state === "asking");
 
   // speed, once you know it
-  st.str = { "1|Marhàban": { s: 4, n: 9, day: D.today() } };
+  st.str = { "1|Màrhaban": { s: 4, n: 9, day: D.today() } };
   t = null; g = 0;
   while (g++ < 60 && !t) {
     click({ "data-go": "home" });
     click({ "data-go": "play", "data-id": "1" });
     const s2 = peek().session;
-    const i = s2.tasks.findIndex(x => x.phrase && x.phrase.ar === "Marhàban");
+    const i = s2.tasks.findIndex(x => x.phrase && x.phrase.ar === "Màrhaban");
     if (i >= 0) { s2.i = i; s2.state = "asking"; t = s2.tasks[i]; }
   }
   click({ "data-act": "peek" });
@@ -2650,7 +2650,7 @@ section("difficulty that follows your strength");
   click({ "data-act": "answer", "data-value": t.answer });
   check("answering it slowly still counts as right", peek().session.lastRight === true);
   check("but says so", /but slowly/i.test(h));
-  check("and does not let it climb", st.str["1|Marhàban"].s === 4);
+  check("and does not let it climb", st.str["1|Màrhaban"].s === 4);
   st.str = { "1|Àhlan": { s: 1, n: 1, day: D.today() } };
   let weak = null; g = 0;
   while (g++ < 60 && !weak) {
@@ -2722,10 +2722,10 @@ section("when you are wrong");
 
   // what you missed on an earlier day leads the next session
   st.str = {};
-  ["Marhàban", "Àhlan", "Sabàh al-khèir"].forEach(ar => {
+  ["Màrhaban", "Àhlan", "Sabàh al-khèir"].forEach(ar => {
     st.str["1|" + ar] = { s: 0, n: 3, day: D.today() - 1, miss: 2, missDay: D.today() - 1 };
   });
-  check("a phrase missed yesterday is known to be", D.missedEarlier(1, "Marhàban"));
+  check("a phrase missed yesterday is known to be", D.missedEarlier(1, "Màrhaban"));
   check("one missed today is not", (st.str["1|Àhlan"].missDay = D.today(), !D.missedEarlier(1, "Àhlan")));
   st.str["1|Àhlan"].missDay = D.today() - 1;
   st.games = undefined;
@@ -2742,18 +2742,18 @@ section("when you are wrong");
 
   // a phrase you keep missing is taken apart instead of served again
   st.str = {};
-  st.str["1|Marhàban"] = { s: 0, n: 9, day: D.today() - 3, miss: D.LEECH_AT + 1, missDay: D.today() - 3 };
-  check("five misses and no strength makes a leech", D.isLeech(1, "Marhàban"));
+  st.str["1|Màrhaban"] = { s: 0, n: 9, day: D.today() - 3, miss: D.LEECH_AT + 1, missDay: D.today() - 3 };
+  check("five misses and no strength makes a leech", D.isLeech(1, "Màrhaban"));
   check("but not if it has since gone up",
-    (st.str["1|Marhàban"].s = 3, !D.isLeech(1, "Marhàban")));
-  st.str["1|Marhàban"].s = 0;
+    (st.str["1|Màrhaban"].s = 3, !D.isLeech(1, "Màrhaban")));
+  st.str["1|Màrhaban"].s = 0;
 
   st.games = { quiz: false, build: true, match: false, dialog: false, write: true, listen: false, say: true, dictate: false };
   let leech = null, g = 0;
   while (g++ < 60 && !leech) {
     click({ "data-go": "home" });
     click({ "data-go": "play", "data-id": "1" });
-    leech = peek().session.tasks.find(x => x.phrase && x.phrase.ar === "Marhàban");
+    leech = peek().session.tasks.find(x => x.phrase && x.phrase.ar === "Màrhaban");
   }
   check("with only producing games on, a leech still comes as recognition",
     !!leech && leech.isLeech === true && leech.toEnglish === true);
@@ -2764,7 +2764,7 @@ section("when you are wrong");
     click({ "data-go": "home" });
     click({ "data-go": "play", "data-id": "1" });
     const s2 = peek().session;
-    const i = s2.tasks.findIndex(x => x.phrase && x.phrase.ar === "Marhàban");
+    const i = s2.tasks.findIndex(x => x.phrase && x.phrase.ar === "Màrhaban");
     if (i >= 0) { s2.i = i; s2.state = "asking"; shown = s2.tasks[i]; }
   }
   click({ "data-act": "peek" });   // any tap re-renders on the round we moved to
@@ -3337,7 +3337,7 @@ section("the curious questions");
   check("in Levantine too", D.askKind("Min èmta ìnti hòn?") === "when");
   check("and this or that is a choice", D.askKind("Hal taʿmalìn àm tadrusìn?") === "choice");
   check("even when the dialect drops the hal",
-    D.askKind("Bitìshtighli willa bitìdrusi?") === "choice");
+    D.askKind("Bitìshtighli wìlla bitìdrusi?") === "choice");
 }
 
 section("the rest of the conversation");
@@ -3414,7 +3414,7 @@ section("how a phrase lands");
     tagged.length < LESSONS.flatMap(l => l.phrases).length / 10);
   check("you are beautiful is one that commits you", D.howOf("Ànti jamìla") === "direct");
   check("you are kind is not", D.howOf("Ànti latìfa") === "safe");
-  check("nor is a plain hello", D.howOf("Marhàban") === null);
+  check("nor is a plain hello", D.howOf("Màrhaban") === null);
 
   click({ "data-go": "learn", "data-id": "18" });
   let g8 = 0;
@@ -3496,7 +3496,7 @@ section("what you asked for while it was being built");
   check("and it can be heard", /class="flash-alt"[\s\S]*?class="say say-sm"/.test(h));
   check("the ending is explained where there is one",
     D.endingHint("Kìfak?").includes("-ak") && D.endingHint("Kìfik?").includes("-ik"));
-  check("and nothing is claimed where there is no ending", D.endingHint("Marhàban") === "");
+  check("and nothing is claimed where there is no ending", D.endingHint("Màrhaban") === "");
 
   // typing: the fus-ha you know, the spelling you use
   st.variety = "lev";
@@ -3577,7 +3577,7 @@ section("what you asked for while it was being built");
 
   // and the ones that were the app being wrong are fixed
   const widened = [
-    ["Nine in the morning", "As-salàmu ʿaláikum"],
+    ["Nine in the morning", "As-salàmu ʿalàikum"],
     ["The price he says", "Ghàli"],
     ["holding a door open", "Shùkran jazìlan"],
     ["asked for your number", "Rùbbama fi màrra ùkhra"],
@@ -3592,9 +3592,9 @@ section("what you asked for while it was being built");
 
   // a wrong answer has to be actually wrong
   check("two ways of saying one thing are known to do the same job",
-    D.sameJob("Marhàban", "Àhlan") && D.sameJob("Anà bikhèir", "Al-hàmdu lillàh"));
+    D.sameJob("Màrhaban", "Àhlan") && D.sameJob("Anà bikhèir", "Al-hàmdu lillàh"));
   check("and two different things are not",
-    !D.sameJob("Marhàban", "Shùkran") && !D.sameJob("Qàhwa", "Shày"));
+    !D.sameJob("Màrhaban", "Shùkran") && !D.sameJob("Qàhwa", "Shày"));
 
   st.str = {};
   st.games = { dialog: true };
@@ -3979,8 +3979,8 @@ section("nine ways the app was still marking you wrong");
   }
 
   // 2. seven more situations that refused a real answer
-  const widened = [["arrive somewhere in the evening", "Marhàban"],
-    ["see them again tomorrow", "Maʿa salàma"],
+  const widened = [["arrive somewhere in the evening", "Màrhaban"],
+    ["see them again tomorrow", "Maʿa as-salàma"],
     ["invited you for a coffee", "Min ʿuyùni"],
     ["whether you liked the food", "Lam yùʿjibni"],
     ["if you are ready", "Làhza min fàdlik"]];
@@ -4347,7 +4347,7 @@ section("the games got harder in the right places");
 
   // Write: a space is not a mistake, and a miss costs one step not two
   check("word breaks do not decide a typed answer",
-    D.sameSaid("assalamu alaikum", "As-salàmu ʿaláikum") &&
+    D.sameSaid("assalamu alaikum", "As-salàmu ʿalàikum") &&
     D.sameSaid("alhamdulillah", "Al-hàmdu lillàh") &&
     D.sameSaid("khudhni ilaalmatar", "Khudhni ilà al-matàr"));
   check("but a different phrase is still different",
@@ -5036,7 +5036,7 @@ if (withMic) {
 
     // The real answer: find the phrase and show it as you learned it.
     const near = a => nearestTranslit(a);
-    check("marhaban comes back as Marhàban", near("مرحبا").text === "Marhàban");
+    check("marhaban comes back as Màrhaban", near("مرحبا").text === "Màrhaban");
     check("shukran comes back as Shùkran", near("شكرا").text === "Shùkran");
     check("al-hamdu lillah is found too", near("الحمد لله").text === "Al-hàmdu lillàh");
     check("and a whole phrase", near("صباح الخير").text === "Sabàh al-khèir");
@@ -5854,7 +5854,7 @@ section("free talk from all three sides of a conversation");
   check("how much is it too", D.fromVisitor("Kam as-sìʿr?"));
   check("and when does the train go", D.fromVisitor("Matà al-qitàr?"));
   check("but where are you from is what the local asks", !D.fromVisitor("Min àina ànta?"));
-  check("and so is where do you live", !D.fromVisitor("Àina taskun?"));
+  check("and so is where do you live", !D.fromVisitor("Àina tàskun?"));
   check("and where to, which is the driver's line", !D.fromVisitor("Ilà àina?"));
   check("a question that names nothing is nobody's request for directions",
     !D.fromVisitor("Kam ʿìndak?"));
@@ -5948,7 +5948,7 @@ section("the families a word belongs to");
 
   // the ones the spelling would have got wrong, pinned down
   check("travel and yellow are not relatives",
-    (D.rootOf("safar") || {}).r !== (D.rootOf("àsfar") || { r: "x" }).r);
+    (D.rootOf("sàfar") || {}).r !== (D.rootOf("àsfar") || { r: "x" }).r);
   check("your name and a fish are not relatives",
     (D.rootOf("ìsmuk") || {}).r !== (D.rootOf("sàmak") || { r: "x" }).r);
   check("but the book and I write are",
@@ -6173,7 +6173,7 @@ section("keeping up with the speed, not the words");
   }
 
   check("and it never leaves the speaker turned up for everything else",
-    D.rateFor("Marhàban") <= 1);
+    D.rateFor("Màrhaban") <= 1);
   st.str = {};
   click({ "data-go": "home" });
 }
@@ -6204,7 +6204,7 @@ section("the lines nobody who speaks it has read");
     D.UNSURE.some(u => /allerg/i.test(u.why) || u.ar.indexOf("hasasìyya") !== -1));
 
   check("a line with a doubt knows it", !!D.unsureOf(D.UNSURE[0].ar));
-  check("and one without says nothing", D.unsureOf("Marhàban") === null);
+  check("and one without says nothing", D.unsureOf("Màrhaban") === null);
 
   // where you meet it
   const one = D.UNSURE.find(u => LESSONS.some(l => l.phrases.some(p => p.ar === u.ar)));
@@ -6255,7 +6255,7 @@ section("answering with something true about you");
     /data-act="yours-read" disabled/.test(h));
 
   // what it can honestly say
-  const mixed = D.yoursRead("Ismì Lorenzo", "Mà ìsmuk?");
+  const mixed = D.yoursRead("Ìsmi Lorenzo", "Mà ìsmuk?");
   check("it counts the words that came out of the course", mixed.mine.length >= 1);
   check("and names the ones that did not, without calling them wrong",
     mixed.strange.indexOf("Lorenzo") !== -1);
@@ -6456,7 +6456,7 @@ section("changing what you ordered, and ordering a drink");
       .every(ar => how.phrases.some(p => p.ar === ar)));
   check("and takeaway, which is one accent from my travel",
     how.phrases.some(p => p.ar.indexOf("Saf\u00e0ri") === 0) &&
-    D.normalise("Saf\u00e0ri") === D.normalise("safari"));
+    D.normalise("Saf\u00e0ri") === D.normalise("sàfari"));
 
   // 64: the bar it could not order in
   ["B\u00ecra", "Nab\u00ecdh", "K\u00f2kt\u00e8l", "Zuj\u00e0ja", "K\u00e0's"]
@@ -6648,6 +6648,58 @@ section("being finished with a phrase, which nothing here ever was");
   check("which works from the screen too", !D.graduated(1, ar));
 
   st.str = {}; st.known = {}; st.out = {};
+  click({ "data-go": "home" });
+}
+
+
+section("what you know with your eyes and not your mouth");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.known = {}; st.out = {}; st.passive = {};
+
+  check("nothing is solid yet, so nothing is on the list", D.eyeOnly().length === 0);
+
+  // solid on the page, never said
+  const l = LESSONS[0];
+  const ar = l.phrases.find(p => !!SCRIPT[p.ar]).ar;
+  st.str["1|" + ar] = { s: D.MAX_STRENGTH, n: 6, day: D.today() };
+  check("a phrase you have only ever recognised turns up on it",
+    D.eyeOnly().some(x => x.ar === ar));
+  check("and the app admits it has never heard it", D.spokenCount(1, ar) === 0);
+
+  D.noteSpoken(1, ar);
+  check("saying it once takes it off", !D.eyeOnly().some(x => x.ar === ar));
+  check("and that is remembered", D.spokenCount(1, ar) === 1);
+
+  // it is only a finding when the phrase is actually solid
+  st.str["1|" + ar] = { s: 1, n: 2, day: D.today() };
+  check("a phrase you barely have is not accused of anything",
+    !D.eyeOnly().some(x => x.ar === ar));
+
+  // and never for one you said you would not say
+  st.str["1|" + ar] = { s: D.MAX_STRENGTH, n: 6, day: D.today() };
+  st.passive = {}; st.passive[ar] = 1;
+  check("nor is one you have parked as recognise-only",
+    !D.eyeOnly().some(x => x.ar === ar));
+  st.passive = {};
+
+  click({ "data-go": "words" });
+  check("the screen names it for what it is",
+    /Known by eye, never said/.test(strip(screenOnly())));
+  check("and says why nothing could see it before",
+    /never for a single phrase/.test(strip(screenOnly())));
+  check("with something to do about it", /data-act="say-these"/.test(h));
+
+  if (withVoice) {
+    click({ "data-act": "say-these" });
+    check("which takes exactly those out loud",
+      peek().loud && peek().loud.list.every(p => D.eyeOnly().some(x => x.ar === p.ar) ||
+        p.ar === ar));
+  }
+
+  st.str = {}; st.known = {}; st.out = {}; st.passive = {};
   click({ "data-go": "home" });
 }
 
