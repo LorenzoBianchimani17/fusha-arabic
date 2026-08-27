@@ -949,9 +949,9 @@ section("the breakdown is in the Arabic you are reading");
   unlockAll();
 
   st.variety = "lev";
-  const g = D.glossesFor(D.disp("Anà àidan"));
+  const g = D.glossesFor(D.disp("Àna àidan"));
   check("a Levantine phrase is broken into Levantine words",
-    g.length === 2 && g[0].word === "Anà" && g[1].word === "kamàn");
+    g.length === 2 && g[0].word === "Àna" && g[1].word === "kamàn");
   check("and the meaning is of the word actually shown", g[1].gloss.indexOf("too") !== -1);
   check("the fus-ha word is not what you are given",
     !g.some(x => x.word === "àidan"));
@@ -977,7 +977,7 @@ section("the breakdown is in the Arabic you are reading");
   if (missing.length) console.log("   ", missing.slice(0, 10));
 
   st.variety = "msa";
-  const m = D.glossesFor(D.disp("Anà àidan"));
+  const m = D.glossesFor(D.disp("Àna àidan"));
   check("in fus-ha you get the fus-ha words back",
     m.length === 2 && m[1].word === "àidan");
   click({ "data-go": "home" });
@@ -1536,9 +1536,9 @@ section("typed answers");
   check('ayn mark optional', same("afwan", "ʿÀfwan"));
   check('hyphen or space', same("as salamu alaikum", "As-salàmu ʿalàikum"));
   check('question mark optional', same("ma ismuk", "Mà ìsmuk?"));
-  check('extra spaces collapse', same("  ana   bikheir ", "Anà bikhèir"));
+  check('extra spaces collapse', same("  ana   bikheir ", "Àna bikhèir"));
   check('a different word is wrong', !same("shukran", "ʿÀfwan"));
-  check('a missing word is wrong', !same("ana", "Anà bikhèir"));
+  check('a missing word is wrong', !same("ana", "Àna bikhèir"));
 }
 
 section("the rule turns up the moment you need it");
@@ -1880,15 +1880,15 @@ section("your own answers, not Marco's");
   promptAnswer = "35";
   click({ "data-act": "you-age" });
   check("all four questions are answered", D.yourLines().length === 4);
-  check("where you are from", D.disp("Anà min Itàlya") === "Anà min Almànya");
-  check("what you do", D.disp("Anà muhàndis") === "Anà mubàrmij");
+  check("where you are from", D.disp("Àna min Itàlya") === "Àna min Almànya");
+  check("what you do", D.disp("Àna muhàndis") === "Àna mubàrmij");
   check("how old you are", D.disp("ʿÙmri thalathùn") === "ʿÙmri khàmsa wa thalathùn");
-  check("in English too", D.englishFor("Anà muhàndis") === "I am a programmer");
+  check("in English too", D.englishFor("Àna muhàndis") === "I am a programmer");
 
   // a woman says the job differently
   click({ "data-act": "you-gender", "data-id": "f" });
-  check("a woman gets the feminine form", D.disp("Anà muhàndis") === "Anà mubàrmija");
-  check("but the English is the same", D.englishFor("Anà muhàndis") === "I am a programmer");
+  check("a woman gets the feminine form", D.disp("Àna muhàndis") === "Àna mubàrmija");
+  check("but the English is the same", D.englishFor("Àna muhàndis") === "I am a programmer");
   click({ "data-act": "you-gender", "data-id": "m" });
 
   // it reaches the games and the conversations, not just this screen
@@ -1927,7 +1927,7 @@ section("your own answers, not Marco's");
   check("a name the course already uses is left alone", D.disp("Ìsmi Marco") === "Ìsmi Marco");
   check("and the English goes back with it", D.englishFor("Ìsmi Marco") === "My name is Marco");
   click({ "data-act": "you-from", "data-id": "eg" });
-  check("nor is a country it already teaches", D.disp("Anà min Itàlya") === "Anà min Itàlya");
+  check("nor is a country it already teaches", D.disp("Àna min Itàlya") === "Àna min Itàlya");
 
   // an age the course cannot say
   promptAnswer = "15";
@@ -2219,7 +2219,7 @@ section("what are they asking?");
   check("hal means the answer is yes or no", D.askKind("Hal tàʿrif?") === "yesno");
   check("an or-question is its own kind", D.askKind("Shày am qàhwa?") === "choice");
   check("and so is having it turned back on you",
-    D.askKind("Anà bikhèir. Wa ànta?") === "backatyou");
+    D.askKind("Àna bikhèir. Wa ànta?") === "backatyou");
   check("every kind it can answer has a name",
     D.askPool().every(q => D.ASK_KINDS.some(k => k.key === q.kind)));
 
@@ -2334,7 +2334,7 @@ section("joining two ideas, and saying when");
     join.dialogue.concat(when.dialogue).every(d => !!SCRIPT[d.ask] && !!SCRIPT[d.reply]));
 
   // the words the course had no way to say before
-  ["Làkin", "Li'ànna", "Thùmma", "Rùbbama", "Làisa ʿìndi", "Hùnaka mushkìla"]
+  ["Làkin", "Li'ànna", "Thùmma", "Rùbbama", "Làisa ʿìndi", "Hùnaka mùshkila"]
     .forEach(function (ar) {
       check("it can now say " + ar, join.phrases.some(p => p.ar === ar));
     });
@@ -2395,7 +2395,7 @@ section("answering back, and the past");
   check("there is a lesson of replies", !!answers && answers.phrases.length >= 12);
   check("and it sits next to the repair kit",
     Math.abs(LESSONS.indexOf(answers) - LESSONS.findIndex(l => l.id === 27)) === 1);
-  ["Naʿam, ʿìndi", "Là, làisa ʿìndi", "Bi at-ta'kìd", "Àsif, là àstatìʿ", "Làisa al-àn"]
+  ["Nàʿam, ʿìndi", "Là, làisa ʿìndi", "Bi at-ta'kìd", "Àsif, là àstatìʿ", "Làisa al-àn"]
     .forEach(ar => check("it can now say " + ar, answers.phrases.some(p => p.ar === ar)));
   check("every reply can be spoken", answers.phrases.every(p => !!SCRIPT[p.ar]));
   check("and exists in Levantine",
@@ -3292,17 +3292,17 @@ section("the curious questions");
     LESSONS.indexOf(know) === LESSONS.findIndex(l => l.id === 18) + 1 &&
     LESSONS.indexOf(think) === LESSONS.indexOf(know) + 1);
 
-  ["Mà tùhibbìn an tafʿalì?", "Hal ʿìndaki hiwayàt?", "Ày nàuʿ min al-mùsiqa?",
+  ["Màdha tuhibbìn an tafʿalì?", "Hal ʿìndaki hiwayàt?", "Ày nàuʿ min al-mùsiqa?",
     "Mà fìlmuki al-mufàddal?", "Mùndhu matà ànti hùna?", "Hal taʿmalìn àm tadrusìn?"]
     .forEach(ar => check("it can ask " + ar, know.phrases.some(p => p.ar === ar)));
   check("and answer with something you actually do",
-    ["Ùhib al-mùsiqa", "Ùhib al-aflàm", "Ùhib as-sàfar", "Ùhib at-tabkh", "Àlʿab kùrat al-qàdam"]
+    ["Uhìbb al-mùsiqa", "Uhìbb al-aflàm", "Uhìbb as-sàfar", "Uhìbb at-tabkh", "Àlʿab kùrat al-qàdam"]
       .every(ar => know.phrases.some(p => p.ar === ar)));
   check("the whole lesson is addressed to a woman, with the man on the card",
     know.phrases.filter(p => p.f).length >= 5 &&
     know.phrases.filter(p => p.f).every(p => /Speaking to a man/.test(p.fLabel)));
 
-  ["Mumtàz", "Mùmill", "Haqqan?", "Nàuʿan mà", "Hàsab", "Dà'iman", "Àhyanan", "Àbadan"]
+  ["Mumtàz", "Mùmill", "Haqqan?", "Nàuʿan mà", "ʿAlà hàsab", "Dà'iman", "Àhyanan", "Àbadan"]
     .forEach(ar => check("an opinion can be " + ar, think.phrases.some(p => p.ar === ar)));
   check("liking something has both ways round",
     think.phrases.some(p => p.ar === "Yùʿjibuni") && think.phrases.some(p => p.ar === "Lam yùʿjibni"));
@@ -3322,7 +3322,7 @@ section("the curious questions");
   const touch = LESSONS.find(l => l.id === 33);
   check("there is a lesson for keeping in touch", !!touch && touch.phrases.length >= 10);
   check("it follows the other two", LESSONS.indexOf(touch) === LESSONS.indexOf(think) + 1);
-  ["Hàdha ràqmi", "Ìbʿathi li risàla", "Hal ànti hùrra ghàdan?", "Àina nàltaqi?",
+  ["Hàdha ràqmi", "Ìbʿathi lì risàla", "Hal ànti hùrra ghàdan?", "Àina nàltaqi?",
     "Urìd an aràki màrra ùkhra"]
     .forEach(ar => check("it can say " + ar, touch.phrases.some(p => p.ar === ar)));
   check("all of it speakable and Levantine",
@@ -3377,7 +3377,7 @@ section("the rest of the conversation");
   check("and the question that lands differently there is flagged",
     /proposition/.test(life.phrases.find(p => p.ar === "Hal ànti mutazàwwija?").note || ""));
 
-  ["Màdha tànsahìn?", "Anà nabàti", "Là àshrab al-kùhul", "Ladhìdh!", "Hal nàqsim al-hisàb?"]
+  ["Màdha tànsahìn?", "Àna nabàti", "Là àshrab al-kùhul", "Ladhìdh!", "Hal nàqsim al-hisàb?"]
     .forEach(ar => check("at the table it can say " + ar, table.phrases.some(p => p.ar === ar)));
   check("and warns you that the tea is already sweet",
     /sweet by default/.test(table.phrases.find(p => p.ar === "Bidùn sùkkar, min fàdlik").note || ""));
@@ -3592,7 +3592,7 @@ section("what you asked for while it was being built");
 
   // a wrong answer has to be actually wrong
   check("two ways of saying one thing are known to do the same job",
-    D.sameJob("Màrhaban", "Àhlan") && D.sameJob("Anà bikhèir", "Al-hàmdu lillàh"));
+    D.sameJob("Màrhaban", "Àhlan") && D.sameJob("Àna bikhèir", "Al-hàmdu lillàh"));
   check("and two different things are not",
     !D.sameJob("Màrhaban", "Shùkran") && !D.sameJob("Qàhwa", "Shày"));
 
@@ -3980,7 +3980,7 @@ section("nine ways the app was still marking you wrong");
 
   // 2. seven more situations that refused a real answer
   const widened = [["arrive somewhere in the evening", "Màrhaban"],
-    ["see them again tomorrow", "Maʿa as-salàma"],
+    ["see them again tomorrow", "Màʿa as-salàma"],
     ["invited you for a coffee", "Min ʿuyùni"],
     ["whether you liked the food", "Lam yùʿjibni"],
     ["if you are ready", "Làhza min fàdlik"]];
@@ -4005,10 +4005,10 @@ section("nine ways the app was still marking you wrong");
 
   // 5 and 6. more than one reply is right
   check("a line the course answers more than one way knows them all", (function () {
-    const asked = "Hal fahìmt?";
+    const asked = "Hal fahìmta?";
     const inData = new Set();
     LESSONS.forEach(l => (l.dialogue || []).forEach(d => { if (d.ask === asked) inData.add(d.reply); }));
-    return inData.size > 1 && D.repliesTo(asked, "Naʿam, fahìmtu").length === inData.size;
+    return inData.size > 1 && D.repliesTo(asked, "Nàʿam, fahìmtu").length === inData.size;
   })());
   check("and neither is offered as the mistake", (function () {
     for (let i = 0; i < 20; i++) {
@@ -4043,7 +4043,7 @@ section("saying something that lands");
   const D = global.__data;
   const land = LESSONS.find(l => l.id === 37);
   check("there is a lesson of things people actually say", !!land && land.phrases.length >= 10);
-  ["Ànti kal-qàmar", "Ùhib hàdha fìki", "Dàmuki khafìf", "Allàh yuʿtìki al-ʿàfiya",
+  ["Ànti kal-qàmar", "Uhìbb hàdha fìki", "Dàmuki khafìf", "Allàh yuʿtìki al-ʿàfiya",
     "Tìslam yadàki", "Min ʿuyùni", "Yà rèit"]
     .forEach(ar => check("it can say " + ar, land.phrases.some(p => p.ar === ar)));
   check("the compliment carries the warning that goes with it",
@@ -4170,7 +4170,7 @@ section("was that a yes?");
   check("inshallah is filed as a maybe and explained",
     D.REPLIES.some(r => r.ar === "Inshàallah" && r.side === "maybe" && /polite no/.test(r.note || "")));
   check("and the polite refusal is filed as a no",
-    D.REPLIES.some(r => r.ar === "Àsifa, anà mashghùla" && r.side === "no"));
+    D.REPLIES.some(r => r.ar === "Àsifa, àna mashghùla" && r.side === "no"));
   check("where the app says a line reads two ways, both are accepted",
     D.REPLIES.filter(r => (r.also || []).length).length >= 3);
 
@@ -5344,7 +5344,7 @@ section("free talk");
     (replyFor("Sabàh al-khèir") || {}).line.ar === "Sabàh an-nùr");
   check("asking how someone is gets an answer",
     !!replyFor("Kèifa hàluk?"));
-  check("answering carries the conversation on", !!replyFor("Anà bikhèir, shùkran"));
+  check("answering carries the conversation on", !!replyFor("Àna bikhèir, shùkran"));
 
   // matching, in both alphabets and with sloppy spelling
   const top = s => (bestMatches(s, 3)[0] || {}).p;
@@ -6261,21 +6261,21 @@ section("answering with something true about you");
     mixed.strange.indexOf("Lorenzo") !== -1);
   const echo = D.yoursRead("Mà ìsmuk?", "Mà ìsmuk?");
   check("repeating the question back is caught", echo.echo === true);
-  const own = D.yoursRead("Anà min Itàlya", "Min àina ànta?");
+  const own = D.yoursRead("Àna min Itàlya", "Min àina ànta?");
   check("an answer entirely out of the course is all recognised",
     own.strange.length === 0 && own.mine.length === 3);
   check("and it is not mistaken for an echo", own.echo === false);
 
   // it keeps what you wrote
   const q = peek().yours.q;
-  type("yours-typing", "Anà min Itàlya");
+  type("yours-typing", "Àna min Itàlya");
   click({ "data-act": "yours-read" });
   check("reading it says how much of it was yours to use",
     /came out of the course/.test(strip(screenOnly())));
   check("and each word is a tap into the dictionary",
     /class="fam-word" data-act="dict-open"/.test(h));
   click({ "data-act": "yours-keep" });
-  check("keeping it writes it down", D.yoursSaid(q.ask) === "Anà min Itàlya");
+  check("keeping it writes it down", D.yoursSaid(q.ask) === "Àna min Itàlya");
   check("and it says so", /Kept/.test(strip(screenOnly())));
 
   click({ "data-act": "yours-next" });
@@ -6451,7 +6451,7 @@ section("changing what you ordered, and ordering a drink");
   check("and the fast food you put them on",
     ["Sandw\u00ecch", "Bat\u00e0ta m\u00e0qliyya"].every(ar => how.phrases.some(p => p.ar === ar)));
   check("with, more, add and another are all there",
-    ["Ma\u02bfa s\u00e0lsa", "S\u00e0lsa \u00e0kthar, min f\u00e0dlik",
+    ["M\u00e0\u02bfa s\u00e0lsa", "S\u00e0lsa \u00e0kthar, min f\u00e0dlik",
      "\u00c0dif j\u00f9bna, min f\u00e0dlik", "W\u00e0hid \u00e0khar, min f\u00e0dlik"]
       .every(ar => how.phrases.some(p => p.ar === ar)));
   check("and takeaway, which is one accent from my travel",
@@ -6462,10 +6462,10 @@ section("changing what you ordered, and ordering a drink");
   ["B\u00ecra", "Nab\u00ecdh", "K\u00f2kt\u00e8l", "Zuj\u00e0ja", "K\u00e0's"]
     .forEach(ar => check("the bar knows " + ar, bar.phrases.some(p => p.ar === ar)));
   check("ice, both ways round",
-    bar.phrases.some(p => p.ar === "Ma\u02bfa th\u00e0lj") &&
+    bar.phrases.some(p => p.ar === "M\u00e0\u02bfa th\u00e0lj") &&
     bar.phrases.some(p => p.ar === "Bid\u00f9n th\u00e0lj"));
   check("and it says ice and snow are one word",
-    /snow from the weather lesson/.test(bar.phrases.find(p => p.ar === "Ma\u02bfa th\u00e0lj").note));
+    /snow from the weather lesson/.test(bar.phrases.find(p => p.ar === "M\u00e0\u02bfa th\u00e0lj").note));
   check("turning a drink down without making it a moment is core",
     bar.phrases.some(p => p.ar.indexOf("l\u00e0kin taf\u00e0ddal") !== -1 && p.core));
   check("and there is a second way out that names what you will have instead",
