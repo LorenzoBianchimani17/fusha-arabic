@@ -43,24 +43,16 @@ consistent, not that the Arabic is right.
 
 ## Still to build
 
-**First, before anything else: pick lessons from the course list.**
-Asked for on 2026-08-27, from a phone, looking at the list. The
-machinery is already there and in the wrong place: `chosenLessons()`
-and `store.chosen` exist, `buildReview({only})` honours them, and
-`chooseHTML()` puts them behind `#/choose` as a grid of bare numbers
-reachable only from the review area. What is missing is the obvious
-thing: tick one or more lessons **on the course list itself**, where
-you are already looking at them, and act on the selection from there.
-Tapping a lesson must still open it, so the selection needs a way in
-that does not fight the tap.
-
-Decided 2026-08-27: once lessons are ticked, offer **both** modes -
-review drawn from those alone (the existing plumbing) and studying
-them back to back as one run (new session code).
-
 ## Agreed on 2026-08-27, in the order they were agreed
 
-1. **Pick lessons from the course list** - above.
+1. ~~Pick lessons from the course list.~~ **Built 2026-08-27.** The
+   course list is grouped into seven named arcs, Pick several turns
+   every row into something you tick, an arc's All takes the whole
+   stretch, and the bar at the bottom offers Review these (drawn from
+   those alone) or Study in a row (a run through them in course order,
+   which is practice and does not pass a lesson). The selection lives
+   in `store.chosen`, the same list `#/choose` reads, so the two cannot
+   disagree.
 2. **Free talk that opens the other way round.** `talkScope()` and
    `setTalkScope()` already exist and already take several lessons, and
    the scope picker is already on the screen: that half is built. What

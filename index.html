@@ -516,6 +516,72 @@
   /* ---------- lesson track ---------- */
 
   .track { display: flex; flex-direction: column; gap: var(--s-3); }
+  .track.is-picking { padding-bottom: 76px; }
+
+  .arc {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-3);
+    margin: var(--s-6) 0 var(--s-1);
+    font-size: var(--t-1);
+    font-weight: 600;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .arc:first-child { margin-top: 0; }
+  .arc-all { margin-left: auto; }
+
+  .lesson.is-pick { grid-template-columns: 38px 1fr 26px; }
+  .lesson.is-picked { border-color: var(--accent); background: var(--accent-soft); }
+
+  .pick-tick {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.6px solid var(--line-strong);
+    position: relative;
+  }
+
+  .pick-tick.is-on { border-color: var(--accent); background: var(--accent); }
+
+  .pick-tick.is-on::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 4px;
+    width: 5px;
+    height: 9px;
+    border: solid var(--surface);
+    border-width: 0 2px 2px 0;
+    transform: rotate(42deg);
+  }
+
+  .pick-open { margin: 0 0 var(--s-5); }
+
+  /* The bar lives where the thumb already is, not at the top of a list
+     you have scrolled to the bottom of. */
+  .pick-bar {
+    position: fixed;
+    z-index: 5;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-4) max(14px, env(safe-area-inset-left))
+             calc(var(--s-4) + env(safe-area-inset-bottom));
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .pick-n { font-size: var(--t-2); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .pick-do { background: var(--accent-soft); color: var(--accent-ink); border-color: transparent; }
+  .pick-do:disabled { opacity: .4; }
+  .pick-off { margin-left: auto; }
 
   .lesson {
     display: grid;
@@ -10404,6 +10470,7 @@
       only: fields.only || null,
       aimed: fields.aimed || null,
       word: fields.word || null,
+      run: fields.run || null,
       extended: false,
       grew: false,
       convo: fields.convo || null,
@@ -10519,6 +10586,33 @@
       return open.some(function (l) { return l.id === id; });
     });
     return live;
+  }
+
+  // Several lessons, one sitting, in the order the course puts them
+  // in. It is practice rather than an exam: a run does not pass a
+  // lesson, because passing one is a thing you do to it on its own.
+  function buildRun(ids) {
+    var chosen = LESSONS.filter(function (l) {
+      return ids.indexOf(l.id) !== -1 && unlocked(l);
+    });
+    if (!chosen.length) return null;
+    var asking = askingGames();
+    var types = asking.length ? asking : ["quiz"];
+    var each = Math.max(2, Math.round(reviewRounds() / chosen.length));
+    var tasks = [];
+    chosen.forEach(function (l) {
+      tasks = tasks.concat(fillRounds(l, types, each));
+    });
+    if (!tasks.length) {
+      chosen.forEach(function (l) { tasks = tasks.concat(fillRounds(l, ["quiz"], each)); });
+    }
+    if (!tasks.length) return null;
+    return newSession({
+      isReview: true,
+      run: chosen.map(function (l) { return l.id; }),
+      reviewPool: tasks.length,
+      tasks: tasks
+    });
   }
 
   function buildReview(fields) {
@@ -11811,6 +11905,7 @@
 
   function go(next, opts) {
     var from = view && view.name;
+    if (next.name !== "home") picking = false;
     if (from && typeof window.scrollY === "number") scrollAt[from] = window.scrollY;
     var deeper = (DEPTH[next.name] || 1) > (DEPTH[from] || 0);
     view = next;
@@ -11826,7 +11921,7 @@
   function applyHash(raw) {
     var parts = String(raw || "").replace(/^#\/?/, "").split("/").filter(Boolean);
 
-    if (!parts.length) { session = null; view = { name: "home" }; render(); return; }
+    if (!parts.length) { session = null; picking = false; view = { name: "home" }; render(); return; }
 
     if (parts[0] === "freetalk") {
       session = null;
@@ -13272,6 +13367,81 @@
       "</span>";
   }
 
+  // Sixty-two cards in one column is a scroll, not a course. The arcs
+  // are the shape the order already has; naming them makes the list
+  // navigable, and it makes taking a whole stretch of it one tap
+  // instead of twelve.
+  var ARCS = [
+    { at: 1, title: "The first five minutes" },
+    { at: 9, title: "The words a day needs" },
+    { at: 21, title: "People" },
+    { at: 33, title: "Getting by on your own" },
+    { at: 42, title: "The words that were missing" },
+    { at: 49, title: "Saying it like they do" },
+    { at: 56, title: "When it counts" }
+  ];
+
+  function arcStartingAt(n) {
+    for (var i = 0; i < ARCS.length; i++) if (ARCS[i].at === n) return ARCS[i];
+    return null;
+  }
+
+  function arcLessons(at) {
+    var i = -1;
+    for (var k = 0; k < ARCS.length; k++) if (ARCS[k].at === at) i = k;
+    if (i === -1) return [];
+    var end = i + 1 < ARCS.length ? ARCS[i + 1].at - 1 : LESSONS.length;
+    return LESSONS.slice(at - 1, end).filter(unlocked);
+  }
+
+  // Picking is a mode, not a setting: it lives for as long as you are
+  // in it. What you picked is kept in store.chosen, which is the same
+  // list the review scope screen reads, so the two cannot disagree.
+  var picking = false;
+
+  function pickedIds() {
+    var want = store.chosen || [];
+    return LESSONS.filter(function (l) {
+      return want.indexOf(l.id) !== -1 && unlocked(l);
+    }).map(function (l) { return l.id; });
+  }
+
+  function setPicked(ids) {
+    store.chosen = ids.slice().sort(function (a, b) { return a - b; });
+    save();
+  }
+
+  function togglePicked(id) {
+    var ids = pickedIds();
+    var at = ids.indexOf(id);
+    if (at === -1) ids.push(id);
+    else ids.splice(at, 1);
+    setPicked(ids);
+  }
+
+  function runTitle(ids) {
+    if (ids.length === 1) {
+      var one = lessonById(ids[0]);
+      return one ? one.title : "A run";
+    }
+    return ids.length + " lessons in a row";
+  }
+
+  function pickBarHTML() {
+    var ids = pickedIds();
+    var passed = ids.filter(function (id) {
+      var r = recordOf(id);
+      return !!(r && r.done);
+    });
+    return '<div class="pick-bar" role="group" aria-label="What to do with the lessons you picked">' +
+      '<span class="pick-n">' + ids.length + " picked</span>" +
+      '<button class="pill pill--md pick-do" data-act="pick-review"' +
+      (passed.length ? "" : " disabled") + ">Review these</button>" +
+      '<button class="pill pill--md pick-do" data-act="pick-run"' +
+      (ids.length ? "" : " disabled") + ">Study in a row</button>" +
+      '<button class="link-btn pick-off" data-act="pick-off">Done</button></div>';
+  }
+
   function homeHTML() {
     var doneCount = 0;
     LESSONS.forEach(function (l) {
@@ -13293,7 +13463,30 @@
       var serves = wantKey() && CAN.some(function (c) {
         return forWant(c) && c.needs.some(function (ar) { return lessonTeaching(ar) === l.id; });
       });
-      return '<button class="' + cls + '" data-go="lesson" data-id="' + l.id + '"' +
+      var arc = arcStartingAt(idx + 1);
+      var head = arc
+        ? '<h3 class="arc">' + esc(arc.title) +
+          (picking && arcLessons(arc.at).length
+            ? '<button class="pill pill--sm chip arc-all" data-act="pick-arc" data-id="' +
+              arc.at + '">All</button>'
+            : "") + "</h3>"
+        : "";
+
+      if (picking) {
+        var on = pickedIds().indexOf(l.id) !== -1;
+        return head + '<button class="lesson is-pick' + (open ? "" : " is-locked") +
+          (on ? " is-picked" : "") + '" data-act="pick-one" data-id="' + l.id + '"' +
+          (open ? "" : " disabled") + ' aria-pressed="' + (on ? "true" : "false") + '">' +
+          '<span class="lesson-num">' + (idx + 1) + "</span>" +
+          '<span class="lesson-body">' +
+          '<span class="lesson-title">' + esc(l.title) + "</span>" +
+          '<span class="lesson-meta">' + esc(open ? l.intro : meta) + "</span>" +
+          (open ? strengthStrip(l) : "") +
+          "</span>" +
+          '<span class="pick-tick' + (on ? " is-on" : "") + '" aria-hidden="true"></span></button>';
+      }
+
+      return head + '<button class="' + cls + '" data-go="lesson" data-id="' + l.id + '"' +
         (open ? "" : " disabled") + ">" +
         '<span class="lesson-num">' + (idx + 1) + "</span>" +
         '<span class="lesson-body">' +
@@ -13396,15 +13589,18 @@
       '<details class="guide fold" data-fold="course"' + foldAttr("course", !doneCount) + '>' +
       '<summary>The course<span class="fold-count">' + doneCount + " / " + LESSONS.length + "</span></summary>" +
       '<div class="fold-body">' +
-      '<p class="fold-lead strip-key">Each strip is that lesson\'s phrases by strength: ' +
-      '<b class="key-solid">solid</b>, <b class="key-warm">holding</b>, ' +
-      '<b class="key-cold">weak</b>, <b class="key-unmet">not met yet</b>.</p>' +
-      '<div class="track">' + rows + "</div>" +
-      (finishedLessons().length > 1
-        ? '<div class="btn-row" style="margin-top:14px">' +
-          '<button class="btn btn-ghost btn-wide" data-go="choose">' +
-          "Practise several of these together</button></div>"
+      (picking
+        ? '<p class="fold-lead">Tap the lessons you want. <b>Review these</b> draws a session from ' +
+          "those alone; <b>Study in a row</b> runs through them one after the other, in the order " +
+          "the course puts them in.</p>"
+        : '<p class="fold-lead strip-key">Each strip is that lesson\'s phrases by strength: ' +
+          '<b class="key-solid">solid</b>, <b class="key-warm">holding</b>, ' +
+          '<b class="key-cold">weak</b>, <b class="key-unmet">not met yet</b>.</p>') +
+      (!picking && finishedLessons().length > 1
+        ? '<div class="btn-row pick-open"><button class="pill pill--md chip" data-act="pick-on">' +
+          "Pick several</button></div>"
         : "") +
+      '<div class="track' + (picking ? " is-picking" : "") + '">' + rows + "</div>" +
       "</div></details>" +
 
       '<details class="guide fold" data-fold="convos"' + foldAttr("convos") + '><summary>Conversations' +
@@ -16539,7 +16735,8 @@
     var t = session.tasks[session.i];
     var pct = Math.round(session.i / session.tasks.length * 100);
     var body = roundBodyHTML(t);
-    var title = session.word ? "The word " + session.word
+    var title = session.run ? runTitle(session.run)
+      : session.word ? "The word " + session.word
       : session.aimed ? "Ready for: " + session.aimed.can
       : session.isTest ? "The test"
       : session.isToday ? "Today"
@@ -17109,6 +17306,8 @@
     } else if (session.isDrill) {
       line = ((gameByKey(session.isDrill) || {}).label || "That game") +
         ", drawn from everything you have passed.";
+    } else if (session.run) {
+      line = "A run through " + session.run.length + " lessons, in the order the course puts them in.";
     } else if (session.word) {
       line = "Every line in the course that uses " + session.word + ", and nothing else.";
     } else if (session.aimed) {
@@ -17196,7 +17395,8 @@
         ? '<button class="btn" data-go="lesson" data-id="' + next.id + '">Next lesson</button>'
         : '<button class="btn" data-go="home">Back to lessons</button>';
 
-    return topbarHTML(session.word ? "The word " + session.word
+    return topbarHTML(session.run ? runTitle(session.run)
+      : session.word ? "The word " + session.word
       : session.aimed ? "Ready for: " + session.aimed.can
       : session.isTest ? "The test"
       : session.isToday ? "Today"
@@ -17602,7 +17802,7 @@
      ============================================================ */
 
   function screenHTML() {
-    if (view.name === "home") return homeHTML();
+    if (view.name === "home") return homeHTML() + (picking ? pickBarHTML() : "");
     if (view.name === "lesson") return lessonHTML(view.lesson);
     if (view.name === "learn") return learnHTML();
     if (view.name === "play") return playHTML();
@@ -18187,6 +18387,34 @@
     if (act === "restore") { restoreBackup(); return; }
     if (act === "save-file") { saveToFile(); return; }
     if (act === "backup" || act === "search" || act === "dict-search" || act === "typing") return;
+    if (act === "pick-on") { picking = true; render(); return; }
+    if (act === "pick-off") { picking = false; render(); return; }
+    if (act === "pick-one") {
+      togglePicked(Number(el.getAttribute("data-id")));
+      render();
+      return;
+    }
+    if (act === "pick-arc") {
+      var arcAt = Number(el.getAttribute("data-id"));
+      var inArc = arcLessons(arcAt).map(function (l) { return l.id; });
+      var have = pickedIds();
+      var allOn = inArc.length && inArc.every(function (id) { return have.indexOf(id) !== -1; });
+      var next = have.filter(function (id) { return inArc.indexOf(id) === -1; });
+      if (!allOn) next = next.concat(inArc);
+      setPicked(next);
+      render();
+      return;
+    }
+    if (act === "pick-review") {
+      var rs = buildReview({ only: pickedIds() });
+      if (rs) { picking = false; session = rs; go({ name: "play" }); }
+      return;
+    }
+    if (act === "pick-run") {
+      var runs = buildRun(pickedIds());
+      if (runs) { picking = false; session = runs; go({ name: "play" }); }
+      return;
+    }
     if (act === "dict-kind") {
       dictKindKey = el.getAttribute("data-id") || "all";
       render();

@@ -56,7 +56,8 @@ HOOKS = (
     ' nearestTranslit: nearestTranslit, disp: disp, spk: spk, variety: variety,'
     ' dictIndex: dictIndex, dictSearch: dictSearch, kindOf: kindOf, KINDS: KINDS,'
     ' wordDrill: wordDrill, wordPool: wordPool, levFormOf: levFormOf,'
-    ' topbarHTML: topbarHTML, navHTML: navHTML };'
+    ' topbarHTML: topbarHTML, navHTML: navHTML, ARCS: ARCS,'
+    ' arcLessons: arcLessons, pickedIds: pickedIds, buildRun: buildRun };'
 )
 
 START = '\n  applyHash(typeof window.location !== "undefined" ? window.location.hash : "");'

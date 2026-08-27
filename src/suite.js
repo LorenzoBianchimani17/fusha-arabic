@@ -5712,5 +5712,114 @@ section("a dictionary of every word the course can explain");
 }
 
 
+section("picking lessons off the course list");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.chosen = undefined;
+  click({ "data-go": "home" });
+
+  // the list has a shape now, and the shape covers all of it
+  check(`the course is grouped into arcs (${D.ARCS.length})`, D.ARCS.length >= 5);
+  check("the first arc starts at the first lesson", D.ARCS[0].at === 1);
+  check("they are in order and never overlap",
+    D.ARCS.every((a, i) => i === 0 || a.at > D.ARCS[i - 1].at));
+  check("and between them they cover every lesson",
+    D.ARCS[D.ARCS.length - 1].at <= LESSONS.length);
+  check("every heading is on the screen",
+    D.ARCS.every(a => strip(h).includes(a.title)));
+  check("an arc knows which lessons are under it",
+    D.arcLessons(D.ARCS[0].at).length > 0 &&
+    D.arcLessons(D.ARCS[1].at)[0].id === LESSONS[D.ARCS[1].at - 1].id);
+
+  // the way in
+  check("the list offers to pick several", /data-act="pick-on"/.test(h));
+  check("and until you ask, tapping a lesson still opens it",
+    /data-go="lesson"/.test(h) && !/data-act="pick-one"/.test(h));
+
+  click({ "data-act": "pick-on" });
+  check("asking turns every row into something you can tick",
+    /data-act="pick-one"/.test(h) && !/data-go="lesson"/.test(h));
+  check("nothing is ticked to begin with", /0 picked/.test(strip(h)));
+  check("the bar is there, at the bottom where the thumb is",
+    /class="pick-bar"/.test(h));
+  check("with nothing to do yet",
+    /data-act="pick-review" disabled/.test(h) && /data-act="pick-run" disabled/.test(h));
+
+  click({ "data-act": "pick-one", "data-id": "1" });
+  click({ "data-act": "pick-one", "data-id": "3" });
+  check("ticking two says two", /2 picked/.test(strip(h)));
+  check("and they are the two", D.pickedIds().join() === "1,3");
+  check("the tick is on the card", (h.match(/pick-tick is-on/g) || []).length === 2);
+  check("and now there is something to do",
+    !/data-act="pick-review" disabled/.test(h) && !/data-act="pick-run" disabled/.test(h));
+
+  click({ "data-act": "pick-one", "data-id": "3" });
+  check("tapping again unticks it", D.pickedIds().join() === "1");
+
+  // a whole stretch at once
+  const arc = D.ARCS[1];
+  const inArc = D.arcLessons(arc.at).map(l => l.id);
+  click({ "data-act": "pick-arc", "data-id": String(arc.at) });
+  check(`All takes the whole arc (${inArc.length})`,
+    inArc.every(id => D.pickedIds().indexOf(id) !== -1));
+  check("and leaves what was picked outside it alone",
+    D.pickedIds().indexOf(1) !== -1);
+  click({ "data-act": "pick-arc", "data-id": String(arc.at) });
+  check("pressing All again gives the arc back",
+    inArc.every(id => D.pickedIds().indexOf(id) === -1) && D.pickedIds().join() === "1");
+
+  // the same list the scope screen reads, so the two cannot disagree
+  click({ "data-act": "pick-one", "data-id": "2" });
+  check("what you picked is what the review scope screen has",
+    D.chosenLessons().join() === D.pickedIds().join());
+
+  // review drawn from those alone
+  click({ "data-act": "pick-review" });
+  check("Review these starts a session", !!peek().session);
+  const from = new Set(peek().session.tasks.filter(t => t.srcLesson).map(t => t.srcLesson.id));
+  check("drawn from the picked lessons and no others",
+    [...from].every(id => [1, 2].indexOf(id) !== -1));
+  check("and picking is over once you are in it", !/class="pick-bar"/.test(h));
+  peek().store.str = {};
+  click({ "data-go": "home" });
+
+  // what you picked survives the session you just did, which is the
+  // point of keeping it in the store rather than in the mode
+  click({ "data-act": "pick-on" });
+  check("and it is still picked when you come back", D.pickedIds().join() === "1,2");
+
+  // several lessons, one sitting, in course order
+  click({ "data-act": "pick-arc", "data-id": String(D.ARCS[0].at) });
+  click({ "data-act": "pick-arc", "data-id": String(D.ARCS[0].at) });
+  check("clearing the first arc clears those two with it", D.pickedIds().length === 0);
+  click({ "data-act": "pick-one", "data-id": "1" });
+  click({ "data-act": "pick-one", "data-id": "3" });
+  click({ "data-act": "pick-one", "data-id": "2" });
+  click({ "data-act": "pick-run" });
+  const run = peek().session;
+  check("Study in a row starts a run", !!run && !!run.run);
+  check("and it says how many lessons it is", /3 lessons in a row/.test(h));
+  const order = run.tasks.filter(t => t.srcLesson).map(t => t.srcLesson.id);
+  const firstSeen = [];
+  order.forEach(id => { if (firstSeen.indexOf(id) === -1) firstSeen.push(id); });
+  check("it walks them in the order the course puts them in, not the order you tapped",
+    firstSeen.join() === "1,2,3");
+  check("every round belongs to one of them",
+    order.every(id => [1, 2, 3].indexOf(id) !== -1));
+  check("a run is practice, so it does not pass a lesson for you",
+    run.isReview === true && run.lesson === null);
+  peek().store.str = {};
+
+  // and the mode does not follow you around
+  click({ "data-go": "home" });
+  check("coming back to the list is not still in picking mode",
+    !/class="pick-bar"/.test(h) && /data-go="lesson"/.test(h));
+  st.chosen = undefined;
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);
