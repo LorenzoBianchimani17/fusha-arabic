@@ -78,7 +78,11 @@ HOOKS = (
     ' bumpStrength: bumpStrength, knownRec: knownRec, setKnown: setKnown,'
     ' isDueCheck: isDueCheck, eyeOnly: eyeOnly, noteSpoken: noteSpoken,'
     ' spokenCount: spokenCount, newlyAble: newlyAble, markAble: markAble, canAt: canAt,'
-    ' DAYS: DAYS, dayState: dayState, CAN: CAN };'
+    ' DAYS: DAYS, dayState: dayState, CAN: CAN, saidWild: saidWild,'
+    ' markWild: markWild, wildCount: wildCount, backFromTrip: backFromTrip,'
+    ' unsureToday: unsureToday, unsureOpen: unsureOpen, settleUnsure: settleUnsure,'
+    ' onPurpose: onPurpose, DIALECT_ON_PURPOSE: DIALECT_ON_PURPOSE, FREE_GAP: FREE_GAP,'
+    ' unsureOf: unsureOf, FRAMES: FRAMES, poolFits: poolFits };'
 )
 
 START = '\n  applyHash(typeof window.location !== "undefined" ? window.location.hash : "");'

@@ -45,21 +45,21 @@ consistent, not that the Arabic is right.
 
 Nothing agreed is outstanding.
 
-Everything raised on 2026-08-27 is built: leaving the rotation for
-good, what you still cannot say, the eye-against-the-mouth list, the
-capability that has just turned, the repair card, the register cap
-replaced with what it was protecting, and the count-based assertions
-that kept flaking. The one idea turned down was handing the phone to
-the other person, on the grounds that a translator does that better.
+The last five went in on 2026-08-27: what you actually said, the
+uncertain line of the day, the cards that are dialect on purpose, the
+frames that widen the course at no cost to the pool, and hands in
+your pockets.
 
-Both audits of lessons 1 to 41 are done and applied. `AUDIT.md` holds
-the brief so the next one asks the same questions.
+The one thing no code here can do is still the same thing: **nobody
+who speaks Levantine has ever read this course.** The list is down to
+41 lines, they are on a screen with the Arabic to show somebody, and
+one of them now comes up on the home screen every day once the trip
+date has passed. Twenty minutes of somebody else's time settles the
+lot.
 
 The next audit is due whenever the course grows by more than a few
-lessons, and it is two jobs: the teacher's audit, on the new range
-only, and the walk through seven days. The walk is now half written
-down in `DAYS`, so the second one is cheaper than it was: what it
-produces is a list of gaps, and the gaps are already on a screen.
+lessons. `AUDIT.md` holds the brief; `DAYS` holds half the second one
+already.
 
 ## One thing to watch, not a task
 

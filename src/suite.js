@@ -6790,5 +6790,97 @@ section("a capability that has just turned");
 }
 
 
+section("the world getting a say, and four smaller ones");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.wild = {}; st.asked = {}; st.str = {}; delete st.trip;
+
+  // 1. what you actually said
+  const ar = LESSONS[0].phrases[0].ar;
+  check("nothing has been said to anybody yet", D.wildCount() === 0);
+  check("and the app admits it has never heard it", D.spokenCount(1, ar) === 0);
+  D.markWild(1, ar);
+  check("marking one records it", D.saidWild(1, ar) && D.wildCount() === 1);
+  check("and it counts as having come out of your mouth", D.spokenCount(1, ar) === 1);
+  D.markWild(1, ar);
+  check("ticking again untells it", !D.saidWild(1, ar) && D.wildCount() === 0);
+
+  click({ "data-go": "wild" });
+  check("the screen says whose evidence this is",
+    /marking its own homework/.test(strip(screenOnly())));
+  check("and asks for said, not practised", /not practised, said/.test(strip(screenOnly())));
+  check("it offers the backbone first", /The backbone/.test(strip(screenOnly())));
+  check("with something to tick", /data-act="wild"/.test(h));
+  type("wild-search", "zzzqqq");
+  check("searching for nothing says so", /Nothing under that/.test(strip(screenOnly())));
+  type("wild-search", "");
+
+  // it is asked for once the date you gave has gone by
+  check("with no date nothing is asked", !D.backFromTrip());
+  st.trip = D.today() - 2;
+  check("once it has gone by, there is something to ask", D.backFromTrip());
+  click({ "data-go": "home" });
+  check("and the home screen asks it", /You are back/.test(strip(screenOnly())));
+  check("saying plainly that it is the one thing the app cannot know",
+    /knows nothing about/.test(strip(screenOnly())));
+
+  // 2. one uncertain line a day, while you are there
+  check("there is one to ask about today", !!D.unsureToday());
+  check("and it is one nobody has settled", D.unsureOpen().length === D.UNSURE.length);
+  check("the home screen puts it in front of you",
+    /Ask somebody about this one today/.test(strip(screenOnly())));
+  check("with the Arabic to show them", /class="ar ask-script"/.test(h));
+  const today = D.unsureToday();
+  click({ "data-act": "asked", "data-id": today.ar, "data-ok": "1" });
+  check("settling one takes it off the list", D.unsureOpen().length === D.UNSURE.length - 1);
+  check("and tomorrow it is a different one", (D.unsureToday() || {}).ar !== today.ar);
+
+  // 3. the cards that are the street on purpose
+  check(`some cards are dialect deliberately (${Object.keys(D.DIALECT_ON_PURPOSE).length})`,
+    Object.keys(D.DIALECT_ON_PURPOSE).length >= 5);
+  check("every one of them is a line the course teaches",
+    Object.keys(D.DIALECT_ON_PURPOSE).every(a => !!SCRIPT[a]));
+  check("and none of them is also on the list of things nobody has checked",
+    Object.keys(D.DIALECT_ON_PURPOSE).every(a => !D.unsureOf(a)));
+  check("a card knows which it is",
+    D.onPurpose("T\u00ecslam") && !D.onPurpose("Marh\u00e0ban"));
+
+  // 4. the frames, which cost the pool nothing
+  const frameWords = D.FRAMES.reduce((n, f) => n + (f.words || []).length, 0);
+  check(`the frames build a great many sentences (${frameWords})`, frameWords >= 240);
+  check("every word in a frame is a word the course teaches", (function () {
+    const taught = {};
+    LESSONS.forEach(l => l.phrases.forEach(p => { taught[p.ar] = 1; }));
+    const ghosts = D.FRAMES.flatMap(f => (f.words || []).filter(w => !taught[w]));
+    if (ghosts.length) console.log("   ", ghosts.slice(0, 8));
+    return ghosts.length === 0;
+  })());
+  check("and none of them costs the review pool anything",
+    D.poolFits().pool === LESSONS.reduce((n, l) =>
+      n + l.phrases.filter(p => !D.knownRec(l.id, p.ar) && !D.graduated(l.id, p.ar)).length, 0));
+
+  // 5. hands in your pockets
+  if (withVoice) {
+    click({ "data-go": "free" });
+    const l = peek().loud;
+    check("it draws ten and starts itself", l && l.mode === "free" && l.list.length === 10);
+    check("saying to put the phone away", /Put the phone away/.test(strip(screenOnly())));
+    check("and needing no tap", /nothing needs a tap/.test(strip(screenOnly())));
+    check("the gap is long enough to say one back", D.FREE_GAP >= 1500);
+    click({ "data-act": "free-stop" });
+    check("it can be held", peek().loud.stopped === true);
+    click({ "data-act": "free-stop" });
+    check("and let go again", peek().loud.stopped === false);
+    click({ "data-act": "loud-next" });
+    check("and skipped ahead by hand", peek().loud.i === 1);
+  }
+
+  st.wild = {}; st.asked = {}; st.str = {}; delete st.trip;
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);

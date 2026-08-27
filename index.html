@@ -740,6 +740,9 @@
   .verdict-msg.warn { color: var(--amber); background: var(--surface-2); }
   .flash-note.is-warn { border-color: var(--amber); }
 
+  .wild-row { width: 100%; text-align: left; cursor: pointer; }
+  .wild-row.is-on { border-color: var(--good); background: var(--good-soft); }
+
   .still-row { display: flex; align-items: center; gap: var(--s-4); padding: var(--s-3) 0; }
   .still-row.is-gap { opacity: .72; }
   .still-dot {
@@ -749,6 +752,11 @@
   .still-none { font-size: var(--t-2); color: var(--ink-3); font-style: italic; }
   .notice-able { border-color: var(--good); }
   .flash-note.is-unsure { border-style: dashed; }
+  .flash-note.is-street { border-color: var(--accent); }
+  .notice-ask { border-color: var(--accent); }
+  .ask-line { display: flex; align-items: center; gap: var(--s-4); margin: var(--s-4) 0; flex-wrap: wrap; }
+  .ask-line .ar { font-size: var(--t-7); }
+  .ask-script { direction: rtl; color: var(--accent); }
 
   .unsure-dot { font-size: var(--t-1); color: var(--ink-3); margin-left: 4px; letter-spacing: -.05em; }
 
@@ -9157,7 +9165,7 @@
     return speech.lastSaid === translit && speech.repeats > 0 ? 0.75 : 1;
   }
 
-  function speak(translit, bookForm, override) {
+  function speak(translit, bookForm, override, after) {
     if (!canSpeak()) return;
     var text = override || (bookForm ? (SCRIPT[translit] || spk(translit)) : spk(translit));
     if (!text) return;
@@ -9172,6 +9180,7 @@
     speech.playing = translit;
     u.onend = u.onerror = function () {
       if (speech.playing === translit) { speech.playing = null; markPlaying(); }
+      if (typeof after === "function") after();
     };
     window.speechSynthesis.speak(u);
     markPlaying();
@@ -10349,6 +10358,43 @@
       out.push(it);
     });
     return out;
+  }
+
+  /* ------------------------------------------------------------
+     SAID TO SOMEBODY - everything this app knows about you, it told
+     itself. The strength, the diary, the capability list, the
+     leaving: all of it is the app marking its own homework, and
+     there is not one moment in the whole system where the world
+     contradicts it.
+
+     This is that moment. A phrase you actually said to a person is
+     worth more than any number of rounds, and it is the only
+     evidence here that did not come from inside.
+     ------------------------------------------------------------ */
+
+  function saidWild(lessonId, ar) {
+    return !!(store.wild || {})[phraseKey(lessonId, ar)];
+  }
+
+  function markWild(lessonId, ar) {
+    if (!store.wild) store.wild = {};
+    var k = phraseKey(lessonId, ar);
+    if (store.wild[k]) delete store.wild[k];
+    else {
+      store.wild[k] = today();
+      // Out of your mouth to a person is out of your mouth. It is the
+      // strongest form of the same evidence the microphone collects.
+      noteSpoken(lessonId, ar);
+    }
+    save();
+  }
+
+  function wildCount() { return Object.keys(store.wild || {}).length; }
+
+  // Once the date you gave has gone by, there is something to ask.
+  function backFromTrip() {
+    var left = daysToTrip();
+    return left !== null && left < 0;
   }
 
   function graduatedList() {
@@ -12777,6 +12823,7 @@
     if (v.name === "words") return "#/words";
     if (v.name === "unsure") return "#/unsure";
     if (v.name === "still") return "#/still";
+    if (v.name === "wild") return "#/wild";
     if (v.name === "yours") return "#/yours";
     if (v.name === "kept") return "#/kept";
     if (v.name === "trip") return "#/trip";
@@ -12867,6 +12914,14 @@
     if (parts[0] === "still") {
       session = null;
       view = { name: "still" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "wild") {
+      session = null;
+      wildQuery = "";
+      view = { name: "wild" };
       render();
       return;
     }
@@ -13027,7 +13082,8 @@
 
     if (parts[0] === "loud") {
       session = null;
-      loud = newLoud(parts[1] === "run" || parts[1] === "pace" ? parts[1] : "shadow", null);
+      loud = newLoud(
+        parts[1] === "run" || parts[1] === "pace" || parts[1] === "free" ? parts[1] : "shadow", null);
       if (loud && loud.mode === "run") loud.startedAt = Date.now();
       view = { name: "loud" };
       render();
@@ -14263,6 +14319,10 @@
       '<span class="nav-note">' + (yoursOpen().length
         ? "A question about you, answered with something true"
         : "Pass a lesson or two to open this") + "</span></button>" +
+      '<button class="nav-item" data-go="wild"><span class="nav-label">What you actually said</span>' +
+      '<span class="nav-note">' + esc(wildCount()
+        ? wildCount() + " said out loud to a person who answered"
+        : "The one place in this app where the world gets a say") + "</span></button>" +
       '<button class="nav-item" data-go="still"><span class="nav-label">What you still cannot say</span>' +
       '<span class="nav-note">' + esc((function () {
         var g = 0;
@@ -14318,6 +14378,11 @@
       '<button class="nav-item' + (openSits ? "" : " is-off") + '" data-go="run"' +
       (openSits ? "" : " disabled") + '><span class="nav-label">At a run</span>' +
       '<span class="nav-note">Ten you know, out loud, without stopping</span></button>' +
+      '<button class="nav-item' + (canSpeak() && openSits ? "" : " is-off") + '" data-go="free"' +
+      (canSpeak() && openSits ? "" : " disabled") + '><span class="nav-label">Hands in your pockets</span>' +
+      '<span class="nav-note">' + (canSpeak() && openSits
+        ? "Ten, played one after another, with a gap to say each one back"
+        : "Needs a voice, and a couple of lessons behind you") + "</span></button>" +
       '<button class="nav-item' + (canSpeak() && openSits ? "" : " is-off") + '" data-go="pace"' +
       (canSpeak() && openSits ? "" : " disabled") + '><span class="nav-label">Keeping up</span>' +
       '<span class="nav-note">' + (canSpeak() && openSits
@@ -14595,6 +14660,33 @@
           (daysToTrip() <= 0 ? "you get back" : "you go, in " + daysToTrip() + " days") + ".</b>" +
           '<p class="want-why">The backbone is what comes round. ' +
           '<button class="link-btn" data-go="trip">Change that</button></p></div>'
+        : "") +
+      (backFromTrip() && unsureToday()
+        ? (function () {
+            var u = unsureToday();
+            var lev = (DIALECT[u.ar] || {}).lev;
+            return '<div class="notice notice-ask"><b>Ask somebody about this one today.</b>' +
+              '<p class="want-why">Nobody who speaks it has ever read the Levantine in this course. ' +
+              "There are " + unsureOpen().length + " lines like this left, and each one takes ten " +
+              "seconds of somebody else's day.</p>" +
+              '<div class="ask-line"><span class="ar">' + esc(disp(u.ar)) + "</span>" +
+              (lev ? '<span class="ar ask-script">' + esc(lev[1]) + "</span>" : "") +
+              sayBtn(u.ar, true) + "</div>" +
+              '<p class="want-why">' + u.why + "</p>" +
+              '<div class="chips">' +
+              '<button class="pill pill--md chip" data-act="asked" data-id="' + esc(u.ar) +
+              '" data-ok="1">Asked, it is right</button>' +
+              '<button class="pill pill--md chip" data-act="asked" data-id="' + esc(u.ar) +
+              '">Not today</button>' +
+              '<button class="pill pill--md chip" data-go="unsure">See them all</button>' +
+              "</div></div>";
+          })()
+        : "") +
+      (backFromTrip() && !wildCount()
+        ? '<div class="notice notice-able"><b>You are back.</b>' +
+          '<p class="want-why">Which of it did you actually say to somebody? That is the only thing ' +
+          "this app knows nothing about, and it is worth more than everything it does know. " +
+          '<button class="link-btn" data-go="wild">Tell it</button></p></div>'
         : "") +
       ableHTML() +
       (openSession()
@@ -15153,6 +15245,58 @@
       '<div class="btn-row"><button class="btn btn-ghost btn-wide" data-go="home">Back</button></div>';
   }
 
+  function wildHTML() {
+    var q = normalise(wildQuery);
+    var pool = [];
+    finishedLessons().forEach(function (l) {
+      visiblePhrases(l).forEach(function (p) {
+        if (isHidden(l.id, p.ar)) return;
+        pool.push({ ar: p.ar, en: p.en, lesson: l, core: !!p.core });
+      });
+    });
+    var marked = pool.filter(function (it) { return saidWild(it.lesson.id, it.ar); });
+    var rest = pool.filter(function (it) { return !saidWild(it.lesson.id, it.ar); });
+    if (q) {
+      rest = rest.filter(function (it) {
+        return normalise(it.ar).indexOf(q) !== -1 || normalise(it.en).indexOf(q) !== -1 ||
+          normalise(disp(it.ar)).indexOf(q) !== -1;
+      });
+    } else {
+      rest = rest.filter(function (it) { return it.core; });
+    }
+
+    function row(it) {
+      var on = saidWild(it.lesson.id, it.ar);
+      return '<button class="pb-row wild-row' + (on ? " is-on" : "") +
+        '" data-act="wild" data-id="' + esc(it.ar) + '" data-lesson="' + it.lesson.id + '">' +
+        '<span class="pick-tick' + (on ? " is-on" : "") + '" aria-hidden="true"></span>' +
+        '<span class="pb-text"><span class="ar">' + esc(disp(it.ar)) + "</span>" +
+        '<span class="pb-en">' + esc(it.en) + "</span></span></button>";
+    }
+
+    return topbarHTML("What you actually said") +
+      '<p class="pb-lead">Everything else in this app is the app marking its own homework. This is ' +
+      "the one place the world gets a say. Tick anything you have said out loud to a person who " +
+      "answered you - not practised, said. Nothing is scored for it; it counts as having come out " +
+      "of your mouth, which is the one thing a drill cannot prove.</p>" +
+      (marked.length
+        ? '<div class="pb-group"><h3>Said to somebody &#183; ' + marked.length + "</h3>" +
+          marked.map(row).join("") + "</div>"
+        : "") +
+      '<input class="pb-search" data-act="wild-search" type="text" value="' + esc(wildQuery) + '"' +
+      ' placeholder="find a phrase" autocomplete="off" autocorrect="off"' +
+      ' autocapitalize="off" spellcheck="false" aria-label="Find a phrase">' +
+      '<div class="pb-group"><h3>' + (q ? "Matching" : "The backbone") +
+      '<span class="fold-count">' + rest.length + "</span></h3>" +
+      (q ? "" : '<p class="fold-lead">The core, which is what you were most likely to have used. ' +
+        "Search for anything else.</p>") +
+      (rest.length ? rest.slice(0, 60).map(row).join("")
+        : '<p class="fold-lead">Nothing under that.</p>') +
+      (rest.length > 60 ? '<p class="fold-lead">and ' + (rest.length - 60) + " more; search to narrow it.</p>" : "") +
+      "</div>" +
+      '<div class="btn-row"><button class="btn btn-ghost btn-wide" data-go="home">Back</button></div>';
+  }
+
   function unsureHTML() {
     return topbarHTML("Not sure about these") +
       '<p class="pb-lead">The Levantine in this course has never been read by anybody who speaks it. ' +
@@ -15708,7 +15852,6 @@
     { ar: "Hàlwa", why: "The Levantine given is the plural <b>halawiyyàt</b>, the sweets you buy, against a singular headword." },
     { ar: "Khudàr", why: "<b>Khùdra</b> and <b>khudàr</b> both circulate in the Levant; this is a soft preference, not a split." },
     { ar: "Bittìkh", why: "Some dictionaries give <b>battìkh</b> as the fus-ha too, which would collapse the contrast with the Levantine on this card." },
-    { ar: "Bùza", why: "A Levantine word that written Arabic borrowed. The textbook fus-ha is <b>muthallajàt</b>, which nobody says." },
     { ar: "Sàlata", why: "The stress is read as three light syllables. If the first vowel is long where you are, it would be <b>salàta</b>." },
     { ar: "Siwàr", why: "The Levantine for one bracelet was corrected once already. <b>Iswàra</b> is the everyday word; <b>swàr</b> is closer to the fus-ha." },
     { ar: "ʿÌqd", why: "Many Levantine speakers reach for <b>sìnsal</b>, a chain, for anything hanging round the neck." },
@@ -15743,6 +15886,28 @@
   ];
 
   var UNSURE_OF = null;
+
+  // A list of forty-two doubts is a list. One of them in front of you
+  // on a day when you are surrounded by people who could settle it in
+  // ten seconds is a habit, and it is the same twenty minutes of coffee
+  // spread thin enough that it actually happens.
+  function unsureSettled(ar) { return !!(store.asked || {})[ar]; }
+
+  function settleUnsure(ar, ok) {
+    if (!store.asked) store.asked = {};
+    store.asked[ar] = ok ? "ok" : "skip";
+    save();
+  }
+
+  function unsureOpen() {
+    return UNSURE.filter(function (u) { return !unsureSettled(u.ar); });
+  }
+
+  function unsureToday() {
+    var open = unsureOpen();
+    if (!open.length) return null;
+    return open[today() % open.length];
+  }
 
   function unsureMark(ar) {
     return unsureOf(ar) ? '<span class="unsure-dot" title="Not checked by a native speaker" aria-label="Not checked by a native speaker">&#183;?</span>' : "";
@@ -15852,6 +16017,8 @@
     if (prev && prev.q && list.length > 1 && list[0].ask === prev.q.ask) list.push(list.shift());
     return { q: list[0], draft: yoursSaid(list[0].ask) || "", read: null, kept: false };
   }
+
+  var wildQuery = "";
 
   var DICT_HITS = 60;
   var dictQuery = "";
@@ -16196,43 +16363,43 @@
   var FRAMES = [
     { stem: "Urìd", ar: "أُرِيدُ", en: "I want ___", needs: 9,
       words: ["Shày", "Qàhwa", "ʿAsìr", "Khubz", "Arùzz", "Làhm", "Dajàj", "Sàmak",
-        "Tàdhkara", "Ghùrfa", "Sayyàra", "Darràja", "Kitàb", "Hàtif", "Dawà'", "Haqìba", "Sàʿa"] },
+        "Tàdhkara", "Ghùrfa", "Sayyàra", "Darràja", "Kitàb", "Hàtif", "Dawà'", "Haqìba", "Sàʿa", "Sàlata", "Fawàkih", "Khudàr", "Bùza", "Tuffàh", "Zaitùn", "Tàmr", "Halìb", "Sabùn", "Shàmbu", "ʿÌtr", "Khàtim", "Siwàr", "ʿÌqd", "Bìra", "Nabìdh", "Kòktèl", "Sandwìch", "Jùbna", "Sàlsa"] },
 
     { stem: "Ahtàj", ar: "أَحْتَاجُ", en: "I need ___", needs: 16,
       words: ["Dawà'", "Tàksi", "Ghùrfa", "Tàdhkara", "Nuqùd", "Mà'", "Kùrsi",
-        "Hàtif", "Sayyàra", "Haqìba", "Kitàb"] },
+        "Hàtif", "Sayyàra", "Haqìba", "Kitàb", "Sabùn", "Shàmbu", "Manadìl", "ʿÌtr", "Milh", "Zàit", "Jùbna", "Sàlsa"] },
 
     { stem: "ʿÌndi", ar: "عِنْدِي", en: "I have ___", needs: 7,
       dia: { lev: ["ʿÀndi", "عندي"] },
       words: ["Qìtta", "Kalb", "Hisàn", "Àrnab", "Sayyàra", "Darràja", "Kitàb", "Hàtif",
-        "Sàʿa", "Tàdhkara", "Ghùrfa", "Nuqùd", "Haqìba", "Kùrsi", "Tàwila", "Sarìr", "Dawà'"] },
+        "Sàʿa", "Tàdhkara", "Ghùrfa", "Nuqùd", "Haqìba", "Kùrsi", "Tàwila", "Sarìr", "Dawà'", "Khàtim", "Siwàr", "ʿÌqd", "Sabùn", "Zujàja"] },
 
     { stem: "Àina", ar: "أَيْنَ", en: "Where is ___?", needs: 10, q: true,
       dia: { lev: ["Wèin", "وين"] },
       words: ["Al-fùnduq", "Al-matàr", "Al-qitàr", "Al-hàfila", "Al-bàit", "Al-màtbakh",
-        "Al-bàb", "Al-miftàh", "Al-màktab", "As-sùq", "Al-mìtro", "Ash-shùbbak"] },
+        "Al-bàb", "Al-miftàh", "Al-màktab", "As-sùq", "Al-mìtro", "Ash-shùbbak", "Al-bànk", "Al-màdrasa", "Al-mustàshfa", "Ad-dukkàn", "Al-jàmiʿ", "Al-kanìsa", "Al-màthaf", "Ash-shàti'", "Ash-shàriʿ", "Al-maidàn", "Al-hadìqa", "As-sifàra", "Al-màqha", "Al-bàr", "As-sìnama"] },
 
     { stem: "Uhìbb", ar: "أُحِبُّ", en: "I like ___", needs: 14,
       words: ["Ar-rabìʿ", "As-sàif", "Al-kharìf", "Ash-shità", "Ash-shàms",
         "Al-màtar", "Ath-thàlj", "As-sàfar", "As-sùq"] },
 
     { stem: "Àkul", ar: "آكُلُ", en: "I eat ___", needs: 16,
-      words: ["Khubz", "Arùzz", "Làhm", "Dajàj", "Sàmak"] },
+      words: ["Khubz", "Arùzz", "Làhm", "Dajàj", "Sàmak", "Sàlata", "Khudàr", "Fawàkih", "Tuffàh", "Màuz", "ʿÌnab", "Bittìkh", "Tàmr", "Zaitùn", "Jùbna", "Sandwìch", "Bùza"] },
 
     { stem: "Àshrab", ar: "أَشْرَبُ", en: "I drink ___", needs: 16,
-      words: ["Mà'", "Shày", "Qàhwa", "ʿAsìr"] },
+      words: ["Mà'", "Shày", "Qàhwa", "ʿAsìr", "Halìb", "Bìra", "Nabìdh", "Kòktèl"] },
 
     { stem: "Àdhhab ilà", ar: "أَذْهَبُ إِلَى", en: "I am going to ___", needs: 16,
       dia: { lev: ["Brùh", "بروح", "ʿ", "ع"] },
-      words: ["Al-fùnduq", "Al-matàr", "As-sùq", "Al-màktab", "Al-bàit"] },
+      words: ["Al-fùnduq", "Al-matàr", "As-sùq", "Al-màktab", "Al-bàit", "Al-bànk", "Al-màdrasa", "Al-mustàshfa", "Ad-dukkàn", "Al-jàmiʿ", "Al-hadìqa", "Al-màqha", "As-sìnama"] },
 
     { stem: "Khudhni ilà", ar: "خُذْنِي إِلَى", en: "Take me to ___", needs: 26,
       dia: { lev: ["Khùdni", "خدني", "ʿ", "ع"] },
-      words: ["Al-fùnduq", "Al-matàr", "Al-bàit", "As-sùq", "Al-màktab", "Al-mìtro"] },
+      words: ["Al-fùnduq", "Al-matàr", "Al-bàit", "As-sùq", "Al-màktab", "Al-mìtro", "Al-bànk", "Al-mustàshfa", "As-sifàra", "Al-màqha", "As-sìnama", "Al-hadìqa"] },
 
     { stem: "Bikàm ilà", ar: "بِكَمْ إِلَى", en: "How much to ___?", needs: 26, q: true,
       dia: { lev: ["Addèsh", "قديش", "ʿ", "ع"] },
-      words: ["Al-fùnduq", "Al-matàr", "Al-bàit", "As-sùq", "Al-màktab", "Al-mìtro"] },
+      words: ["Al-fùnduq", "Al-matàr", "Al-bàit", "As-sùq", "Al-màktab", "Al-mìtro", "Al-bànk", "Al-mustàshfa", "As-sifàra", "As-sìnama"] },
 
     // Every frame above says something about you. These three ask the
     // person in front of you something, which is the half of a
@@ -16241,12 +16408,12 @@
       dia: { lev: ["ʿÀndak", "عندك"] },
       words: ["Shày", "Qàhwa", "Mà'", "ʿAsìr", "Khubz", "Tàdhkara", "Ghùrfa", "Dawà'",
         "Nuqùd", "Hàtif", "Kitàb", "Sayyàra", "Kùrsi", "Tàwila", "Sàʿa", "Haqìba",
-        "Qìtta", "Kalb", "Darràja", "Tàksi"] },
+        "Qìtta", "Kalb", "Darràja", "Tàksi", "Fawàkih", "Khudàr", "Tamàtim", "Batàta", "Bàsal", "Tuffàh", "Màuz", "Burtuqàl", "ʿÌnab", "Bittìkh", "ʿÀsal", "Bùza", "Sàlata", "Sabùn", "Shàmbu", "Manadìl", "ʿÌtr", "Khàtim", "Siwàr", "Aqràt", "ʿÌqd", "Bìra", "Nabìdh", "Zujàja", "Milh", "Fùlful", "Zàit", "Jùbna", "Làimun", "Thùm"] },
 
     { stem: "Hal turìd", ar: "هَلْ تُرِيدُ", en: "Would you like ___?", needs: 5, q: true,
       dia: { lev: ["Bìddak", "بدك"] },
       words: ["Qàhwa", "Mà'", "ʿAsìr", "Khubz", "Arùzz", "Dajàj", "Sàmak", "Làhm",
-        "Tàdhkara", "Ghùrfa", "Dawà'"] },
+        "Tàdhkara", "Ghùrfa", "Dawà'", "Sàlata", "Fawàkih", "Hàlwa", "Bùza", "Bìra", "Nabìdh", "Kòktèl", "Sandwìch"] },
 
     { stem: "Hal tùhib", ar: "هَلْ تُحِبُّ", en: "Do you like ___?", needs: 13, q: true,
       dia: { lev: ["Bthèbb", "بتحب"] },
@@ -18070,7 +18237,8 @@
       var narrowed = pool.filter(function (p) { return want[p.ar]; });
       if (narrowed.length) use = narrowed;
     }
-    var list = shuffle(use).slice(0, mode === "run" ? 10 : mode === "pace" ? PACE_LENGTH : 1);
+    var list = shuffle(use).slice(0,
+      mode === "run" || mode === "free" ? 10 : mode === "pace" ? PACE_LENGTH : 1);
     var out = {
       mode: mode,
       list: list,
@@ -18083,6 +18251,7 @@
       got: prev && prev.mode === mode ? prev.got : 0,
       run: prev && prev.mode === mode ? prev.run : 0
     };
+    if (mode === "free") out.stopped = false;
     if (mode === "pace") {
       out.rate = PACE_FROM;
       out.best = null;
@@ -18090,6 +18259,32 @@
       out.options = list.length ? paceOptions(list[0]) : [];
     }
     return out;
+  }
+
+  /* ------------------------------------------------------------
+     HANDS IN YOUR POCKETS - a plane, a taxi, a queue. Everything
+     else here wants a tap for every phrase, which is why forty
+     dead minutes stay dead. This one starts and keeps going: the
+     phrase, a gap long enough to say it back, the next one, ten of
+     them, and then it stops on its own.
+     ------------------------------------------------------------ */
+
+  var FREE_GAP = 2200;
+
+  function freePlay() {
+    if (!loud || loud.mode !== "free" || !canSpeak()) return;
+    var p = loudNow();
+    if (!p) return;
+    speak(p.ar, false, null, function () {
+      if (!loud || loud.mode !== "free" || loud.stopped) return;
+      window.setTimeout(function () {
+        if (!loud || loud.mode !== "free" || loud.stopped) return;
+        if (loud.i >= loud.list.length - 1) { loud.done = true; render(); return; }
+        loud.i += 1;
+        loud.played = false;
+        render();
+      }, FREE_GAP);
+    });
   }
 
   function pacePlay() {
@@ -18165,6 +18360,13 @@
 
   function loudNext() {
     if (!loud) return;
+    if (loud.mode === "free") {
+      if (loud.i >= loud.list.length - 1) { loud.done = true; render(); return; }
+      loud.i += 1;
+      loud.played = false;
+      render();
+      return;
+    }
     if (loud.mode === "pace") { paceNext(); return; }
     if (loud.mode === "shadow") { loud = newLoud("shadow", loud); render(); return; }
     if (loud.i >= loud.list.length - 1) { loud.done = true; render(); return; }
@@ -18184,6 +18386,7 @@
     var shadow = loud.mode === "shadow";
 
     if (loud.mode === "pace") return paceHTML(p);
+    if (loud.mode === "free") return freeHTML(p);
 
     if (loud.done) {
       var secs = loud.startedAt ? Math.round((Date.now() - loud.startedAt) / 1000) : null;
@@ -18232,6 +18435,33 @@
       "</p>" +
       '<div class="prompt"><div class="prompt-label">' +
       (shadow ? "Say it back" : "Say this") + "</div>" + stage + "</div>" + body;
+  }
+
+  function freeHTML(p) {
+    if (loud.done) {
+      return topbarHTML("Hands in your pockets") +
+        '<div class="card result fade-in"><div class="eyebrow">That is the ten</div>' +
+        '<div class="result-score mono review">' + loud.list.length + "</div>" +
+        '<p class="result-line">Nothing was marked and nothing was asked of you. The point was ' +
+        "that your ears had something to do.</p></div>" +
+        '<div class="btn-row"><button class="btn btn-ghost" data-go="home">Home</button>' +
+        '<button class="btn" data-act="loud-again">Another ten</button></div>';
+    }
+    if (!canSpeak()) {
+      return topbarHTML("Hands in your pockets") +
+        '<p class="pb-lead">This one needs an Arabic voice on the device, and there is not one.</p>' +
+        '<div class="btn-row"><button class="btn" data-go="home">Back</button></div>';
+    }
+    return topbarHTML("Hands in your pockets", null, (loud.i + 1) + " / " + loud.list.length) +
+      '<p class="pb-lead">It plays, it waits long enough for you to say it back, and it goes on ' +
+      "by itself. Put the phone away. Nothing here is marked and nothing needs a tap.</p>" +
+      '<div class="prompt"><div class="prompt-label">Say it back</div>' +
+      '<div class="prompt-main ar">' + esc(disp(p.ar)) + "</div>" +
+      '<div class="prompt-sub">' + esc(p.en) + "</div></div>" +
+      '<div class="btn-row">' +
+      '<button class="btn btn-ghost" data-act="free-stop">' +
+      (loud.stopped ? "Carry on" : "Hold it there") + "</button>" +
+      '<button class="btn" data-act="loud-next">Skip ahead</button></div>';
   }
 
   function paceLabel(r) {
@@ -18489,6 +18719,24 @@
       esc(HOW.direct.why) + "</span></div>";
   }
 
+  // Not a doubt: a decision. On a handful of cards the fus-ha exists
+  // and nobody alive says it, so the course gives you what is said and
+  // owes you the reason.
+  var DIALECT_ON_PURPOSE = {
+    "Tìslam": 1, "Tìslam yadàk": 1, "Tìslam yadàki": 1,
+    "Tìkram ʿàinuk": 1, "Tìkram ʿàinuki": 1,
+    "Yà rèit": 1, "Bùza": 1, "ʿAlà tùl": 1, "Shwày shwày": 1
+  };
+
+  function onPurpose(ar) { return !!DIALECT_ON_PURPOSE[ar]; }
+
+  function purposeNote(ar) {
+    if (!onPurpose(ar)) return "";
+    return '<div class="flash-note is-street"><span><b>This one is the street, on purpose.</b> ' +
+      "A fus&#183;ha form exists and nobody says it, so the course gives you the one you will " +
+      "hear. It is not a mistake and it is not on the list of things nobody has checked.</span></div>";
+  }
+
   function unsureNote(ar) {
     var u = unsureOf(ar);
     if (!u) return "";
@@ -18668,6 +18916,7 @@
     var note = "";
     if (p.note) note += '<div class="flash-note"><span>' + p.note + "</span></div>";
     note += howNote(p.ar);
+    note += purposeNote(p.ar);
     note += unsureNote(p.ar);
     note += twinNote(p.ar);
     var rit = ritualFor(p.ar);
@@ -20027,6 +20276,7 @@
     if (view.name === "words") return wordsHTML();
     if (view.name === "unsure") return unsureHTML();
     if (view.name === "still") return stillHTML();
+    if (view.name === "wild") return wildHTML();
     if (view.name === "yours") return yoursHTML();
     if (view.name === "kept") return keptHTML();
     if (view.name === "trip") return tripHTML();
@@ -20192,6 +20442,10 @@
         loud.played = true;
         pacePlay();
       }
+      if (loud && lp && !loud.played && !loud.stopped && canSpeak() && loud.mode === "free") {
+        loud.played = true;
+        freePlay();
+      }
       return;
     }
     if (view.name === "numbers") {
@@ -20305,6 +20559,7 @@
       if (dest === "dict") { dictQuery = ""; dictKindKey = "all"; go({ name: "dict" }); return; }
       if (dest === "unsure") { go({ name: "unsure" }); return; }
       if (dest === "still") { go({ name: "still" }); return; }
+      if (dest === "wild") { wildQuery = ""; go({ name: "wild" }); return; }
       if (dest === "yours") { yours = newYours(yours); go({ name: "yours" }); return; }
       if (dest === "kept") { go({ name: "kept" }); return; }
       if (dest === "trip") { go({ name: "trip" }); return; }
@@ -20315,7 +20570,7 @@
       if (dest === "twins") { session = null; go({ name: "twins" }); return; }
       if (dest === "asked") { session = null; asked = newAsked(null); go({ name: "asked" }); return; }
       if (dest === "numbers") { session = null; numbers = newNumbers(null); go({ name: "numbers" }); return; }
-      if (dest === "shadow" || dest === "run" || dest === "pace") {
+      if (dest === "shadow" || dest === "run" || dest === "pace" || dest === "free") {
         session = null;
         loud = newLoud(dest, null);
         if (loud && loud.mode === "run") loud.startedAt = Date.now();
@@ -20636,8 +20891,19 @@
     if (act === "restore") { restoreBackup(); return; }
     if (act === "save-file") { saveToFile(); return; }
     if (act === "backup" || act === "search" || act === "dict-search" || act === "typing"
-      || act === "yours-typing" || act === "my-way-typing") return;
+      || act === "yours-typing" || act === "my-way-typing"
+      || act === "wild-search") return;
     if (act === "able-seen") { markAble(); render(); return; }
+    if (act === "asked") {
+      settleUnsure(el.getAttribute("data-id"), el.getAttribute("data-ok") === "1");
+      render();
+      return;
+    }
+    if (act === "wild") {
+      markWild(Number(el.getAttribute("data-lesson")), el.getAttribute("data-id"));
+      render();
+      return;
+    }
     if (act === "say-these") {
       var mouths = eyeOnly().map(function (it) { return it.ar; });
       if (!mouths.length) return;
@@ -20715,6 +20981,14 @@
       return;
     }
     if (act === "yours-next") { yours = newYours(yours); render(); return; }
+    if (act === "free-stop") {
+      if (!loud) return;
+      loud.stopped = !loud.stopped;
+      if (!loud.stopped) { loud.played = false; }
+      else stopSpeech();
+      render();
+      return;
+    }
     if (act === "pace-play") { if (loud) { loud.played = true; pacePlay(); } return; }
     if (act === "pace-pick") { paceAnswer(el.getAttribute("data-value")); return; }
     if (act === "talk-role") {
@@ -21260,6 +21534,11 @@
     }
     if (what === "moment-typing") { if (moment && !moment.checked) moment.typed = el.value; return; }
     if (what === "numbers-typing") { if (numbers && !numbers.checked) numbers.typed = el.value; return; }
+    if (what === "wild-search") {
+      wildQuery = el.value;
+      render();
+      return;
+    }
     if (what === "dict-search") {
       dictQuery = el.value;
       var dres = app.querySelector && app.querySelector("[data-dict]");
