@@ -77,7 +77,8 @@ HOOKS = (
     ' GRADUATE_CHECKS: GRADUATE_CHECKS, MAX_STRENGTH: MAX_STRENGTH,'
     ' bumpStrength: bumpStrength, knownRec: knownRec, setKnown: setKnown,'
     ' isDueCheck: isDueCheck, eyeOnly: eyeOnly, noteSpoken: noteSpoken,'
-    ' spokenCount: spokenCount };'
+    ' spokenCount: spokenCount, newlyAble: newlyAble, markAble: markAble, canAt: canAt,'
+    ' DAYS: DAYS, dayState: dayState, CAN: CAN };'
 )
 
 START = '\n  applyHash(typeof window.location !== "undefined" ? window.location.hash : "");'

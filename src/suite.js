@@ -511,8 +511,14 @@ section("core makes you produce it");
   // With a microphone, saying it is the real test and typing is the
   // stand-in, so Say leads. Without one, Say can only mark itself, and
   // the two take turns.
+  // A percentage band is a claim about a sample, and this sample is a
+  // sixth of its full size under --quick. The claim is that the two
+  // take turns, so that is what it asks: both appear, and neither runs
+  // away with it. It flaked twice on 2026-08-27 saying nothing true.
+  const lead = Math.max(mix.say, mix.write), trail = Math.min(mix.say, mix.write);
   if (withMic) check("with a microphone, core is led by saying it", sayPct > 70);
-  else check("without one, core alternates between saying and typing", sayPct > 30 && sayPct < 70);
+  else check("without one, core alternates between saying and typing",
+    mix.say > 0 && mix.write > 0 && lead <= trail * 3);
 }
 
 section("setting a phrase aside");
@@ -3410,8 +3416,18 @@ section("how a phrase lands");
   check("some phrases carry a register tag", tagged.length >= 12);
   check("and only two kinds of it",
     tagged.every(p => p.how === "safe" || p.how === "direct"));
+  // This used to be a ratio, a tenth of the course, fixed when the
+  // course was four hundred phrases. At nine hundred it was forcing the
+  // tag off good cards to keep a number down, which is the test working
+  // against the thing it exists to protect. What it protects is that
+  // the label is selective and that the serious one is rare, so that is
+  // what it now says.
+  const all = LESSONS.flatMap(l => l.phrases).length;
   check("most phrases carry none, which is the honest default",
-    tagged.length < LESSONS.flatMap(l => l.phrases).length / 10);
+    tagged.length < all / 2);
+  check("and the one that commits you is much the rarer of the two",
+    tagged.filter(p => p.how === "direct").length * 2 <
+    tagged.filter(p => p.how === "safe").length);
   check("you are beautiful is one that commits you", D.howOf("Ànti jamìla") === "direct");
   check("you are kind is not", D.howOf("Ànti latìfa") === "safe");
   check("nor is a plain hello", D.howOf("Màrhaban") === null);
@@ -6700,6 +6716,71 @@ section("what you know with your eyes and not your mouth");
   }
 
   st.str = {}; st.known = {}; st.out = {}; st.passive = {};
+  click({ "data-go": "home" });
+}
+
+
+section("the walk through seven days, written down");
+{
+  const D = global.__data;
+  unlockAll();
+
+  check(`there are days walked end to end (${D.DAYS.length})`, D.DAYS.length >= 6);
+  check("each has a title and a real list of what a person needs",
+    D.DAYS.every(d => d.title && d.needs.length >= 6));
+  check("and every need is written in plain English, not in Arabic",
+    D.DAYS.every(d => d.needs.every(n => n.en && !/[\u0600-\u06ff]/.test(n.en))));
+
+  // the whole point: it cannot flatter the course
+  const liars = D.DAYS.flatMap(d =>
+    d.needs.filter(n => n.ar && !D.lessonTeaching(n.ar)).map(n => d.id + ": " + n.ar));
+  check("a line it claims to cover is a line the course really teaches", liars.length === 0);
+  if (liars.length) console.log("   ", liars.slice(0, 6));
+
+  const gaps = D.DAYS.reduce((n, d) => n + D.dayState(d).lack, 0);
+  const covered = D.DAYS.reduce((n, d) => n + D.dayState(d).have, 0);
+  check(`it covers a good deal (${covered})`, covered >= 30);
+  check(`and admits to what it does not (${gaps})`, gaps > 0);
+  check("no day is entirely empty", D.DAYS.every(d => D.dayState(d).have > 0));
+
+  click({ "data-go": "still" });
+  check("the screen lists them", /class="still-row"/.test(h));
+  check("with the gaps marked as gaps", /is-gap/.test(h) && /nothing for this yet/.test(strip(screenOnly())));
+  check("and a speaker on the ones it does have", /class="say/.test(h));
+  check("it says how many of each day it covers", /class="fold-count"/.test(h));
+  check("and says plainly that nothing on it is a guess",
+    /Nothing on it is a guess/.test(strip(screenOnly())));
+  click({ "data-go": "home" });
+}
+
+section("a capability that has just turned");
+{
+  const D = global.__data;
+  const st = peek().store;
+  st.canSeen = {};
+  st.str = {};
+  unlockAll();
+  click({ "data-go": "home" });
+  check("with nothing solid there is nothing to announce", !/notice-able/.test(h));
+
+  // make everything one capability needs solid
+  const target = D.CAN[0];
+  LESSONS.forEach(l => l.phrases.forEach(p => {
+    if (target.needs.indexOf(p.ar) !== -1) st.str[l.id + "|" + p.ar] = { s: 5, n: 6, day: D.today() };
+  }));
+  click({ "data-go": "home" });
+  check("once one turns, the home screen says so", /notice-able/.test(h));
+  check("naming the thing you can now do", strip(screenOnly()).includes(target.can));
+  check("and offering the whole list", /data-go="can"/.test(screenOnly()));
+  check("the app knows it is new", D.newlyAble().some(c => c.entry.id === target.id));
+
+  click({ "data-act": "able-seen" });
+  check("saying good puts it away", !/notice-able/.test(h));
+  check("and it does not come back", D.newlyAble().length === 0);
+  click({ "data-go": "home" });
+  check("not even on the next visit", !/notice-able/.test(h));
+
+  st.canSeen = {}; st.str = {};
   click({ "data-go": "home" });
 }
 

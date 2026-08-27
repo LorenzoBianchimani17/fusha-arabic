@@ -720,6 +720,15 @@
   .street-en { flex: 1 0 100%; color: var(--ink-3); font-size: var(--t-1); }
   .verdict-msg.warn { color: var(--amber); background: var(--surface-2); }
   .flash-note.is-warn { border-color: var(--amber); }
+
+  .still-row { display: flex; align-items: center; gap: var(--s-4); padding: var(--s-3) 0; }
+  .still-row.is-gap { opacity: .72; }
+  .still-dot {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+    border: 1px dashed var(--line-strong);
+  }
+  .still-none { font-size: var(--t-2); color: var(--ink-3); font-style: italic; }
+  .notice-able { border-color: var(--good); }
   .flash-note.is-unsure { border-style: dashed; }
 
   .unsure-dot { font-size: var(--t-1); color: var(--ink-3); margin-left: 4px; letter-spacing: -.05em; }
@@ -2987,6 +2996,8 @@
         { ar: "Nawwàrti al-màkan", en: "You have lit the place up", f: "Nawwàrta al-màkan", fLabel: "Speaking to a man", how: "safe", note: "Said to someone arriving. Warm, and completely ordinary: it is the standard thing to say when a guest comes in." },
         { ar: "Min ʿuyùni", en: "With pleasure, of course", how: "safe", core: true, note: "Literally <i>from my eyes</i>. It answers a request more warmly than yes does, and it costs nothing to learn." },
         { ar: "Allàh yukhallìki", en: "May God keep you", f: "Allàh yukhallìk", fLabel: "Speaking to a man", how: "safe", note: "The warm thank-you. Used between friends and family more than shùkran, which can sound formal between people who know each other." },
+        { ar: "Lam àqsid dhàlik", en: "I did not mean it that way", how: "safe", note: "The card the course was missing. Every phrase in this lesson can land badly with the wrong person on the wrong day, and until now there was nothing for the moment after. Said quickly and without a speech, it closes the whole thing." },
+        { ar: "Àsif, qùltu khàta'", en: "Sorry, I said it wrong", how: "safe", note: "The other way out, and the more useful one when it really was the Arabic and not the thought. It also happens to be true most of the time." },
         { ar: "Yà rèit", en: "If only", how: "safe", note: "Said to a plan you would like and cannot manage, and to anything you wish were true. Two syllables that sound like a person rather than a textbook." },
         { ar: "Tìkram ʿàinuki", en: "At your service", f: "Tìkram ʿàinuk", fLabel: "Speaking to a man", how: "safe", note: "An answer to a request: <i>your eye is honoured</i>. Formal in fus·ha, everyday in the street." }
       ],
@@ -4483,6 +4494,8 @@
      ============================================================ */
 
   var SCRIPT = {
+    "Lam àqsid dhàlik": "لَمْ أَقْصِدْ ذَلِك",
+    "Àsif, qùltu khàta'": "آسِف، قُلْتُ خَطَأ",
     "Àfʿal": "أَفْعَل",
     "Anàm": "أَنَام",
     "Àftah ash-shùbbak": "أَفْتَحُ الشُّبَّاك",
@@ -5861,6 +5874,8 @@
   // Keyed on the fusha phrase, so everything else in the app - progress,
   // conversations, the phrasebook - keeps working on one set of keys.
   var DIALECT = {
+    "Lam àqsid dhàlik": { lev: ["Mà ʾsìdt hèik", "ما قصدت هيك"] },
+    "Àsif, qùltu khàta'": { lev: ["Àsef, ʾìlt ghàlat", "آسف قلت غلط"] },
     "Àrbaʿa": { lev: ["Àrbʿa", "أربعة"] },
     "Àfʿal": { lev: ["Bàʿmel", "بعمل"] },
     "Anàm": { lev: ["Bnàm", "بنام"] },
@@ -8080,6 +8095,7 @@
      ============================================================ */
 
   var GLOSS = {
+    "àqsid": "I mean, I intend",
     "al-khàmisa": "the fifth (the hour)", "ath-thàmina": "the eighth (the hour)",
     "as-sàdisa": "the sixth (the hour)",
     "bì": "me (after bi)", "lì": "me (after li)", 
@@ -8423,6 +8439,7 @@
   // Every word below appears in a Levantine line somewhere in the course;
   // anything the two varieties share falls through to the fus-ha table.
   var GLOSS_LEV = {
+    "ʾsìdt": "I meant",
     "hàmra": "red (a feminine thing)",
     "àrbʿa": "four",
     "bàʿmel": "I do", "bnàm": "I sleep", "bìftah": "I open", "bsàkker": "I close",
@@ -12526,6 +12543,42 @@
   }
 
   // The sentence the whole screen exists to produce.
+  /* ------------------------------------------------------------
+     JUST NOW - the capability list and the diary both exist, and
+     between them they never once said the thing worth saying: that
+     something you could not do last week you can do today. It is
+     said once, on the home screen, when a capability turns; after
+     that it is a line in a list like everything else.
+     ------------------------------------------------------------ */
+
+  function newlyAble() {
+    var seen = store.canSeen || {};
+    return canAt("yes").filter(function (c) { return !seen[c.entry.id]; });
+  }
+
+  function markAble() {
+    var seen = store.canSeen || {};
+    var change = false;
+    canAt("yes").forEach(function (c) {
+      if (!seen[c.entry.id]) { seen[c.entry.id] = 1; change = true; }
+    });
+    if (!change) return;
+    store.canSeen = seen;
+    save();
+  }
+
+  function ableHTML() {
+    var fresh = newlyAble();
+    if (!fresh.length) return "";
+    var first = fresh[0];
+    return '<div class="notice notice-able"><b>You can ' + esc(first.entry.can) + " now.</b>" +
+      '<p class="want-why">' + (fresh.length > 1
+        ? "That, and " + (fresh.length - 1) + " more that were not there last time you looked. "
+        : "Every phrase it takes is one you have held. ") +
+      '<button class="link-btn" data-act="able-seen">Good</button> or ' +
+      '<button class="link-btn" data-go="can">see the whole list</button>.</p></div>';
+  }
+
   function canSentence() {
     var yes = canAt("yes");
     if (!yes.length) return "Nothing yet that you could carry through on your own.";
@@ -12697,6 +12750,7 @@
     if (v.name === "answers") return "#/answers";
     if (v.name === "words") return "#/words";
     if (v.name === "unsure") return "#/unsure";
+    if (v.name === "still") return "#/still";
     if (v.name === "yours") return "#/yours";
     if (v.name === "kept") return "#/kept";
     if (v.name === "trip") return "#/trip";
@@ -12780,6 +12834,13 @@
     if (parts[0] === "unsure") {
       session = null;
       view = { name: "unsure" };
+      render();
+      return;
+    }
+
+    if (parts[0] === "still") {
+      session = null;
+      view = { name: "still" };
       render();
       return;
     }
@@ -14176,6 +14237,12 @@
       '<span class="nav-note">' + (yoursOpen().length
         ? "A question about you, answered with something true"
         : "Pass a lesson or two to open this") + "</span></button>" +
+      '<button class="nav-item" data-go="still"><span class="nav-label">What you still cannot say</span>' +
+      '<span class="nav-note">' + esc((function () {
+        var g = 0;
+        DAYS.forEach(function (d) { g += dayState(d).lack; });
+        return g + " things a real day needs that the course has no line for";
+      })()) + "</span></button>" +
       '<button class="nav-item" data-go="unsure"><span class="nav-label">Not sure about these</span>' +
       '<span class="nav-note">' + esc(UNSURE.length +
         " lines to put in front of somebody who actually speaks it") + "</span></button>" +
@@ -14503,6 +14570,7 @@
           '<p class="want-why">The backbone is what comes round. ' +
           '<button class="link-btn" data-go="trip">Change that</button></p></div>'
         : "") +
+      ableHTML() +
       (openSession()
         ? '<div class="notice notice-open">You left a session at round ' + openSession().i +
           " of " + openSession().of + " today. " +
@@ -14918,6 +14986,144 @@
             : '<button class="btn btn-wide" data-act="trip-pack" data-id="on">' +
               "Put the rest aside until I am back</button>") + "</div></div>"
         : "") +
+      '<div class="btn-row"><button class="btn btn-ghost btn-wide" data-go="home">Back</button></div>';
+  }
+
+  /* ============================================================
+     WHAT YOU STILL CANNOT SAY - the most productive thing that has
+     ever been done to this course was to walk seven real days with
+     it and report, sentence by sentence, what it could produce and
+     what it could not. Ten gaps came out of that and all ten were
+     closed. This is the same walk, written down, so it does not
+     have to be somebody's afternoon every time: each situation
+     lists what a person actually needs, with the line that covers
+     it or nothing at all where nothing covers it.
+
+     Not a wish list. A line named here must be a line the course
+     really teaches, and a test says so, which means this cannot
+     quietly drift into flattery.
+     ============================================================ */
+
+  var DAYS = [
+    { id: "arrive", title: "Getting there and getting in", needs: [
+      { en: "Take me to the airport", ar: "Khudhni il\u00e0 al-mat\u00e0r" },
+      { en: "How much to the hotel?", ar: "Bik\u00e0m il\u00e0 al-f\u00f9nduq?" },
+      { en: "Is it far from here?", ar: "Hal h\u00f9wa ba\u02bf\u00ecd min h\u00f9na?" },
+      { en: "Do you have a room?", ar: "Hal \u02bf\u00ecndakum gh\u00f9rfa?" },
+      { en: "I want to see the room first", ar: "Ur\u00ecd an ar\u00e0 al-gh\u00f9rfa \u00e0wwalan" },
+      { en: "The key does not work", ar: "Al-mift\u00e0h l\u00e0 y\u00e0\u02bfmal" },
+      { en: "There is no hot water", ar: "L\u00e0isa hun\u00e0ka m\u00e0' s\u00e0khin" },
+      { en: "I have a booking, under this name", ar: null },
+      { en: "A room for two nights", ar: null },
+      { en: "How much a night?", ar: null },
+      { en: "Can I leave my bag here until this evening?", ar: null }
+    ] },
+    { id: "eat", title: "A whole meal", needs: [
+      { en: "A table for two, please", ar: "T\u00e0wila li shakhs\u00e0in, min f\u00e0dlik" },
+      { en: "The menu, please", ar: "Al-q\u00e0'ima, min f\u00e0dlik" },
+      { en: "What do you recommend?", ar: "M\u00e0dha tansah\u00ecn?" },
+      { en: "Without onion, please", ar: "Bid\u00f9n b\u00e0sal, min f\u00e0dlik" },
+      { en: "Is this spicy?", ar: "Hal h\u00e0dha h\u00e0rr?" },
+      { en: "I did not order this", ar: "Lam \u00e0tlub h\u00e0dha" },
+      { en: "There is a mistake in the bill", ar: "Hun\u00e0ka kh\u00e0ta' fi al-his\u00e0b" },
+      { en: "The same again for him", ar: null },
+      { en: "Is service included?", ar: null },
+      { en: "We are still waiting", ar: null }
+    ] },
+    { id: "ill", title: "Falling ill away from home", needs: [
+      { en: "I am allergic to nuts", ar: "\u02bf\u00ccndi hasas\u00ecyya min al-mukassar\u00e0t" },
+      { en: "Do you have something for a headache?", ar: "Hal \u02bf\u00ecndakum daw\u00e0' li as-sud\u00e0\u02bf?" },
+      { en: "I have diarrhoea", ar: "\u02bf\u00ccndi ish\u00e0l" },
+      { en: "Do I need a prescription?", ar: "Hal aht\u00e0j w\u00e0sfa tibb\u00ecyya?" },
+      { en: "Where is the nearest hospital?", ar: "\u00c0ina \u00e0qrab must\u00e0shfa?" },
+      { en: "Call a doctor, please", ar: "\u00ccttasil bi tab\u00ecb, min f\u00e0dlik" },
+      { en: "I fell and hurt myself", ar: null },
+      { en: "It is bleeding", ar: null },
+      { en: "Call an ambulance", ar: null },
+      { en: "I take medicine for this every day", ar: null }
+    ] },
+    { id: "wrong", title: "Something going wrong", needs: [
+      { en: "I am lost", ar: "\u00c0na t\u00e0'ih" },
+      { en: "This is the address", ar: "H\u00e0dha al-\u02bfunw\u00e0n" },
+      { en: "There is no signal", ar: "L\u00e0isa hun\u00e0ka irs\u00e0l" },
+      { en: "Someone stole my wallet", ar: "S\u00e0raqu mahf\u00e0dhati" },
+      { en: "Leave me alone", ar: "\u00d9trukni, min f\u00e0dlik" },
+      { en: "I will call the police", ar: "Sa'\u00e0ttasil bish-sh\u00f9rta" },
+      { en: "Can I use your phone?", ar: null },
+      { en: "Stay with me until my friend comes", ar: null },
+      { en: "I got off at the wrong stop", ar: null }
+    ] },
+    { id: "her", title: "Somebody you like", needs: [
+      { en: "What are you doing tonight?", ar: "M\u00e0dha t\u00e0f\u02bfal al-l\u00e0ila?" },
+      { en: "Do you fancy a drink?", ar: "Hal tur\u00ecd mashr\u00f9b?" },
+      { en: "Let us meet in front of the cinema", ar: "N\u00e0ltaqi am\u00e0m as-s\u00ecnama" },
+      { en: "I am here for two weeks", ar: "\u00c0na h\u00f9na li usbu\u02bf\u00e0in" },
+      { en: "I want to see you before I go", ar: "Ur\u00ecd an ar\u00e0ki q\u00e0bla s\u00e0fari" },
+      { en: "I will miss you", ar: "Sa'aft\u00e0qiduk" },
+      { en: "You are a good person", ar: "\u00c0nta ins\u00e0n t\u00e0yyib" },
+      { en: "Can I walk you home?", ar: null },
+      { en: "Text me when you get home", ar: null },
+      { en: "I would rather not talk about that", ar: null }
+    ] },
+    { id: "filler", title: "Filling a silence", needs: [
+      { en: "Did you see the match?", ar: "Hal sh\u00e0hadta al-mub\u00e0r\u00e0?" },
+      { en: "Who do you support?", ar: "Man tush\u00e0jji\u02bf?" },
+      { en: "The traffic is bad today", ar: "Al-izdih\u00e0m shad\u00ecd al-y\u00e0um" },
+      { en: "How is the family?", ar: "K\u00e8ifa h\u00e0l al-\u02bf\u00e0'ila?" },
+      { en: "Why are you learning Arabic?", ar: "Lim\u00e0dha tata\u02bf\u00e0llam al-\u02bfarab\u00ecyya?" },
+      { en: "It is a beautiful language", ar: "H\u00ecya l\u00f9gha jam\u00ecla" },
+      { en: "The people here are very kind", ar: null },
+      { en: "Have you ever been to Italy?", ar: null },
+      { en: "It is hotter here than at home", ar: null }
+    ] },
+    { id: "guest", title: "Being someone's guest", needs: [
+      { en: "Thank you for the invitation", ar: "Sh\u00f9kran \u02bfal\u00e0 ad-d\u00e0\u02bfwa" },
+      { en: "Should I take my shoes off?", ar: "Hal \u00e0khla\u02bf hidh\u00e0'i?" },
+      { en: "May I use the bathroom?", ar: "Hal y\u00f9mkin an \u00e0stakhdim al-hamm\u00e0m?" },
+      { en: "Can I help with anything?", ar: "Hal \u00e0stat\u00ec\u02bf an us\u00e0\u02bfiduk?" },
+      { en: "Really, I have had plenty, but it was excellent", ar: "H\u00e0qqan shab\u00ec\u02bftu, l\u00e0kin k\u00e0na ladh\u00ecdh" },
+      { en: "I should be going, it is getting late", ar: "Y\u00e0jib an \u00e0dhhab, al-w\u00e0qt mut'\u00e0khkhir" },
+      { en: "Next time you come to us", ar: "Al-m\u00e0rra al-q\u00e0dima \u02bf\u00ecndana" },
+      { en: "Give my regards to your mother", ar: "S\u00e0llim \u02bfal\u00e0 \u00f9mmik" }
+    ] }
+  ];
+
+  function dayState(day) {
+    var have = 0, lack = 0;
+    day.needs.forEach(function (n) {
+      if (n.ar && lessonTeaching(n.ar)) have++;
+      else lack++;
+    });
+    return { have: have, lack: lack, n: day.needs.length };
+  }
+
+  function stillHTML() {
+    var totals = { have: 0, lack: 0 };
+    DAYS.forEach(function (d) {
+      var st = dayState(d);
+      totals.have += st.have;
+      totals.lack += st.lack;
+    });
+    return topbarHTML("What you still cannot say") +
+      '<p class="pb-lead">Seven real days, walked end to end, listing what a person actually needs ' +
+      "rather than what a topic list would contain. " + totals.have + " of them the course covers " +
+      "and names the line; " + totals.lack + " it does not, and says so.</p>" +
+      '<p class="pb-italian">This is the honest version of a roadmap. Nothing on it is a guess: ' +
+      "a line named here has to be a line the course really teaches, and a test holds it to that.</p>" +
+      DAYS.map(function (d) {
+        var st = dayState(d);
+        return '<div class="pb-group"><h3>' + esc(d.title) +
+          '<span class="fold-count">' + st.have + " / " + st.n + "</span></h3>" +
+          d.needs.map(function (n) {
+            var ok = n.ar && lessonTeaching(n.ar);
+            return '<div class="still-row' + (ok ? "" : " is-gap") + '">' +
+              (ok ? sayBtn(n.ar, true) : '<span class="still-dot" aria-hidden="true"></span>') +
+              '<span class="pb-text"><span class="pb-en">' + esc(n.en) + "</span>" +
+              (ok ? '<span class="ar">' + esc(disp(n.ar)) + "</span>"
+                  : '<span class="still-none">nothing for this yet</span>') +
+              "</span></div>";
+          }).join("") + "</div>";
+      }).join("") +
       '<div class="btn-row"><button class="btn btn-ghost btn-wide" data-go="home">Back</button></div>';
   }
 
@@ -19794,6 +20000,7 @@
     if (view.name === "answers") return answersHTML();
     if (view.name === "words") return wordsHTML();
     if (view.name === "unsure") return unsureHTML();
+    if (view.name === "still") return stillHTML();
     if (view.name === "yours") return yoursHTML();
     if (view.name === "kept") return keptHTML();
     if (view.name === "trip") return tripHTML();
@@ -20071,6 +20278,7 @@
       if (dest === "phrasebook") { pbQuery = ""; go({ name: "phrasebook" }); return; }
       if (dest === "dict") { dictQuery = ""; dictKindKey = "all"; go({ name: "dict" }); return; }
       if (dest === "unsure") { go({ name: "unsure" }); return; }
+      if (dest === "still") { go({ name: "still" }); return; }
       if (dest === "yours") { yours = newYours(yours); go({ name: "yours" }); return; }
       if (dest === "kept") { go({ name: "kept" }); return; }
       if (dest === "trip") { go({ name: "trip" }); return; }
@@ -20403,6 +20611,7 @@
     if (act === "save-file") { saveToFile(); return; }
     if (act === "backup" || act === "search" || act === "dict-search" || act === "typing"
       || act === "yours-typing" || act === "my-way-typing") return;
+    if (act === "able-seen") { markAble(); render(); return; }
     if (act === "say-these") {
       var mouths = eyeOnly().map(function (it) { return it.ar; });
       if (!mouths.length) return;
