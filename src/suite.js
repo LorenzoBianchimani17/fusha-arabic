@@ -2334,7 +2334,7 @@ section("joining two ideas, and saying when");
     join.dialogue.concat(when.dialogue).every(d => !!SCRIPT[d.ask] && !!SCRIPT[d.reply]));
 
   // the words the course had no way to say before
-  ["Làkin", "Li'ànna", "Thùmma", "Rùbbama", "Làisa ʿìndi", "Hùnaka mùshkila"]
+  ["Làkin", "Li'ànna", "Thùmma", "Rùbbama", "Làisa ʿìndi", "Hunàka mùshkila"]
     .forEach(function (ar) {
       check("it can now say " + ar, join.phrases.some(p => p.ar === ar));
     });
@@ -2369,7 +2369,7 @@ section("when you get stuck");
   check("and every line of it exists in Levantine", kit.phrases.every(p =>
     (D.DIALECT[p.ar] || {}).lev || (D.SAME.lev || {})[p.ar]));
   check("the ones that carry a conversation are core",
-    ["Marra ùkhra, min fàdlik", "Màdha yaʿni?", "Kèifa taqùl hàdha?", "Tàyyib"]
+    ["Màrra ùkhra, min fàdlik", "Màdha yàʿni?", "Kèifa taqùl hàdha?", "Tàyyib"]
       .every(ar => kit.phrases.some(p => p.ar === ar && p.core)));
   check("the core did not grow past its share of the course",
     LESSONS.flatMap(l => l.phrases.filter(p => p.core)).length <=
@@ -2395,7 +2395,7 @@ section("answering back, and the past");
   check("there is a lesson of replies", !!answers && answers.phrases.length >= 12);
   check("and it sits next to the repair kit",
     Math.abs(LESSONS.indexOf(answers) - LESSONS.findIndex(l => l.id === 27)) === 1);
-  ["Nàʿam, ʿìndi", "Là, làisa ʿìndi", "Bi at-ta'kìd", "Àsif, là àstatìʿ", "Làisa al-àn"]
+  ["Nàʿam, ʿìndi", "Là, làisa ʿìndi", "Bi at-ta'kìd", "Àsif, là astatìʿ", "Làisa al-àn"]
     .forEach(ar => check("it can now say " + ar, answers.phrases.some(p => p.ar === ar)));
   check("every reply can be spoken", answers.phrases.every(p => !!SCRIPT[p.ar]));
   check("and exists in Levantine",
@@ -2404,7 +2404,7 @@ section("answering back, and the past");
   // the past tense stopped being first person only
   const past = LESSONS.find(l => l.title === "Talking about the past");
   check("the past has a second person now",
-    past.phrases.some(p => p.ar === "Màdha àkalta?") && past.phrases.some(p => p.ar === "Hal dhahàbta?"));
+    past.phrases.some(p => p.ar === "Màdha akàlta?") && past.phrases.some(p => p.ar === "Hal dhahàbta?"));
   check("and a way to say you liked it",
     past.phrases.some(p => p.ar === "Àʿjabani") && past.phrases.some(p => p.ar === "Hal àʿjabak?"));
   check("and a way to say you did not know", past.phrases.some(p => p.ar === "Lam àʿrif"));
@@ -3302,7 +3302,7 @@ section("the curious questions");
     know.phrases.filter(p => p.f).length >= 5 &&
     know.phrases.filter(p => p.f).every(p => /Speaking to a man/.test(p.fLabel)));
 
-  ["Mumtàz", "Mùmill", "Haqqan?", "Nàuʿan mà", "ʿAlà hàsab", "Dà'iman", "Àhyanan", "Àbadan"]
+  ["Mumtàz", "Mumìll", "Hàqqan?", "Nàuʿan mà", "ʿAlà hàsab", "Dà'iman", "Ahyànan", "Àbadan"]
     .forEach(ar => check("an opinion can be " + ar, think.phrases.some(p => p.ar === ar)));
   check("liking something has both ways round",
     think.phrases.some(p => p.ar === "Yùʿjibuni") && think.phrases.some(p => p.ar === "Lam yùʿjibni"));
@@ -3352,7 +3352,7 @@ section("the rest of the conversation");
   check("all three sit with the others about people",
     [react, life, table].every(l => LESSONS.indexOf(l) > LESSONS.findIndex(x => x.id === 18)));
 
-  ["Tàbʿan", "Hàddithini àkthar", "Wa baʿd?", "Yà salàm!", "Miskìn"]
+  ["Tàbʿan", "Haddithìni àkthar", "Wa baʿd?", "Yà salàm!", "Miskìn"]
     .forEach(ar => check("it can react with " + ar, react.phrases.some(p => p.ar === ar)));
   check("and hand the question back, from where the course already taught it",
     LESSONS.some(l => l.phrases.some(p => p.ar === "Wa ànta?" && p.f === "Wa ànti?" && p.core)));
@@ -3372,12 +3372,12 @@ section("the rest of the conversation");
   check("and ask a name again without shame",
     react.phrases.some(p => p.ar === "Àsif, mà ìsmuki màrra ùkhra?"));
 
-  ["Hal ànti mutazàwwija?", "Lastu mutazàwwij", "Hal ʿìndaki àtfal?", "Aʿìsh wàhdi"]
+  ["Hal ànti mutazàwwija?", "Làstu mutazàwwij", "Hal ʿìndaki àtfal?", "Aʿìsh wàhdi"]
     .forEach(ar => check("it can say " + ar, life.phrases.some(p => p.ar === ar)));
   check("and the question that lands differently there is flagged",
     /proposition/.test(life.phrases.find(p => p.ar === "Hal ànti mutazàwwija?").note || ""));
 
-  ["Màdha tànsahìn?", "Àna nabàti", "Là àshrab al-kùhul", "Ladhìdh!", "Hal nàqsim al-hisàb?"]
+  ["Màdha tansahìn?", "Àna nabàti", "Là àshrab al-kuhùl", "Ladhìdh!", "Hal nàqsim al-hisàb?"]
     .forEach(ar => check("at the table it can say " + ar, table.phrases.some(p => p.ar === ar)));
   check("and warns you that the tea is already sweet",
     /sweet by default/.test(table.phrases.find(p => p.ar === "Bidùn sùkkar, min fàdlik").note || ""));
@@ -5403,7 +5403,7 @@ section("free talk");
     const last = peek().talk.turns[peek().talk.turns.length - 1];
     check("an unanswerable line still leaves the door open", last.who === "them");
     check("the first thing it does is ask for it again",
-      last.ar === "Marra ùkhra, min fàdlik");
+      last.ar === "Màrra ùkhra, min fàdlik");
     check("in words, under the bubble", /class="talk-repair"/.test(h));
     check("and the way out is already open, not folded away",
       /class="guide suggest" open/.test(h));
@@ -5414,7 +5414,7 @@ section("free talk");
     inputH({ target: { getAttribute: () => "talk-typing", value: dead.ar } });
     click({ "data-act": "talk-send" });
     check("a second time it asks what you meant",
-      peek().talk.turns[peek().talk.turns.length - 1].ar === "Màdha yaʿni?");
+      peek().talk.turns[peek().talk.turns.length - 1].ar === "Màdha yàʿni?");
 
     fields.talk = dead.ar;
     inputH({ target: { getAttribute: () => "talk-typing", value: dead.ar } });

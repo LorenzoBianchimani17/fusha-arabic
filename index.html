@@ -2410,8 +2410,8 @@
       title: "When you get stuck",
       intro: "The moves that keep a conversation alive when you have lost the thread. Worth more than any list of nouns.",
       phrases: [
-        { ar: "Marra ùkhra, min fàdlik", en: "Once more, please", core: true, note: "The single most useful thing you can say. Nobody minds saying it twice, and it keeps you in the conversation instead of nodding at something you did not catch." },
-        { ar: "Màdha yaʿni?", en: "What does that mean?", core: true, note: "Point at the word and ask. <b>Yaʿni</b> is the verb <b>to mean</b>, and you will hear it constantly on its own as a filler, the way English uses <b>I mean</b>." },
+        { ar: "Màrra ùkhra, min fàdlik", en: "Once more, please", core: true, note: "The single most useful thing you can say. Nobody minds saying it twice, and it keeps you in the conversation instead of nodding at something you did not catch." },
+        { ar: "Màdha yàʿni?", en: "What does that mean?", core: true, note: "Point at the word and ask. <b>Yaʿni</b> is the verb <b>to mean</b>, and you will hear it constantly on its own as a filler, the way English uses <b>I mean</b>." },
         { ar: "Kèifa taqùl hàdha?", en: "How do you say this?", core: true, note: "Hold the thing up, or point. This is how you get vocabulary out of the person in front of you rather than out of a phone." },
         { ar: "Mà hàdha?", en: "What is this?" },
         { ar: "Là àʿrif", en: "I do not know" },
@@ -2424,10 +2424,10 @@
         { ar: "Inshàallah", en: "God willing", note: "Attached to anything in the future. Depending on the tone it means <b>yes</b>, <b>probably</b> or <b>almost certainly not</b>, and you will hear it twenty times a day." }
       ],
       dialogue: [
-        { ask: "Marra ùkhra, min fàdlik", askEn: "Once more, please", reply: "Tàyyib", en: "All right" },
-        { ask: "Màdha yaʿni?", askEn: "What does that mean?", reply: "Yaʿni shùkran", en: "It means thank you" },
+        { ask: "Màrra ùkhra, min fàdlik", askEn: "Once more, please", reply: "Tàyyib", en: "All right" },
+        { ask: "Màdha yàʿni?", askEn: "What does that mean?", reply: "Yàʿni shùkran", en: "It means thank you" },
         { ask: "Hal fahìmta?", askEn: "Did you understand?", reply: "Nàʿam, fahìmtu", en: "Yes, I have understood" },
-        { ask: "Hal fahìmta?", askEn: "Did you understand?", reply: "Là, marra ùkhra", en: "No, once more" },
+        { ask: "Hal fahìmta?", askEn: "Did you understand?", reply: "Là, màrra ùkhra", en: "No, once more" },
         { ask: "Ilà al-ghad, inshàallah", askEn: "See you tomorrow, God willing", reply: "Tamàm", en: "Perfect" }
       ]
     },
@@ -2445,7 +2445,7 @@
         { ar: "Rùbbama fi màrra ùkhra", en: "Maybe another time", note: "A no that leaves the door open, which is how a no is usually said." },
         { ar: "Ìdha àmkan", en: "If possible" },
         { ar: "Àna mustaʿìdd", en: "I am ready" },
-        { ar: "Àsif, là àstatìʿ", en: "Sorry, I cannot", core: true },
+        { ar: "Àsif, là astatìʿ", en: "Sorry, I cannot", core: true },
         { ar: "Sa'akùn hunàk", en: "I will be there" },
         { ar: "Làisa al-àn", en: "Not now" }
       ],
@@ -2513,7 +2513,7 @@
         { ar: "Ams", en: "Yesterday" },
         { ar: "Al-àn", en: "Now", core: true },
         { ar: "Matà?", en: "When?" },
-        { ar: "Yàum al-àhad", en: "Sunday", note: "<b>Yàum</b> means day. Most day names are ordinal numbers: <b>al-àhad</b> is the first one." },
+        { ar: "Yàum al-àhad", en: "Sunday", note: "<b>Yàum</b> means day. Most day names are built on numbers: <b>al-àhad</b> is one, <b>al-ithnàin</b> two, and so on to Thursday." },
         { ar: "Yàum al-ithnàin", en: "Monday" },
         { ar: "Yàum ath-thulathà'", en: "Tuesday" },
         { ar: "Yàum al-arbiʿà'", en: "Wednesday" },
@@ -2521,10 +2521,10 @@
         { ar: "Yàum al-jùmʿa", en: "Friday" },
         { ar: "Yàum as-sabt", en: "Saturday" },
         { ar: "Kam as-sàʿa?", en: "What time is it?", core: true },
-        { ar: "As-sàʿa khàmsa", en: "It is five o'clock" }
+        { ar: "As-sàʿa al-khàmisa", en: "It is five o'clock", note: "Fus-ha names the hour with an ordinal: not <b>five</b> but <b>the fifth</b>. The street does say the plain number, which is why the Levantine below is <b>as-sàʿa khàmse</b>." }
       ],
       dialogue: [
-        { ask: "Kam as-sàʿa al-àn?", askEn: "What time is it now?", reply: "As-sàʿa khàmsa", en: "It is five o'clock" },
+        { ask: "Kam as-sàʿa al-àn?", askEn: "What time is it now?", reply: "As-sàʿa al-khàmisa", en: "It is five o'clock" },
         { ask: "Matà?", askEn: "When?", reply: "Ghàdan", en: "Tomorrow" },
         { ask: "Ày yàum al-yàum?", askEn: "What day is it today?", reply: "Al-yàum yàum al-jùmʿa", en: "Today is Friday" }
       ]
@@ -2621,24 +2621,24 @@
       intro: "Naming a colour, and making it agree.",
       phrases: [
         { ar: "Al-làun", en: "The colour" },
-        { ar: "Àhmar", en: "Red", f: "Hàmra", fLabel: "With a feminine noun", note: "Colours change with the <b>noun</b>, not with who you are talking to. A masculine noun takes <b>àhmar</b>, a feminine one takes <b>hàmra</b>." },
-        { ar: "Àzraq", en: "Blue", f: "Zàrqa", fLabel: "With a feminine noun" },
-        { ar: "Àkhdar", en: "Green", f: "Khàdra", fLabel: "With a feminine noun" },
-        { ar: "Àsfar", en: "Yellow", f: "Sàfra", fLabel: "With a feminine noun" },
-        { ar: "Àbyad", en: "White", f: "Bàida", fLabel: "With a feminine noun" },
-        { ar: "Àswad", en: "Black", f: "Sàuda", fLabel: "With a feminine noun" },
+        { ar: "Àhmar", en: "Red", f: "Hamrà'", fLabel: "With a feminine noun", note: "Colours change with the <b>noun</b>, not with who you are talking to. A masculine noun takes <b>àhmar</b>, a feminine one takes <b>hamrà'</b>." },
+        { ar: "Àzraq", en: "Blue", f: "Zarqà'", fLabel: "With a feminine noun" },
+        { ar: "Àkhdar", en: "Green", f: "Khadrà'", fLabel: "With a feminine noun" },
+        { ar: "Àsfar", en: "Yellow", f: "Safrà'", fLabel: "With a feminine noun" },
+        { ar: "Àbyad", en: "White", f: "Baidà'", fLabel: "With a feminine noun" },
+        { ar: "Àswad", en: "Black", f: "Saudà'", fLabel: "With a feminine noun" },
         { ar: "Bùnni", en: "Brown", note: "<b>Bùnni</b> comes from <b>bunn</b>, the coffee bean." },
         { ar: "Ramàdi", en: "Grey" },
         { ar: "Mà làunuh?", en: "What colour is it?" },
         { ar: "Al-bàit al-àbyad", en: "The white house" },
-        { ar: "As-samà' zàrqa", en: "The sky is blue", note: "<b>Samà</b>, sky, is feminine, so blue has to be <b>zàrqa</b> here and never <b>àzraq</b>." },
-        { ar: "Sayyàra hàmra", en: "A red car" }
+        { ar: "As-samà' zarqà'", en: "The sky is blue", note: "<b>Samà</b>, sky, is feminine, so blue has to be <b>zàrqa</b> here and never <b>àzraq</b>." },
+        { ar: "Sayyàra hamrà'", en: "A red car" }
       ],
       dialogue: [
         { ask: "Mà làunuh?", askEn: "What colour is it?", reply: "Àzraq", en: "Blue" },
-        { ask: "Mà làun as-samà'?", askEn: "What colour is the sky?", reply: "As-samà' zàrqa", en: "The sky is blue" },
+        { ask: "Mà làun as-samà'?", askEn: "What colour is the sky?", reply: "As-samà' zarqà'", en: "The sky is blue" },
         { ask: "Ày làun tuhìbb?", askEn: "Which colour do you like?", reply: "Uhìbb al-àkhdar", en: "I like green" },
-        { ask: "Hal hìya hàmra?", askEn: "Is it red?", reply: "Là, hìya sàuda", en: "No, it is black" }
+        { ask: "Hal hìya hamrà'?", askEn: "Is it red?", reply: "Là, hìya saudà'", en: "No, it is black" }
       ]
     },
     {
@@ -2763,18 +2763,18 @@
         { ar: "Rùbbama", en: "Maybe" },
         { ar: "Àʿtaqid", en: "I think" },
         { ar: "Làisa ʿìndi", en: "I do not have any", note: "<b>Làisa</b> negates having and being - it works differently from the <b>là</b> you already use before a verb." },
-        { ar: "Hùnaka mùshkila", en: "There is a problem", note: "The word you know as \"there\" (<b>hunàk</b>) means \"there is\" once a noun follows it." },
-        { ar: "Làisa hùnaka mùshkila", en: "There is no problem" },
-        { ar: "Maʿì", en: "With me", note: "<b>Maʿì</b> is for something on you right now - <b>ʿìndi</b> is for something you own or have in general." },
-        { ar: "Làisa maʿì", en: "I have not got it on me" },
-        { ar: "Urìd shày, làkin làisa ʿìndi nùqud", en: "I want tea, but I do not have any money" },
+        { ar: "Hunàka mùshkila", en: "There is a problem", note: "The word you know as \"there\" (<b>hunàk</b>) means \"there is\" once a noun follows it." },
+        { ar: "Làisa hunàka mùshkila", en: "There is no problem" },
+        { ar: "Màʿi", en: "With me", note: "<b>Màʿi</b> is for something on you right now - <b>ʿìndi</b> is for something you own or have in general." },
+        { ar: "Làisa màʿi", en: "I have not got it on me" },
+        { ar: "Urìd shày, làkin làisa ʿìndi nuqùd", en: "I want tea, but I do not have any money" },
         { ar: "Àna taʿbàn li'ànna al-jàww hàrr", en: "I am tired because it is hot" },
         { ar: "Àkul, thùmma àdhhab", en: "I eat, and then I go" }
       ],
       dialogue: [
-        { ask: "Hal turìd shày?", askEn: "Would you like tea?", reply: "Nàʿam, làkin làisa ʿìndi nùqud", en: "Yes, but I do not have any money" },
-        { ask: "Hal ʿìndak al-mìftah?", askEn: "Do you have the key?", reply: "Làisa maʿì", en: "I have not got it on me" },
-        { ask: "Mà al-mùshkila?", askEn: "What is the problem?", reply: "Làisa hùnaka mùshkila", en: "There is not a problem" },
+        { ask: "Hal turìd shày?", askEn: "Would you like tea?", reply: "Nàʿam, làkin làisa ʿìndi nuqùd", en: "Yes, but I do not have any money" },
+        { ask: "Hal ʿìndak al-miftàh?", askEn: "Do you have the key?", reply: "Làisa màʿi", en: "I have not got it on me" },
+        { ask: "Mà al-mùshkila?", askEn: "What is the problem?", reply: "Làisa hunàka mùshkila", en: "There is not a problem" },
         { ask: "Hal tàdhhab al-àn?", askEn: "Are you going now?", reply: "Àkul, thùmma àdhhab", en: "I eat, and then I go" }
       ]
     },
@@ -2804,7 +2804,7 @@
       ],
       dialogue: [
         { ask: "Jawàz sàfarik, min fàdlik", askEn: "Your passport, please", reply: "Tafàddal", en: "Here you are" },
-        { ask: "Matà al-qitàr?", askEn: "When is the train?", reply: "As-sàʿa khàmsa", en: "At five o'clock" },
+        { ask: "Matà al-qitàr?", askEn: "When is the train?", reply: "As-sàʿa al-khàmisa", en: "At five o'clock" },
         { ask: "Hal ʿìndakum ghùrfa?", askEn: "Do you have a room?", reply: "Nàʿam, ʿìndana ghùrfa", en: "Yes, we have a room" },
         { ask: "Kam yàum?", askEn: "How many days?", reply: "Thalàtha ayyàm", en: "Three days" },
         { ask: "Ilà àina?", askEn: "Where to?", reply: "Ilà al-matàr, min fàdlik", en: "To the airport, please" },
@@ -2877,21 +2877,21 @@
         { ar: "Yùʿjibuni", en: "I like it", note: "Literally <i>it pleases me</i>. Arabic says liking this way round more often than with <b>ùhib</b>." },
         { ar: "Lam yùʿjibni", en: "I did not like it" },
         { ar: "Mumtàz", en: "Excellent", core: true },
-        { ar: "Mumtìʿ", en: "Enjoyable, fun" },
-        { ar: "Mùmill", en: "Boring" },
+        { ar: "Mùmtiʿ", en: "Enjoyable, fun" },
+        { ar: "Mumìll", en: "Boring" },
         { ar: "Sàʿb", en: "Difficult" },
         { ar: "Sàhl", en: "Easy" },
         { ar: "Nàuʿan mà", en: "Sort of, so-so" },
         { ar: "ʿAlà hàsab", en: "It depends" },
-        { ar: "Haqqan?", en: "Really?", core: true, note: "The one-word way of staying in a conversation while the other person keeps talking." },
+        { ar: "Hàqqan?", en: "Really?", core: true, note: "The one-word way of staying in a conversation while the other person keeps talking." },
         { ar: "Dà'iman", en: "Always" },
-        { ar: "Àhyanan", en: "Sometimes" },
+        { ar: "Ahyànan", en: "Sometimes" },
         { ar: "Àbadan", en: "Never" }
       ],
       dialogue: [
         { ask: "Mà rà'yuki?", askEn: "What do you think?", reply: "Mumtàz", en: "Excellent" },
-        { ask: "Al-fìlm mumtìʿ", askEn: "The film is fun", reply: "Àna muwàfiq", en: "I agree" },
-        { ask: "Hal ta'tìn hùna dà'iman?", askEn: "Do you always come here?", reply: "Àhyanan", en: "Sometimes" },
+        { ask: "Al-fìlm mùmtiʿ", askEn: "The film is fun", reply: "Àna muwàfiq", en: "I agree" },
+        { ask: "Hal ta'tìn hùna dà'iman?", askEn: "Do you always come here?", reply: "Ahyànan", en: "Sometimes" },
         { ask: "Kèifa kàna?", askEn: "How was it?", reply: "Lam yùʿjibni", en: "I did not like it" }
       ]
     },
@@ -2909,13 +2909,13 @@
         { ar: "Àina nàltaqi?", en: "Where shall we meet?", core: true },
         { ar: "Nàltaqi hunàk", en: "Let us meet there" },
         { ar: "Urìd an aràki màrra ùkhra", en: "I would like to see you again", f: "Urìd an aràk màrra ùkhra", fLabel: "Speaking to a man", note: "Direct, and none the worse for it. Said at the end of an evening that went well, it is understood everywhere.", how: "direct" },
-        { ar: "Kàna màsa'an jamìlan", en: "It was a lovely evening" }
+        { ar: "Kàna masà'an jamìlan", en: "It was a lovely evening" }
       ],
       dialogue: [
         { ask: "Hal ànti hùrra ghàdan?", askEn: "Are you free tomorrow?", reply: "Nàʿam, àna hùrra", en: "Yes, I am free" },
         { ask: "Àina nàltaqi?", askEn: "Where shall we meet?", reply: "Nàltaqi hunàk", en: "Let us meet there" },
         { ask: "Sa'àttasil biki", askEn: "I will call you", reply: "Hàdha ràqmi", en: "This is my number" },
-        { ask: "Kàna màsa'an jamìlan", askEn: "It was a lovely evening", reply: "Urìd an aràk màrra ùkhra", en: "I would like to see you again" }
+        { ask: "Kàna masà'an jamìlan", askEn: "It was a lovely evening", reply: "Urìd an aràk màrra ùkhra", en: "I would like to see you again" }
       ]
     },
     {
@@ -2925,7 +2925,7 @@
       phrases: [
         { ar: "Tàbʿan", en: "Of course", core: true },
         { ar: "Sahìh", en: "True, right" },
-        { ar: "Hàddithini àkthar", en: "Tell me more", f: "Hàddithni àkthar", fLabel: "Speaking to a man", core: true, how: "safe" },
+        { ar: "Haddithìni àkthar", en: "Tell me more", f: "Haddìthni àkthar", fLabel: "Speaking to a man", core: true, how: "safe" },
         { ar: "Wa baʿd?", en: "And then?", note: "Two syllables that buy you another minute of listening, which is what you want at this stage." },
         { ar: "Yà salàm!", en: "How lovely!" },
         { ar: "Mà shà' Allàh", en: "Said on hearing something good", note: "Said when something good is reported: a new job, a child, a fine house. Leaving it out where it is expected is more noticeable than getting it slightly wrong." },
@@ -2949,7 +2949,7 @@
       phrases: [
         { ar: "Hal ànti mutazàwwija?", en: "Are you married?", f: "Hal ànta mutazàwwij?", fLabel: "Speaking to a man", note: "Normal small talk in most of the Arab world, and asked far sooner than it would be in Italy. Asked of a woman you have just met it can still read as a proposition rather than a question, so it is the safer one to answer than to ask.", how: "direct" },
         { ar: "Àna mutazàwwij", en: "I am married", f: "Àna mutazàwwija", fLabel: "Said by a woman" },
-        { ar: "Lastu mutazàwwij", en: "I am not married", f: "Lastu mutazàwwija", fLabel: "Said by a woman", core: true },
+        { ar: "Làstu mutazàwwij", en: "I am not married", f: "Làstu mutazàwwija", fLabel: "Said by a woman", core: true },
         { ar: "Hal ʿìndaki àtfal?", en: "Do you have children?", f: "Hal ʿìndak àtfal?", fLabel: "Speaking to a man" },
         { ar: "ʿÌndi wàlad wa bint", en: "I have a boy and a girl" },
         { ar: "Làisa ʿìndi àtfal", en: "I have no children" },
@@ -2961,7 +2961,7 @@
         { ar: "Àna hùna li as-siyàha", en: "I am here as a tourist" }
       ],
       dialogue: [
-        { ask: "Hal ànti mutazàwwija?", askEn: "Are you married?", reply: "Lastu mutazàwwija", en: "I am not married" },
+        { ask: "Hal ànti mutazàwwija?", askEn: "Are you married?", reply: "Làstu mutazàwwija", en: "I am not married" },
         { ask: "Hal ʿìndaki àtfal?", askEn: "Do you have children?", reply: "Làisa ʿìndi àtfal", en: "I have no children" },
         { ask: "Hal ànti hùna wàhdaki?", askEn: "Are you here on your own?", reply: "Aʿìsh màʿa ùsrati", en: "I live with my family" },
         { ask: "Màdha tàfʿal hùna?", askEn: "What are you doing here?", reply: "Àna hùna li al-ʿàmal", en: "I am here for work" }
@@ -2972,24 +2972,24 @@
       title: "At the table",
       intro: "Ordering for two, saying what you do not eat, and settling the bill without a scene.",
       phrases: [
-        { ar: "Màdha tànsahìn?", en: "What do you recommend?", f: "Màdha tànsah?", fLabel: "Speaking to a man", core: true },
+        { ar: "Màdha tansahìn?", en: "What do you recommend?", f: "Màdha tànsah?", fLabel: "Speaking to a man", core: true },
         { ar: "Àna nabàti", en: "I am vegetarian", f: "Àna nabatìyya", fLabel: "Said by a woman", core: true },
         { ar: "Là àkul làhm", en: "I do not eat meat" },
-        { ar: "Là àshrab al-kùhul", en: "I do not drink alcohol", note: "Worth having ready. In much of the region it is the ordinary answer and nobody blinks; offering a reason is not expected." },
+        { ar: "Là àshrab al-kuhùl", en: "I do not drink alcohol", note: "Worth having ready. In much of the region it is the ordinary answer and nobody blinks; offering a reason is not expected." },
         { ar: "Hal fìhi làhm khinzìr?", en: "Does it have pork in it?" },
         { ar: "Bidùn sùkkar, min fàdlik", en: "Without sugar, please", note: "Tea and coffee arrive sweet by default in most of the region. If you want it plain, you have to say so before it is poured." },
         { ar: "Ladhìdh!", en: "Delicious!", core: true },
         { ar: "Shabìʿtu, shùkran", en: "I am full, thank you" },
         { ar: "Àkthar min al-làzim", en: "That is more than enough" },
-        { ar: "Àna àdʿuki", en: "It is on me", f: "Àna àdʿuk", fLabel: "Speaking to a man", note: "Expect this to be contested. Insisting once is polite; insisting three times is the custom.", how: "direct" },
+        { ar: "Àna adʿùki", en: "It is on me", f: "Àna adʿùk", fLabel: "Speaking to a man", note: "Expect this to be contested. Insisting once is polite; insisting three times is the custom.", how: "direct" },
         { ar: "Hal nàqsim al-hisàb?", en: "Shall we split the bill?" },
         { ar: "Al-hisàb ʿalàyya", en: "The bill is on me" }
       ],
       dialogue: [
-        { ask: "Màdha tànsahìn?", askEn: "What do you recommend?", reply: "As-sàmak ladhìdh hùna", en: "The fish is good here" },
+        { ask: "Màdha tansahìn?", askEn: "What do you recommend?", reply: "As-sàmak ladhìdh hùna", en: "The fish is good here" },
         { ask: "Hal fìhi làhm khinzìr?", askEn: "Does it have pork in it?", reply: "Là, àbadan", en: "No, none at all" },
         { ask: "Hal nàqsim al-hisàb?", askEn: "Shall we split the bill?", reply: "Al-hisàb ʿalàyya", en: "The bill is on me" },
-        { ask: "Hal turìdìn àkthar?", askEn: "Would you like more?", reply: "Shabìʿtu, shùkran", en: "I am full, thank you" }
+        { ask: "Hal turidìn àkthar?", askEn: "Would you like more?", reply: "Shabìʿtu, shùkran", en: "I am full, thank you" }
       ]
     },
     {
@@ -3002,12 +3002,12 @@
         { ar: "Dàmuki khafìf", en: "You are good company", f: "Dàmuk khafìf", fLabel: "Speaking to a man", how: "safe", note: "Literally <i>your blood is light</i>. It means funny, easy to be around, and it is high praise. The opposite, heavy blood, is said behind people's backs." },
         { ar: "Allàh yuʿtìki al-ʿàfiya", en: "May God give you strength", f: "Allàh yuʿtìk al-ʿàfiya", fLabel: "Speaking to a man", how: "safe", core: true, note: "Said to anybody working: the man behind the counter, someone carrying something, a colleague at the end of a shift. Saying it marks you out as someone who was raised properly." },
         { ar: "Tìslam yadàki", en: "Bless your hands", f: "Tìslam yadàk", fLabel: "Speaking to a man", how: "safe", note: "For food someone cooked, or anything made by hand. Not optional after a meal at somebody's house." },
-        { ar: "Sàhha", en: "Enjoy it, to your health", how: "safe", note: "Said when someone is eating or drinking, and after a shower or a haircut. In the street it is <b>sàhtein</b>, two healths." },
-        { ar: "Nàwwarti al-màkan", en: "You have lit the place up", f: "Nàwwart al-màkan", fLabel: "Speaking to a man", how: "safe", note: "Said to someone arriving. Warm, and completely ordinary: it is the standard thing to say when a guest comes in." },
+        { ar: "Sàhha", en: "Enjoy it, to your health", how: "safe", note: "Said when someone is eating or drinking, and after a shower or a haircut. In the street it is <b>sahtèin</b>, two healths." },
+        { ar: "Nawwàrti al-màkan", en: "You have lit the place up", f: "Nawwàrta al-màkan", fLabel: "Speaking to a man", how: "safe", note: "Said to someone arriving. Warm, and completely ordinary: it is the standard thing to say when a guest comes in." },
         { ar: "Min ʿuyùni", en: "With pleasure, of course", how: "safe", core: true, note: "Literally <i>from my eyes</i>. It answers a request more warmly than yes does, and it costs nothing to learn." },
         { ar: "Allàh yukhallìki", en: "May God keep you", f: "Allàh yukhallìk", fLabel: "Speaking to a man", how: "safe", note: "The warm thank-you. Used between friends and family more than shùkran, which can sound formal between people who know each other." },
         { ar: "Yà rèit", en: "If only", how: "safe", note: "Said to a plan you would like and cannot manage, and to anything you wish were true. Two syllables that sound like a person rather than a textbook." },
-        { ar: "Tikràm ʿàinuki", en: "At your service", f: "Tikràm ʿàinuk", fLabel: "Speaking to a man", how: "safe", note: "An answer to a request: <i>your eye is honoured</i>. Formal in fus·ha, everyday in the street." }
+        { ar: "Tìkram ʿàinuki", en: "At your service", f: "Tìkram ʿàinuk", fLabel: "Speaking to a man", how: "safe", note: "An answer to a request: <i>your eye is honoured</i>. Formal in fus·ha, everyday in the street." }
       ],
       dialogue: [
         { ask: "Hal tuhìbb hàdha?", askEn: "Do you like this?", reply: "Uhìbb hàdha fìki", en: "I like this about you" },
@@ -3021,20 +3021,20 @@
       title: "Answering a blessing",
       intro: "Half the warm things people say to you have one right answer. Not having it is more awkward than not saying anything.",
       phrases: [
-        { ar: "Allàh yuʿàfìk", en: "Reply to may God give you strength", f: "Allàh yuʿafìki", fLabel: "Speaking to a woman", how: "safe", core: true, note: "The answer to <b>yaʿtìk al-ʿàfye</b>. Learn the two together or the first one is a trap you have set for yourself." },
-        { ar: "Allàh yusàllimuk", en: "Reply to bless your hands", f: "Allàh yusallìmuki", fLabel: "Speaking to a woman", how: "safe", core: true, note: "Answers <b>tìslam ìdeik</b>, and also answers anyone who wishes you well." },
-        { ar: "ʿAlà qàlbik", en: "Reply to enjoy your meal", f: "ʿAlà qàlbiki", fLabel: "Speaking to a woman", how: "safe", note: "Literally <i>to your heart</i>. The answer to <b>sàhtein</b>, and it sounds better than thank you." },
+        { ar: "Allàh yuʿafìk", en: "Reply to may God give you strength", f: "Allàh yuʿafìki", fLabel: "Speaking to a woman", how: "safe", core: true, note: "The answer to <b>yaʿtìk al-ʿàfye</b>. Learn the two together or the first one is a trap you have set for yourself." },
+        { ar: "Allàh yusàllimuk", en: "Reply to bless your hands", f: "Allàh yusàllimuki", fLabel: "Speaking to a woman", how: "safe", core: true, note: "Answers <b>tìslam ìdeik</b>, and also answers anyone who wishes you well." },
+        { ar: "ʿAlà qàlbik", en: "Reply to enjoy your meal", f: "ʿAlà qàlbiki", fLabel: "Speaking to a woman", how: "safe", note: "Literally <i>to your heart</i>. The answer to <b>sahtèin</b>, and it sounds better than thank you." },
         { ar: "Mabrùk", en: "Congratulations", how: "safe", core: true, note: "For anything at all: a new job, a car, a haircut, a phone. Saying it for small things is normal, and not saying it is noticed." },
         { ar: "Allàh yubàrik fìk", en: "Reply to congratulations", f: "Allàh yubàrik fìki", fLabel: "Speaking to a woman", how: "safe", core: true },
         { ar: "Àhlan bìk", en: "Reply to welcome", f: "Àhlan bìki", fLabel: "Speaking to a woman", how: "safe" },
         { ar: "Hàdha min dhàuqik", en: "That is your good taste", f: "Hàdha min dhàuqiki", fLabel: "Speaking to a woman", how: "safe", note: "Said back to a compliment, and to <b>nàwwart</b>. It hands the nice thing back to the person who said it." },
         { ar: "Tìslam", en: "Bless you, thanks", how: "safe", core: true, note: "The short warm thank-you. It is also the right answer when somebody says your Arabic is good." },
         { ar: "Shwày shwày", en: "A little, bit by bit", how: "safe", note: "What you say when they praise your Arabic. Agreeing that you speak well ends the conversation; this keeps it going." },
-        { ar: "Àna àtaʿallam", en: "I am learning", how: "safe" },
-        { ar: "Là, ànta kàrim", en: "No, you are being kind", f: "Là, ànti karìma", fLabel: "Speaking to a woman", how: "safe", note: "Turning a compliment away politely rather than accepting it flat. Expected, and it costs nothing." }
+        { ar: "Àna ataʿàllam", en: "I am learning", how: "safe" },
+        { ar: "Là, ànta karìm", en: "No, you are being kind", f: "Là, ànti karìma", fLabel: "Speaking to a woman", how: "safe", note: "Turning a compliment away politely rather than accepting it flat. Expected, and it costs nothing." }
       ],
       dialogue: [
-        { ask: "Allàh yuʿtìk al-ʿàfiya", askEn: "May God give you strength", reply: "Allàh yuʿàfìk", en: "Reply to may God give you strength" },
+        { ask: "Allàh yuʿtìk al-ʿàfiya", askEn: "May God give you strength", reply: "Allàh yuʿafìk", en: "Reply to may God give you strength" },
         { ask: "Tìslam yadàk", askEn: "Bless your hands", reply: "Allàh yusàllimuk", en: "Reply to bless your hands" },
         { ask: "Sàhha", askEn: "Enjoy it, to your health", reply: "ʿAlà qàlbik", en: "Reply to enjoy your meal" },
         { ask: "Mabrùk", askEn: "Congratulations", reply: "Allàh yubàrik fìk", en: "Reply to congratulations" },
@@ -3050,12 +3050,12 @@
         { ar: "Yà madàm", en: "Madam, to a woman", how: "safe", note: "For a woman who is clearly not very young. To someone your own age or younger it can land as ageing her; <b>lau samàhti</b> avoids the question." },
         { ar: "Yà ànisa", en: "Miss, to a young woman", how: "direct", note: "Correct, and in some places it now sounds like an approach rather than a form of address. If you are not sure, <b>lau samàhti</b> does the job with nothing attached." },
         { ar: "Yà hàjj", en: "To an older man", f: "Yà hàjja", fLabel: "To an older woman", how: "safe", note: "Warm and respectful for someone clearly older, whether or not they have made the pilgrimage. Used constantly, and it lands well." },
-        { ar: "Yà dùktor", en: "Doctor", how: "safe" },
-        { ar: "Yà mùʿallim", en: "Boss, mate", how: "safe", note: "Between men, to a shopkeeper or a driver. Friendly, slightly street, and never wrong in a market." },
+        { ar: "Yà duktòr", en: "Doctor", how: "safe" },
+        { ar: "Yà muʿàllim", en: "Boss, mate", how: "safe", note: "Between men, to a shopkeeper or a driver. Friendly, slightly street, and never wrong in a market." },
         { ar: "Allàh karìm", en: "God is generous, we shall see", how: "safe", core: true, note: "The great deflection. It is not a yes and not a no, and everybody understands exactly which of the two you meant." },
-        { ar: "Sanàra mà yàhduth", en: "We shall see what happens", how: "safe" },
+        { ar: "Sànara mà yàhduth", en: "We shall see what happens", how: "safe" },
         { ar: "Ghàdan natahàddath", en: "We will talk tomorrow", how: "safe", note: "A way of ending a conversation without deciding anything, and without offence." },
-        { ar: "Là ùrid an ùzʿijak", en: "I do not want to trouble you", f: "Là ùrid an ùzʿijaki", fLabel: "Speaking to a woman", how: "safe" },
+        { ar: "Là urìd an ùzʿijak", en: "I do not want to trouble you", f: "Là urìd an ùzʿijaki", fLabel: "Speaking to a woman", how: "safe" },
         { ar: "Shùkran, hàdha kàfi", en: "Thank you, that is enough", how: "safe", note: "For the second and third offer of food or tea. Refusing once is not refusing: the offer comes again, and this is how you hold." }
       ],
       dialogue: [
@@ -3080,7 +3080,7 @@
         { ar: "Hùwa sadìqi", en: "He is my friend", note: "<b>Hàdha sadìqi</b>, from lesson 3, points at someone and introduces him. <b>Hùwa sadìqi</b> says something about a man already in the conversation." },
         { ar: "Hìya hùna", en: "She is here" },
         { ar: "Nàhnu hùna", en: "We are here", core: true },
-        { ar: "Àina hum?", en: "Where are they?", note: "<b>Hum</b> covers a group of men or a mixed group, and unlike <b>ànta</b> and <b>ànti</b> it does not change for gender." },
+        { ar: "Àina hum?", en: "Where are they?", note: "<b>Hum</b> covers a group of men or a mixed group. Fus-ha has <b>hunna</b> for a group of women, which you will rarely need; the Levantine <b>hìnne</b> does both." },
         { ar: "Hum fi al-bàit", en: "They are at home" },
         { ar: "Àina bàituk?", en: "Where is your house?", f: "Àina bàituki?", fLabel: "Speaking to a woman" },
         { ar: "Hàdha bàituna", en: "This is our house" }
@@ -3104,7 +3104,7 @@
         { ar: "Limàdha ànta taʿbàn?", en: "Why are you tired?", f: "Limàdha ànti taʿbàna?", fLabel: "Speaking to a woman", core: true, note: "Answerable with a sentence the course already gave you whole: <b>Li'ànna al-jàww hàrr</b>, because it is hot." },
         { ar: "Limàdha tuhìbb hàdha?", en: "Why do you like this?", f: "Limàdha tuhibbìn hàdha?", fLabel: "Speaking to a woman" },
         { ar: "Limàdha là turìd shày?", en: "Why do you not want tea?" },
-        { ar: "Limàdha hùnaka mùshkila?", en: "Why is there a problem?" },
+        { ar: "Limàdha hunàka mùshkila?", en: "Why is there a problem?" },
         { ar: "Limàdha hàdha ghàli?", en: "Why is this expensive?" },
         { ar: "Là sàbab", en: "No reason", note: "With a shrug, it does exactly the same work as the English." }
       ],
@@ -3149,8 +3149,8 @@
       intro: "Saying when. The numbers you know, put to the only use they get every day.",
       phrases: [
         { ar: "Fi ày sàʿa?", en: "At what time?", core: true },
-        { ar: "Fi as-sàʿa thamàniya", en: "At eight o'clock", core: true, note: "Swap in any number you already know in place of <b>thamàniya</b> to name any hour." },
-        { ar: "Wa an-nìsf", en: "Half past", note: "Add this straight after any hour, as in <b>as-sàʿa sìtta wa an-nìsf</b>, half past six." },
+        { ar: "Fi as-sàʿa ath-thàmina", en: "At eight o'clock", core: true, note: "Fus-ha names the hour with an ordinal, so eight is <b>ath-thàmina</b>, the eighth. The street uses the plain number instead and everyone understands both." },
+        { ar: "Wa an-nìsf", en: "Half past", note: "Add this straight after any hour, as in <b>as-sàʿa as-sàdisa wa an-nìsf</b>, half past six." },
         { ar: "Wa ar-rùbʿ", en: "Quarter past" },
         { ar: "Fi as-sabàh", en: "In the morning" },
         { ar: "Baʿda adh-dhùhr", en: "In the afternoon" },
@@ -3163,7 +3163,7 @@
         { ar: "Àna mut'àkhkhir", en: "I am late" }
       ],
       dialogue: [
-        { ask: "Fi ày sàʿa?", askEn: "At what time?", reply: "Fi as-sàʿa thamàniya", en: "At eight o'clock" },
+        { ask: "Fi ày sàʿa?", askEn: "At what time?", reply: "Fi as-sàʿa ath-thàmina", en: "At eight o'clock" },
         { ask: "Matà?", askEn: "When?", reply: "Al-làila", en: "Tonight" },
         { ask: "Hal al-àn munàsib?", askEn: "Is now all right?", reply: "Al-àn munàsib", en: "Now is fine" },
         { ask: "Àina kùnta?", askEn: "Where were you?", reply: "Àna mut'àkhkhir", en: "I am late" }
@@ -3209,7 +3209,7 @@
         { ar: "Ghùrfat an-nàum", en: "The bedroom", note: "Literally <b>the room of sleep</b>. Arabic builds this kind of compound constantly: <b>ghùrfa</b> plus what it is for." },
         { ar: "Al-bàb", en: "The door" },
         { ar: "Ash-shùbbak", en: "The window" },
-        { ar: "Al-mìftah", en: "The key" },
+        { ar: "Al-miftàh", en: "The key" },
         { ar: "Kùrsi", en: "A chair" },
         { ar: "Tàwila", en: "A table" },
         { ar: "Sarìr", en: "A bed" },
@@ -3219,10 +3219,10 @@
         { ar: "ʿAlà", en: "On", core: true },
         { ar: "Al-kitàb ʿalà at-tàwila", en: "The book is on the table" },
         { ar: "Àna fi al-bàit", en: "I am at home" },
-        { ar: "Àina al-mìftah?", en: "Where is the key?" }
+        { ar: "Àina al-miftàh?", en: "Where is the key?" }
       ],
       dialogue: [
-        { ask: "Àina al-mìftah?", askEn: "Where is the key?", reply: "ʿAlà at-tàwila", en: "On the table" },
+        { ask: "Àina al-miftàh?", askEn: "Where is the key?", reply: "ʿAlà at-tàwila", en: "On the table" },
         { ask: "Àina ànta?", askEn: "Where are you?", reply: "Àna fi al-bàit", en: "I am at home" },
         { ask: "Àina al-kitàb?", askEn: "Where is the book?", reply: "Fi ghùrfat an-nàum", en: "In the bedroom" },
         { ask: "Hal al-bàb maftùh?", askEn: "Is the door open?", reply: "Là, hùwa mughlàq", en: "No, it is closed" }
@@ -3271,24 +3271,24 @@
         { ar: "Katàbtu", en: "I wrote" },
         { ar: "Qarà'tu", en: "I read (past)", note: "English spells the past and the present the same here. Arabic does not: <b>àqra</b> is I read now, <b>qarà'tu</b> is I read then." },
         { ar: "Ra'àitu", en: "I saw" },
-        { ar: "Fàʿaltu", en: "I did" },
-        { ar: "Màdha àkalta?", en: "What did you eat?", core: true, note: "The past of a question is the same question with the past verb in it. <b>Àkalta</b> is you ate; <b>akàltu</b>, with a u, is I ate." },
+        { ar: "Faʿàltu", en: "I did" },
+        { ar: "Màdha akàlta?", en: "What did you eat?", core: true, note: "The past of a question is the same question with the past verb in it. <b>Àkalta</b> is you ate; <b>akàltu</b>, with a u, is I ate." },
         { ar: "Hal dhahàbta?", en: "Did you go?" },
         { ar: "Àʿjabani", en: "I liked it", core: true, note: "Literally <b>it pleased me</b>. Arabic puts the thing first and you second, which is why the ending is <b>-ni</b>, me." },
         { ar: "Hal àʿjabak?", en: "Did you like it?", core: true },
         { ar: "Lam àʿrif", en: "I did not know", note: "<b>Lam</b> plus the present is how fus-ha says did not. Levantine just puts <b>mà</b> in front of the past, which is easier and what you will hear." },
         { ar: "Kàna hunàk", en: "He was there" },
-        { ar: "Màdha fàʿalta?", en: "What did you do?" },
-        { ar: "Màdha fàʿalta ams?", en: "What did you do yesterday?" },
+        { ar: "Màdha faʿàlta?", en: "What did you do?" },
+        { ar: "Màdha faʿàlta ams?", en: "What did you do yesterday?" },
         { ar: "Àina kùnta?", en: "Where were you?" },
         { ar: "Kàna jamìlan", en: "It was lovely" }
       ],
       dialogue: [
-        { ask: "Màdha fàʿalta ams?", askEn: "What did you do yesterday?", reply: "Dhahàbtu ilà al-bàit", en: "I went home" },
+        { ask: "Màdha faʿàlta ams?", askEn: "What did you do yesterday?", reply: "Dhahàbtu ilà al-bàit", en: "I went home" },
         { ask: "Àina kùnta?", askEn: "Where were you?", reply: "Kùntu fi al-bàit", en: "I was at home" },
         { ask: "Hal akàlta?", askEn: "Did you eat?", reply: "Nàʿam, akàltu", en: "Yes, I ate" },
         { ask: "Kèifa kàna?", askEn: "How was it?", reply: "Kàna jamìlan", en: "It was lovely" },
-        { ask: "Màdha àkalta?", askEn: "What did you eat?", reply: "Akàltu", en: "I ate" },
+        { ask: "Màdha akàlta?", askEn: "What did you eat?", reply: "Akàltu", en: "I ate" },
         { ask: "Hal àʿjabak?", askEn: "Did you like it?", reply: "Àʿjabani", en: "I liked it" },
         { ask: "Hal dhahàbta?", askEn: "Did you go?", reply: "Là, lam àʿrif", en: "No, I did not know" }
       ]
@@ -3307,7 +3307,7 @@
         { ar: "Sa'àkhudh hàdha", en: "I will take this", core: true, note: "The <b>sa-</b> on the front is the future, the mirror of the past <b>-tu</b>: <b>àkhudh</b> I take, <b>sa'àkhudh</b> I will take." },
         { ar: "Urìd hàdha", en: "I want this" },
         { ar: "Là urìd", en: "I do not want it" },
-        { ar: "Nùqud", en: "Money" },
+        { ar: "Nuqùd", en: "Money" },
         { ar: "Sa'ufàkkir", en: "I will think about it", core: true, note: "The most useful phrase in any market. It ends the haggling without ending the friendliness." },
         { ar: "Hàdha jamìl", en: "This is nice" },
         { ar: "Kam hàdha?", en: "How much is this?" }
@@ -3329,19 +3329,19 @@
         { ar: "Mamnùʿ", en: "It is not allowed", note: "Worth recognising on signs before you ever need to say it." },
         { ar: "Hal yùmkin at-taswìr?", en: "May I take photos?" },
         { ar: "Mamnùʿ at-taswìr", en: "No photography" },
-        { ar: "Intàdhir làhza", en: "Wait a moment" },
+        { ar: "Ìntadhir làhza", en: "Wait a moment" },
         { ar: "Làhza min fàdlik", en: "One moment please" },
         { ar: "Hayyà bina", en: "Let us go" },
-        { ar: "Tàʿal", en: "Come" },
-        { ar: "Ijlis", en: "Sit down", f: "Ijlisì" },
+        { ar: "Taʿàl", en: "Come" },
+        { ar: "Ìjlis", en: "Sit down", f: "Ìjlisi" },
         { ar: "Là tàqlaq", en: "Do not worry" },
         { ar: "Hal yùmkin ad-dukhùl?", en: "May I come in?" }
       ],
       dialogue: [
         { ask: "Hal yùmkin?", askEn: "May I?", reply: "Nàʿam, tafàddal", en: "Yes, go ahead" },
         { ask: "Hal yùmkin at-taswìr?", askEn: "May I take photos?", reply: "Là, mamnùʿ", en: "No, it is not allowed" },
-        { ask: "Hayyà bina", askEn: "Let us go", reply: "Intàdhir làhza", en: "Wait a moment" },
-        { ask: "Tàʿal, ijlis", askEn: "Come, sit down", reply: "Shùkran", en: "Thank you" }
+        { ask: "Hayyà bina", askEn: "Let us go", reply: "Ìntadhir làhza", en: "Wait a moment" },
+        { ask: "Taʿàl, ìjlis", askEn: "Come, sit down", reply: "Shùkran", en: "Thank you" }
       ]
     },
     {
@@ -3351,7 +3351,7 @@
       phrases: [
         { ar: "Sayyàra", en: "A car" },
         { ar: "Tàksi", en: "A taxi", core: true },
-        { ar: "Dàrraja", en: "A bicycle" },
+        { ar: "Darràja", en: "A bicycle" },
         { ar: "Al-mìtro", en: "The metro" },
         { ar: "Safìna", en: "A ship" },
         { ar: "Sà'iq", en: "A driver" },
@@ -3360,7 +3360,7 @@
         { ar: "Bikàm ilà al-fùnduq?", en: "How much to the hotel?", note: "Ask before you get in, not after." },
         { ar: "Qif hùna, min fàdlik", en: "Stop here, please" },
         { ar: "Bi as-sayyàra", en: "By car", note: "<b>Bi</b> in front of a thing means <b>by</b> it: <b>bi at-tàksi</b>, by taxi." },
-        { ar: "Màshyan", en: "On foot" },
+        { ar: "Màshiyan", en: "On foot" },
         { ar: "Sarìʿ", en: "Fast" },
         { ar: "Batì'", en: "Slow" },
         { ar: "Kam sàʿa?", en: "How many hours?" }
@@ -3419,7 +3419,7 @@
         { ar: "ʿÌndi àlam fi ʿuyùni min hàtifi", en: "I have a pain in my eyes, from my phone", note: "The same <b>ʿuyùni</b> from <b>min ʿuyùni</b>, with pleasure. Here it is literally my eyes." },
         { ar: "Ìghsil yadàik", en: "Wash your hands", f: "Ìghsili yadàiki", fLabel: "Speaking to a woman", core: true, note: "The same <b>yad</b>, hand, as in <b>Tìslam yadàk</b>, bless your hands. After an order the pair changes its ending: <b>yadàk</b> becomes <b>yadàik</b>." },
         { ar: "Àʿtini yàdak", en: "Give me your hand" },
-        { ar: "Al-mìftah amàm ʿuyùnak", en: "The key is right in front of your eyes", f: "Al-mìftah amàm ʿuyùnik", fLabel: "Speaking to a woman", note: "Said when something is right there and the person still cannot find it. Not really about eyesight." }
+        { ar: "Al-miftàh amàm ʿuyùnak", en: "The key is right in front of your eyes", f: "Al-miftàh amàm ʿuyùnik", fLabel: "Speaking to a woman", note: "Said when something is right there and the person still cannot find it. Not really about eyesight." }
       ],
       dialogue: [
         { ask: "Àina al-àlam?", askEn: "Where is the pain?", reply: "ʿÌndi àlam fi sìnni", en: "I have a pain in my tooth" },
@@ -3468,7 +3468,7 @@
         { ar: "Al-màdrasa", en: "The school" },
         { ar: "Al-mustàshfa", en: "The hospital", core: true, note: "Until now this word only ever appeared trapped inside <b>Àʿmal fi mustàshfa</b>, I work at a hospital. Here it stands on its own." },
         { ar: "Ad-dukkàn", en: "The shop", note: "Not <b>as-sùq</b>: as-sùq is a whole market of stalls, ad-dukkàn is a single shop." },
-        { ar: "Hal hùnaka sùbermarket qarìb min hùna?", en: "Is there a supermarket near here?", core: true, note: "This frame works for anything on this page: swap the noun and keep <b>hal hùnaka ___ qarìb min hùna?</b>" },
+        { ar: "Hal hunàka sùbermarket qarìb min hùna?", en: "Is there a supermarket near here?", core: true, note: "This frame works for anything on this page: swap the noun and keep <b>hal hunàka ___ qarìb min hùna?</b>" },
         { ar: "Al-jàmiʿ", en: "The mosque", note: "<b>Masjid</b> is the word you meet in the Qur'an and in writing; <b>jàmiʿ</b> is what people actually say for the mosque down the street." },
         { ar: "Al-kanìsa", en: "The church" },
         { ar: "Al-màthaf", en: "The museum" },
@@ -3484,7 +3484,7 @@
         { ask: "Ilà àina?", askEn: "Where to?", reply: "Khudhni ilà as-sifàra", en: "Take me to the embassy" },
         { ask: "Hal al-bànk maftùh?", askEn: "Is the bank open?", reply: "Là, hùwa mughlàq", en: "No, it is closed" },
         { ask: "Àina al-mustàshfa?", askEn: "Where is the hospital?", reply: "Ilà al-yasàr", en: "To the left" },
-        { ask: "Hal hùnaka sùbermarket qarìb min hùna?", askEn: "Is there a supermarket near here?", reply: "Nàʿam, hùwa qarìb", en: "Yes, it is near" }
+        { ask: "Hal hunàka sùbermarket qarìb min hùna?", askEn: "Is there a supermarket near here?", reply: "Nàʿam, hùwa qarìb", en: "Yes, it is near" }
       ]
     },
     {
@@ -3493,12 +3493,12 @@
       intro: "Behind, in front, between - and the words for before, after, and the first time.",
       phrases: [
         { ar: "Al-bànk khàlf al-fùnduq", en: "The bank is behind the hotel", core: true, note: "<b>Khàlf</b> attaches straight to what follows, just like <b>fi</b> and <b>ʿalà</b>: no linking word needed." },
-        { ar: "Intàdhirni amàm al-bàb", en: "Wait for me in front of the door", f: "Intàdhirìni amàm al-bàb", fLabel: "Speaking to a woman", core: true },
+        { ar: "Intadhìrni amàm al-bàb", en: "Wait for me in front of the door", f: "Intadhirìni amàm al-bàb", fLabel: "Speaking to a woman", core: true },
         { ar: "Al-màtʿam bijànib al-bànk", en: "The restaurant is next to the bank" },
         { ar: "Al-mahàtta bàina al-bànk wa al-fùnduq", en: "The station is between the bank and the hotel", note: "<b>Bàina</b> needs a <b>wa</b> between the two things it separates, exactly like English <i>and</i>." },
         { ar: "Ghùrfati fàuq al-màtbakh", en: "My room is above the kitchen" },
         { ar: "Al-qìtta tàht as-sarìr", en: "The cat is under the bed" },
-        { ar: "Al-mìftah dàkhil al-haqìba", en: "The key is inside the bag" },
+        { ar: "Al-miftàh dàkhil al-haqìba", en: "The key is inside the bag" },
         { ar: "As-sayyàra khàrij al-fùnduq", en: "The car is outside the hotel" },
         { ar: "Qàbla dhàlik", en: "Before that", core: true, note: "<b>Dhàlik</b>, that, you already have from <b>Àsif ʿalà dhàlik</b>. Put <b>qàbla</b> in front of anything, not just <b>dhàlik</b>." },
         { ar: "Baʿda dhàlik", en: "After that" },
@@ -3511,7 +3511,7 @@
       ],
       dialogue: [
         { ask: "Àina al-bànk?", askEn: "Where is the bank?", reply: "Al-bànk khàlf al-fùnduq", en: "The bank is behind the hotel" },
-        { ask: "Hayyà bina", askEn: "Let us go", reply: "Intàdhirni amàm al-bàb", en: "Wait for me in front of the door" },
+        { ask: "Hayyà bina", askEn: "Let us go", reply: "Intadhìrni amàm al-bàb", en: "Wait for me in front of the door" },
         { ask: "Matà?", askEn: "When?", reply: "Qàbla dhàlik", en: "Before that" },
         { ask: "Hal hàdhihi àwwal màrra?", askEn: "Is this the first time?", reply: "Àwwal màrra", en: "The first time" }
       ]
@@ -3550,16 +3550,16 @@
         { ar: "Àsmaʿ", en: "I hear" },
         { ar: "Uʿtìka hàdha", en: "I give you this" },
         { ar: "Àkhudh", en: "I take", core: true, note: "The plain present sitting behind <b>sa'àkhudh</b>, I will take, from At the market. Drop the <b>sa-</b> and this is what is left." },
-        { ar: "Antàdhir", en: "I wait", core: true, note: "Same root as <b>Intàdhir làhza</b>, wait a moment, from Asking permission. <b>An-</b> turns the command back on yourself: I wait." },
+        { ar: "Antàdhir", en: "I wait", core: true, note: "Same root as <b>Ìntadhir làhza</b>, wait a moment, from Asking permission. <b>An-</b> turns the command back on yourself: I wait." },
         { ar: "Antàdhir at-tàksi", en: "I am waiting for the taxi" },
         { ar: "Àjlis hùna", en: "I sit here", note: "You already know <b>Ijlis</b>, sit down, from Asking permission - that one tells somebody else to sit. This turns it back on yourself." },
         { ar: "Àmshi ilà as-sùq", en: "I am walking to the market" },
-        { ar: "Àbhath ʿan al-mìftah", en: "I am looking for the key" },
+        { ar: "Àbhath ʿan al-miftàh", en: "I am looking for the key" },
         { ar: "Là atadhàkkar", en: "I do not remember" },
         { ar: "Ànsa al-kàlima", en: "I forget the word", note: "The present of <b>Nasìtu al-kàlima</b>, I have forgotten the word, from When you get stuck. <b>Ànsa</b> is now, <b>nasìtu</b> was then." },
         { ar: "Àbda' al-ʿàmal", en: "I start work" },
         { ar: "Àdrus", en: "I study" },
-        { ar: "Astatìʿ", en: "I can", core: true, note: "Up to now this has only appeared trapped inside <b>Àsif, là àstatìʿ</b>, sorry, I cannot. It stands on its own just as well." },
+        { ar: "Astatìʿ", en: "I can", core: true, note: "Up to now this has only appeared trapped inside <b>Àsif, là astatìʿ</b>, sorry, I cannot. It stands on its own just as well." },
         { ar: "Hal tastatìʿ musàʿadati?", en: "Can you help me?" },
         { ar: "Nàʿam, astatìʿ", en: "Yes, I can" }
       ],
@@ -3567,7 +3567,7 @@
         { ask: "Hal tastatìʿ musàʿadati?", askEn: "Can you help me?", reply: "Nàʿam, astatìʿ", en: "Yes, I can" },
         { ask: "Hal tàʿrif?", askEn: "Do you know?", reply: "Là atadhàkkar", en: "I do not remember" },
         { ask: "Àina tàdhhab?", askEn: "Where are you going?", reply: "Àmshi ilà as-sùq", en: "I am walking to the market" },
-        { ask: "Àbhath ʿan al-mìftah", askEn: "I am looking for the key", reply: "Là àʿrif", en: "I do not know" }
+        { ask: "Àbhath ʿan al-miftàh", askEn: "I am looking for the key", reply: "Là àʿrif", en: "I do not know" }
       ]
     },
     {
@@ -3582,16 +3582,16 @@
         { ar: "Kam yastàghriq?", en: "How long does it take?", core: true, note: "The one worth having. <b>Yàstaghriq</b> is <i>it takes up</i>, and the thing it takes up is time." },
         { ar: "Kam daqìqa?", en: "How many minutes?", note: "Built the same way as <b>Kam sàʿa?</b>, how many hours, from the transport lesson. After <b>kam</b> the noun stays singular." },
         { ar: "Khams daqà'iq min hùna", en: "It is five minutes from here", note: "Watch what the number does. On its own five is <b>khàmsa</b>; in front of a plural noun it sheds the ending and becomes <b>khams</b>, and <b>daqìqa</b> goes plural to <b>daqà'iq</b>. This happens with every number from three to ten in front of a feminine noun. In front of a masculine one the number keeps the ending instead: <b>khàmsat ayyàm</b>, five days." },
-        { ar: "ʿÀshr daqà'iq màshyan", en: "Ten minutes on foot", note: "Same rule: <b>ʿàshara</b> ten becomes <b>ʿàshr</b> before the plural. <b>Màshyan</b> is the <i>on foot</i> from the transport lesson, and it is the word that turns a distance into a decision." },
+        { ar: "ʿÀshr daqà'iq màshiyan", en: "Ten minutes on foot", note: "Same rule: <b>ʿàshara</b> ten becomes <b>ʿàshr</b> before the plural. <b>Màshiyan</b> is the <i>on foot</i> from the transport lesson, and it is the word that turns a distance into a decision." },
         { ar: "Baʿìd jìddan", en: "Very far" },
         { ar: "Làisa baʿìdan", en: "Not far", note: "<b>Làisa</b> is the negation you met for having and being, and the word after it takes an <b>-an</b> ending: <b>baʿìd</b> becomes <b>baʿìdan</b>. Learn it whole." },
-        { ar: "Hal astatìʿ an àmshi?", en: "Can I walk there?", note: "You already say <b>là àstatìʿ</b>, I cannot. Here it takes a second verb, and Arabic slips <b>an</b> in between the two: <b>àstatìʿ an àmshi</b>, I am able that I walk." },
+        { ar: "Hal astatìʿ an àmshi?", en: "Can I walk there?", note: "You already say <b>là astatìʿ</b>, I cannot. Here it takes a second verb, and Arabic slips <b>an</b> in between the two: <b>àstatìʿ an àmshi</b>, I am able that I walk." },
         { ar: "Sa'àkhudh tàksi, hùwa baʿìd", en: "I will take a taxi, it is far", note: "The whole lesson in one line: the answer you got, and what you decided to do about it." }
       ],
       dialogue: [
         { ask: "Hal hùwa baʿìd min hùna?", askEn: "Is it far from here?", reply: "Là, hùwa qarìb", en: "No, it is near" },
         { ask: "Kam al-masàfa?", askEn: "How far is it?", reply: "Khams daqà'iq min hùna", en: "It is five minutes from here" },
-        { ask: "Kam yastàghriq?", askEn: "How long does it take?", reply: "ʿÀshr daqà'iq màshyan", en: "Ten minutes on foot" },
+        { ask: "Kam yastàghriq?", askEn: "How long does it take?", reply: "ʿÀshr daqà'iq màshiyan", en: "Ten minutes on foot" },
         { ask: "Hal astatìʿ an àmshi?", askEn: "Can I walk there?", reply: "Baʿìd jìddan", en: "It is very far" }
       ]
     },
@@ -3600,15 +3600,15 @@
       title: "Learning from the person in front of you",
       intro: "The person pouring your coffee knows more Arabic than any book you own. These are the lines that turn them into a teacher, and keep them from switching to English.",
       phrases: [
-        { ar: "Àna àtaʿallam al-ʿarabìyya màʿak", en: "I am learning Arabic with you", f: "Àna àtaʿallam al-ʿarabìyya màʿaki", fLabel: "Speaking to a woman", core: true, note: "You already have <b>Àna àtaʿallam</b>, I am learning. The two words on the end change what it does: it stops being a confession and becomes an invitation. Said early, it is the best way to keep someone from switching to English out of kindness." },
+        { ar: "Àna ataʿàllam al-ʿarabìyya màʿak", en: "I am learning Arabic with you", f: "Àna ataʿàllam al-ʿarabìyya màʿaki", fLabel: "Speaking to a woman", core: true, note: "You already have <b>Àna ataʿàllam</b>, I am learning. The two words on the end change what it does: it stops being a confession and becomes an invitation. Said early, it is the best way to keep someone from switching to English out of kindness." },
         { ar: "Uhàwil an àfham", en: "I am trying to understand", core: true, note: "Better than <b>Là àfham</b>, which closes the door. This one keeps it open: it says carry on, just help me." },
         { ar: "ʿAllìmni hàdha", en: "Teach me this", f: "ʿAllimìni hàdha", fLabel: "Speaking to a woman", core: true, note: "Point at the thing and say it. <b>Kèifa taqùl hàdha?</b> gets you one word; this asks them to stay with you while you get it right. Same root as <b>ustàdh</b>, teacher." },
-        { ar: "Màrra ùkhra, bibùt'", en: "Once more, slowly", note: "Two things you already have, welded together: <b>Marra ùkhra</b> from when you get stuck, and the <b>bibut'</b> of <b>Takàllam bibùt'</b>. Asking for both at once saves you asking twice." },
+        { ar: "Màrra ùkhra, bibùt'", en: "Once more, slowly", note: "Two things you already have, welded together: <b>Màrra ùkhra</b> from when you get stuck, and the <b>bibut'</b> of <b>Takàllam bibùt'</b>. Asking for both at once saves you asking twice." },
         { ar: "Àrini", en: "Show me", note: "One word, and it does an enormous amount of work: show me the gesture, the writing, the way you hold it. To a woman it lengthens to <b>arìni</b>." },
         { ar: "Àrini dhàlik", en: "Show me that one", note: "<b>Dhàlik</b> is <i>that</i>, the far one, against <b>hàdha</b> for <i>this</i>, the near one. In a shop or a kitchen the difference is the whole sentence." },
         { ar: "Khudhni màʿak", en: "Take me with you", f: "Khudhìni màʿaki", fLabel: "Speaking to a woman", note: "You know <b>Khudhni ilà al-matàr</b> for a taxi. This is the human version, and it is how you end up somewhere no guidebook sent you. Said lightly, it is not an imposition." },
         { ar: "Hayyà bina màʿan", en: "Let us go together", note: "<b>Hayyà bina</b> on its own is already <i>let us go</i>. <b>Màʿan</b>, together, is what makes it an offer rather than an instruction." },
-        { ar: "Taʿàla maʿì", en: "Come with me", f: "Taʿàli maʿì", fLabel: "Speaking to a woman", note: "The other direction: you are the one going, and you want company." },
+        { ar: "Taʿàla màʿi", en: "Come with me", f: "Taʿàli màʿi", fLabel: "Speaking to a woman", note: "The other direction: you are the one going, and you want company." },
         { ar: "Sahhìhni", en: "Correct me", f: "Sahhihìni", fLabel: "Speaking to a woman", note: "Most people are far too polite to correct a foreigner. You have to ask, and once you have asked once they will do it all evening." },
         { ar: "Sahhìhni ìdha akhtà'tu", en: "Correct me if I am wrong", note: "The full version, worth having whole. <b>Ìdha</b> is <i>if</i>, and <b>akhtà'tu</b> is <i>I made a mistake</i> - the same <b>-tu</b> past ending as <b>fahìmtu</b> and <b>nasìtu</b>." },
         { ar: "Ùktub hàdha li, min fàdlik", en: "Write this down for me, please", f: "Ùktubi hàdha li, min fàdliki", fLabel: "Speaking to a woman", note: "You have <b>Àktub</b>, I write; this is the order form of it. Hand over a phone or a napkin. Seeing the word written is what makes it stick, and it also settles which of two words you actually heard." },
@@ -3642,7 +3642,7 @@
       dialogue: [
         { ask: "Mà rà'yuk fìhi?", askEn: "What do you think of him?", reply: "Hùwa latìf", en: "He is kind" },
         { ask: "Man hàdha?", askEn: "Who is this?", reply: "Sadìqi karìm", en: "My friend is generous" },
-        { ask: "Ànta insàn tàyyib", askEn: "You are a good person", reply: "Là, ànta kàrim", en: "No, you are being kind" },
+        { ask: "Ànta insàn tàyyib", askEn: "You are a good person", reply: "Là, ànta karìm", en: "No, you are being kind" },
         { ask: "Ànti dhakìya", askEn: "You are intelligent", reply: "Tìslam", en: "Bless you, thanks" }
       ]
     },
@@ -3713,15 +3713,15 @@
         { ar: "As-sìnama", en: "The cinema", note: "Another borrowing, and the same word in every Arab country. Films are usually subtitled rather than dubbed, so an evening here is less of a language problem than you would expect." },
         { ar: "Al-màlha al-làili", en: "The nightclub", note: "Literally <b>the night place of amusement</b>. This is the newspaper word; on the street people say <b>klub</b> or the name of the place. Worth recognising more than saying." },
         { ar: "Màdha tàfʿal al-làila?", en: "What are you doing tonight?", f: "Màdha tafʿalìn al-làila?", fLabel: "Speaking to a woman", core: true, how: "safe", note: "You already have <b>Màdha tàfʿal hùna?</b>, what are you doing here. Swap the place for the time and it stops being suspicious and becomes an opening." },
-        { ar: "Hal turìd mashrùb?", en: "Do you fancy a drink?", f: "Hal turìdìn mashrùb?", fLabel: "Speaking to a woman", core: true, how: "safe", note: "Built exactly like <b>Hal turìd shày?</b>, which you already say. <b>Mashrùb</b> is anything you drink, juice and coffee included, so it commits nobody to anything." },
+        { ar: "Hal turìd mashrùb?", en: "Do you fancy a drink?", f: "Hal turidìn mashrùb?", fLabel: "Speaking to a woman", core: true, how: "safe", note: "Built exactly like <b>Hal turìd shày?</b>, which you already say. <b>Mashrùb</b> is anything you drink, juice and coffee included, so it commits nobody to anything." },
         { ar: "Màdha tuhìbb an tà'kul?", en: "What do you feel like eating?", f: "Màdha tuhibbìn an ta'kulì?", fLabel: "Speaking to a woman", how: "safe", note: "<b>An</b> is the little word that joins the two verbs, and it is the same <b>an</b> as in <b>Hal àstatìʿ an àmshi?</b>" },
         { ar: "Àina yà'kul an-nàs jàyyidan hùna?", en: "Where do people eat well here?", note: "Better than asking for a good restaurant, because it asks where <i>they</i> go rather than where they think you want to go. <b>An-nàs</b>, the people, is the word doing the work." },
-        { ar: "Hal hùnaka màkan shàʿbi qarìb min hùna?", en: "Is there somewhere local near here?", note: "The frame from Places in town with the noun swapped again. <b>Shàʿbi</b> comes from <b>shaʿb</b>, a people, and means <i>of the people</i>: plain, cheap, packed, and not aimed at you. It is a compliment when you say it and a compliment when they answer." },
-        { ar: "Ày màkan tànsah bìhi?", en: "Which place do you recommend?", f: "Ày màkan tànsahìn bìhi?", fLabel: "Speaking to a woman", core: true, how: "safe", note: "You already have the bare <b>Màdha tànsah?</b> Naming the thing and adding <b>bìhi</b>, <i>of it</i>, turns a question about the menu into a question about the evening." },
+        { ar: "Hal hunàka màkan shàʿbi qarìb min hùna?", en: "Is there somewhere local near here?", note: "The frame from Places in town with the noun swapped again. <b>Shàʿbi</b> comes from <b>shaʿb</b>, a people, and means <i>of the people</i>: plain, cheap, packed, and not aimed at you. It is a compliment when you say it and a compliment when they answer." },
+        { ar: "Ày màkan tànsah bìhi?", en: "Which place do you recommend?", f: "Ày màkan tansahìn bìhi?", fLabel: "Speaking to a woman", core: true, how: "safe", note: "You already have the bare <b>Màdha tànsah?</b> Naming the thing and adding <b>bìhi</b>, <i>of it</i>, turns a question about the menu into a question about the evening." },
         { ar: "Urìd an ujàrrib shày' mahàlli", en: "I would like to try something local", note: "Hear the catch at the end or you will order tea. <b>Shày</b> is tea; <b>shày'</b> is <i>a thing</i>. Said in a restaurant it hands the choice back to the person who knows." },
         { ar: "Hal nàdhhab màʿan?", en: "Shall we go together?", how: "direct", note: "<b>Hayyà bina màʿan</b> tells someone the plan; this asks them. The <b>na-</b> on the front is the <i>we</i> you already have in <b>nàshrab</b>." },
-        { ar: "Hal tà'ti maʿì?", en: "Do you want to come?", f: "Hal ta'tìn maʿì?", fLabel: "Speaking to a woman", how: "direct", note: "The lighter of the two invitations: you are going anyway, and there is room. Said in passing it costs the other person nothing to refuse, which is exactly why it gets accepted." },
-        { ar: "Nàltaqi amàm as-sìnama", en: "Let us meet in front of the cinema", note: "Two things you already have welded together: <b>Nàltaqi hunàk</b> from Asking someone out, and the <b>amàm</b> of <b>Intàdhirni amàm al-bàb</b>. Naming the landmark is what stops the evening falling apart over the phone." }
+        { ar: "Hal tà'ti màʿi?", en: "Do you want to come?", f: "Hal ta'tìn màʿi?", fLabel: "Speaking to a woman", how: "direct", note: "The lighter of the two invitations: you are going anyway, and there is room. Said in passing it costs the other person nothing to refuse, which is exactly why it gets accepted." },
+        { ar: "Nàltaqi amàm as-sìnama", en: "Let us meet in front of the cinema", note: "Two things you already have welded together: <b>Nàltaqi hunàk</b> from Asking someone out, and the <b>amàm</b> of <b>Intadhìrni amàm al-bàb</b>. Naming the landmark is what stops the evening falling apart over the phone." }
       ],
       dialogue: [
         { ask: "Màdha tàfʿal al-làila?", askEn: "What are you doing tonight?", reply: "Àna hùrr al-làila", en: "I am free tonight" },
@@ -3795,18 +3795,18 @@
         { ar: "Hal tàʿrif hàdha ash-shàriʿ?", en: "Do you know this street?", f: "Hal tàʿrifìn hàdha ash-shàriʿ?", fLabel: "Speaking to a woman" },
         { ar: "Hàdha al-ʿunwàn khàta'", en: "This is the wrong address", note: "<b>Khàta'</b> is a mistake, and it goes after the thing rather than in front of it: literally <i>this address is a mistake</i>." },
         { ar: "Àrini ʿalà al-khàrita", en: "Show me on the map", note: "The <b>Àrini</b> from Learning from the person in front of you, pointed at a screen." },
-        { ar: "Làisa hùnaka irsàl", en: "There is no signal", note: "Built exactly like <b>Làisa hùnaka mùshkila</b>. In the street it collapses to two words, <b>mà fi irsàl</b>." },
+        { ar: "Làisa hunàka irsàl", en: "There is no signal", note: "Built exactly like <b>Làisa hunàka mùshkila</b>. In the street it collapses to two words, <b>mà fi irsàl</b>." },
         { ar: "Làisa ʿìndi intèrnet", en: "I have no internet" },
         { ar: "Battàriyati fàrigha", en: "My battery is dead", note: "Literally <i>my battery is empty</i>. The street says it finished rather than emptied: <b>battarìti khìlsit</b>." },
         { ar: "Hal yùmkin ash-shàhn hùna?", en: "Can I charge it here?", note: "The same <b>hal yùmkin</b> that asks to come in and to sit down. Add the thing you want to do and it covers most of what you will ever need to ask permission for." },
         { ar: "Urìd sharìhat hàtif", en: "I want a SIM card", note: "In the shop it is not a card at all: a Levantine seller calls it a <b>khatt</b>, a line." },
         { ar: "Sàraqu mahfàdhati", en: "Someone stole my wallet", note: "Literally <i>they stole my wallet</i>. Arabic reaches for a vague <i>they</i> where English reaches for <i>someone</i>, and nobody hears an accusation in it." },
-        { ar: "Ùtrukni, min fàdlik", en: "Leave me alone", how: "direct", note: "The first rung of a ladder the course did not have. Everything you knew until now - <b>Là, shùkran</b>, <b>Shùkran, hàdha kàfi</b>, <b>Là ùrid an ùzʿijak</b> - is built for somebody selling you something. This is for somebody who will not stop, and the <b>min fàdlik</b> is what keeps it a request." },
+        { ar: "Ùtrukni, min fàdlik", en: "Leave me alone", how: "direct", note: "The first rung of a ladder the course did not have. Everything you knew until now - <b>Là, shùkran</b>, <b>Shùkran, hàdha kàfi</b>, <b>Là urìd an ùzʿijak</b> - is built for somebody selling you something. This is for somebody who will not stop, and the <b>min fàdlik</b> is what keeps it a request." },
         { ar: "Là tàtbaʿni", en: "Do not follow me", how: "direct", note: "The second rung. Flat, no softener, and said loudly enough for other people to hear. In the Levant that last part does most of the work." },
         { ar: "Sa'àttasil bish-shùrta", en: "I will call the police", how: "direct", core: true, note: "The last rung. You already know <b>Àina ash-shùrta?</b>, where the police are; this says you intend to involve them. Said once, clearly, and then you walk towards people." }
       ],
       dialogue: [
-        { ask: "Hùnaka mùshkila", askEn: "There is a problem", reply: "Àna tà'ih", en: "I am lost" },
+        { ask: "Hunàka mùshkila", askEn: "There is a problem", reply: "Àna tà'ih", en: "I am lost" },
         { ask: "Ilà àina?", askEn: "Where to?", reply: "Hàdha al-ʿunwàn", en: "This is the address" },
         { ask: "Hal yùmkin ash-shàhn hùna?", askEn: "Can I charge it here?", reply: "Tafàddal", en: "Here you are" },
         { ask: "Là tàtbaʿni", askEn: "Do not follow me", reply: "Àsif", en: "Sorry" }
@@ -3876,11 +3876,11 @@
         { ar: "Hàdha bàrid", en: "This is cold", note: "The same <b>bàrid</b> as <b>Al-jàww bàrid</b>. Arabic uses one word for the weather and the soup, and so does English." },
         { ar: "Ghàyyirhu, min fàdlik", en: "Change it, please" },
         { ar: "Hal hàdha hàrr?", en: "Is this spicy?", note: "The same <b>hàrr</b> as the weather. Hot food and a hot day are one word, and which one is meant is never in doubt." },
-        { ar: "Al-mìftah là yàʿmal", en: "The key does not work", core: true, note: "This is the shape worth having. <b>Hàdha là yàʿmal</b> was in the course with nothing attached to it; put any noun in front of <b>là yàʿmal</b> and you have named the fault. Two more of them are below." },
+        { ar: "Al-miftàh là yàʿmal", en: "The key does not work", core: true, note: "This is the shape worth having. <b>Hàdha là yàʿmal</b> was in the course with nothing attached to it; put any noun in front of <b>là yàʿmal</b> and you have named the fault. Two more of them are below." },
         { ar: "Al-mukàyyif là yàʿmal", en: "The air conditioning does not work" },
         { ar: "Al-waifài là yàʿmal", en: "The wifi does not work" },
-        { ar: "Làisa hùnaka mà' sàkhin", en: "There is no hot water", note: "Built like <b>Làisa hùnaka irsàl</b>. The two together cover most of what a room can be missing." },
-        { ar: "Hùnaka khàta' fi al-hisàb", en: "There is a mistake in the bill", note: "<b>Hùnaka mùshkila</b> says something is wrong somewhere. This says where, which is what gets it looked at." },
+        { ar: "Làisa hunàka mà' sàkhin", en: "There is no hot water", note: "Built like <b>Làisa hunàka irsàl</b>. The two together cover most of what a room can be missing." },
+        { ar: "Hunàka khàta' fi al-hisàb", en: "There is a mistake in the bill", note: "<b>Hunàka mùshkila</b> says something is wrong somewhere. This says where, which is what gets it looked at." },
         { ar: "Urìd an arà al-ghùrfa àwwalan", en: "I want to see the room first" },
         { ar: "Hal al-futùr mashmùl?", en: "Is breakfast included?" },
         { ar: "Urìd wàsl, min fàdlik", en: "I would like a receipt, please" }
@@ -3888,7 +3888,7 @@
       dialogue: [
         { ask: "Màdha turìd?", askEn: "What would you like?", reply: "Al-qà'ima, min fàdlik", en: "The menu, please" },
         { ask: "Tafàddal", askEn: "Here you are", reply: "Lam àtlub hàdha", en: "I did not order this" },
-        { ask: "Hùnaka mùshkila", askEn: "There is a problem", reply: "Al-mìftah là yàʿmal", en: "The key does not work" },
+        { ask: "Hunàka mùshkila", askEn: "There is a problem", reply: "Al-miftàh là yàʿmal", en: "The key does not work" },
         { ask: "Hal ʿìndakum ghùrfa?", askEn: "Do you have a room?", reply: "Urìd an arà al-ghùrfa àwwalan", en: "I want to see the room first" }
       ]
     },
@@ -3902,7 +3902,7 @@
         { ar: "Mà kànat an-natìja?", en: "What was the score?" },
         { ar: "Man tushàjjiʿ?", en: "Who do you support?", f: "Man tushajjiʿìn?", fLabel: "Speaking to a woman" },
         { ar: "Ushàjjiʿ Milàn", en: "I support Milan", core: true, note: "Say the team and you have said where you are from, what you care about and how the next twenty minutes will go. Being Italian, you will be asked." },
-        { ar: "Hùnaka izdihàm", en: "There is traffic", note: "The street word is shorter and everywhere: <b>zàhme</b>, a crush. Built like <b>Hùnaka mùshkila</b>." },
+        { ar: "Hunàka izdihàm", en: "There is traffic", note: "The street word is shorter and everywhere: <b>zàhme</b>, a crush. Built like <b>Hunàka mùshkila</b>." },
         { ar: "Al-izdihàm shadìd al-yàum", en: "The traffic is bad today" },
         { ar: "At-tarìq mughlàq", en: "The road is closed", note: "The same <b>mughlàq</b> that shuts the bank." },
         { ar: "Àna mut'àkhkhir bisàbab al-izdihàm", en: "I am late because of the traffic", note: "<b>Bisàbab</b> is <b>bi</b> plus <b>sàbab</b>, the reason you already have from <b>Mà as-sàbab?</b> Unlike <b>li'ànna</b> it takes a noun rather than a whole sentence, which makes it the easier of the two." },
@@ -3923,14 +3923,14 @@
       title: "Being someone's guest",
       intro: "The course covered the middle of an evening in somebody's house - refusing three times, praising the cook, answering the blessings - and had no way to open it and no way to leave.",
       phrases: [
-        { ar: "Shùkran ʿalà ad-dàʿwa", en: "Thank you for the invitation", core: true, note: "The one sentence a guest must have, and it was not there. <b>Àna àdʿuki</b> in the course means you are paying in a restaurant; <b>ad-dàʿwa</b> is the invitation itself, the thing you were given." },
+        { ar: "Shùkran ʿalà ad-dàʿwa", en: "Thank you for the invitation", core: true, note: "The one sentence a guest must have, and it was not there. <b>Àna adʿùki</b> in the course means you are paying in a restaurant; <b>ad-dàʿwa</b> is the invitation itself, the thing you were given." },
         { ar: "Shùkran ʿalà kull shày'", en: "Thank you for everything", note: "Said at the door, after the food, the tea and the second tea." },
         { ar: "Bàituk jamìl", en: "Your home is beautiful", f: "Bàituki jamìl", fLabel: "Speaking to a woman", note: "<b>Hàdha jamìl</b> points at an object. This names the house, which is the thing they want to hear about." },
         { ar: "Hal àkhlaʿ hidhà'i?", en: "Should I take my shoes off?", core: true, note: "Ask at the door, before you have walked in. Half the homes in the Levant will say do not bother and mean it; the other half will be glad you asked, and you cannot tell which from the doorstep." },
         { ar: "Hal yùmkin an àstakhdim al-hammàm?", en: "May I use the bathroom?", note: "The course had <b>Àina al-hammàm?</b> for a restaurant. In somebody's house, asking bluntly where the toilet is skips the permission, and the permission is the whole point. Same <b>hal yùmkin</b> as coming in and sitting down." },
         { ar: "Hal àstatìʿ an usàʿiduk?", en: "Can I help with anything?", f: "Hal àstatìʿ an usàʿiduki?", fLabel: "Speaking to a woman", note: "You could ask for help - <b>Saʿìdni</b> - and never offer it. Offered once at the table it will be refused; offered once at the kitchen door it will not." },
         { ar: "Ahdàrtu làka shày' saghìr", en: "I brought you something small", f: "Ahdàrtu làki shày' saghìr", fLabel: "Speaking to a woman", note: "Said while handing it over, and it must be small, or the host is put under an obligation. <b>Hàdhihi hadìyya</b> is the label; this is the sentence." },
-        { ar: "Haqqan shabìʿtu, làkin kàna ladhìdh", en: "Really, I have had plenty, but it was excellent", note: "The move the course was missing. It had the refusals and it had the praise and no way to put them in one breath, which is what makes a third refusal land as gratitude instead of rejection." },
+        { ar: "Hàqqan shabìʿtu, làkin kàna ladhìdh", en: "Really, I have had plenty, but it was excellent", note: "The move the course was missing. It had the refusals and it had the praise and no way to put them in one breath, which is what makes a third refusal land as gratitude instead of rejection." },
         { ar: "Àsif ʿalà at-ta'khìr", en: "Sorry I am late", note: "<b>Àna mut'àkhkhir</b> says you are late for something of your own. This apologises for keeping them, which is the one they are waiting to hear." },
         { ar: "Yàjib an àdhhab, al-wàqt mut'àkhkhir", en: "I should be going, it is getting late", core: true, note: "<b>Màʿa as-salàma</b> is said at the door. This is what you say twenty minutes before the door, and in the Levant those twenty minutes are the rule rather than the exception." },
         { ar: "Al-màrra al-qàdima ʿìndana", en: "Next time you come to us", note: "The closing courtesy. Even if there will be no next time, saying it is what ends the evening properly." },
@@ -3939,7 +3939,7 @@
       dialogue: [
         { ask: "Àhlan wa sàhlan", askEn: "Welcome", reply: "Shùkran ʿalà ad-dàʿwa", en: "Thank you for the invitation" },
         { ask: "Tafàddal", askEn: "Come in", reply: "Hal àkhlaʿ hidhà'i?", en: "Should I take my shoes off?" },
-        { ask: "Kùl àkthar", askEn: "Eat more", reply: "Haqqan shabìʿtu, làkin kàna ladhìdh", en: "Really, I have had plenty, but it was excellent" },
+        { ask: "Kùl àkthar", askEn: "Eat more", reply: "Hàqqan shabìʿtu, làkin kàna ladhìdh", en: "Really, I have had plenty, but it was excellent" },
         { ask: "Yàjib an àdhhab, al-wàqt mut'àkhkhir", askEn: "I should be going, it is getting late", reply: "Al-màrra al-qàdima ʿìndana", en: "Next time you come to us" }
       ]
     },
@@ -3988,9 +3988,9 @@
         { ar: "Kà's", en: "A glass", note: "<b>Kùb</b> is the glass you drink water out of. <b>Kà's</b> is the one you raise." },
         { ar: "Dàur àkhar, min fàdlik", en: "Another round, please" },
         { ar: "Nakhbàk!", en: "Cheers!", f: "Nakhbàki!", fLabel: "To a woman", note: "Literally <b>your health</b>. The street raises the glass instead: <b>kàsak</b>, your glass." },
-        { ar: "Àna là àshrab, làkin tafàddal", en: "I do not drink, but go ahead", core: true, note: "The one worth having whole. It refuses and it removes the awkwardness in the same breath, which is what <b>Là àshrab al-kùhul</b> on its own does not do." },
+        { ar: "Àna là àshrab, làkin tafàddal", en: "I do not drink, but go ahead", core: true, note: "The one worth having whole. It refuses and it removes the awkwardness in the same breath, which is what <b>Là àshrab al-kuhùl</b> on its own does not do." },
         { ar: "Là, shùkran, sa'àshrab mà'", en: "No thanks, I will have water", note: "Say what you will have instead and nobody asks twice. Refusing without replacing it is the thing that gets you a second offer." },
-        { ar: "Hal hùnaka bàr qarìb min hùna?", en: "Is there a bar near here?", note: "The frame from Places in town again. Outside the cities the answer may be no, and that is worth knowing before you go looking." }
+        { ar: "Hal hunàka bàr qarìb min hùna?", en: "Is there a bar near here?", note: "The frame from Places in town again. Outside the cities the answer may be no, and that is worth knowing before you go looking." }
       ],
       dialogue: [
         { ask: "Màdha turìd?", askEn: "What would you like?", reply: "Bìra bàrida, min fàdlik", en: "A cold beer, please" },
@@ -4016,14 +4016,14 @@
         { ar: "Kèifa taqùl hàdha bil-ʿarabìyya?", en: "How do you say this in Arabic?", note: "You already have <b>Kèifa taqùl hàdha?</b> Naming the language is what you add when you are holding up your phone with an English word on it." },
         { ar: "Hàdha, là dhàlik", en: "This one, not that one" },
         { ar: "Nàʿam, hàdha hùwa!", en: "Yes, that is the one!", note: "Worth having ready. Once somebody starts guessing, the whole thing turns on your being quick to say when they have got it." },
-        { ar: "Intàdhir, ufàkkir", en: "Wait, I am thinking", note: "Buying yourself three seconds out loud is better than three seconds of silence, which is what makes people switch to English." },
+        { ar: "Ìntadhir, ufàkkir", en: "Wait, I am thinking", note: "Buying yourself three seconds out loud is better than three seconds of silence, which is what makes people switch to English." },
         { ar: "Saʿìdni, nasìtu al-kàlima", en: "Help me, I have forgotten the word", core: true }
       ],
       dialogue: [
         { ask: "Mà hàdha?", askEn: "What is this?", reply: "Là àʿrif al-kàlima", en: "I do not know the word" },
         { ask: "Màdha turìd?", askEn: "What would you like?", reply: "Shày' li ash-shùrb", en: "A thing for drinking" },
         { ask: "Àrini dhàlik", askEn: "Show me that one", reply: "Hàdha, là dhàlik", en: "This one, not that one" },
-        { ask: "Saʿìdni, nasìtu al-kàlima", askEn: "Help me, I have forgotten the word", reply: "Intàdhir làhza", en: "Wait a moment" }
+        { ask: "Saʿìdni, nasìtu al-kàlima", askEn: "Help me, I have forgotten the word", reply: "Ìntadhir làhza", en: "Wait a moment" }
       ]
     },
     {
@@ -4031,7 +4031,7 @@
       title: "Why Arabic",
       intro: "You will be asked this in the first two minutes, every time, by everybody. Having an answer ready is worth more than the answer being clever.",
       phrases: [
-        { ar: "Limàdha tàtaʿallam al-ʿarabìyya?", en: "Why are you learning Arabic?", f: "Limàdha tataʿallamìn al-ʿarabìyya?", fLabel: "Speaking to a woman", note: "The question. Learn it as well as the answers: you will want to ask it back." },
+        { ar: "Limàdha tataʿàllam al-ʿarabìyya?", en: "Why are you learning Arabic?", f: "Limàdha tataʿallamìn al-ʿarabìyya?", fLabel: "Speaking to a woman", note: "The question. Learn it as well as the answers: you will want to ask it back." },
         { ar: "Uhìbb sàut al-ʿarabìyya", en: "I like the sound of Arabic", core: true, note: "The answer that lands best, because it is about their language rather than about you, and because it is almost always true." },
         { ar: "Hìya lùgha jamìla", en: "It is a beautiful language", core: true },
         { ar: "Hìya sàʿba, làkin jamìla", en: "It is hard, but beautiful", note: "Saying it is hard is not a complaint here. It is a compliment, and it is the one thing every Arabic speaker already believes." },
@@ -4039,15 +4039,15 @@
         { ar: "Àna hùna li al-lùgha", en: "I am here for the language", note: "The same <b>Àna hùna li ___</b> as for work and for the sights. This is the third thing you can put in it." },
         { ar: "Urìd an àtakàllam màʿa an-nàs", en: "I want to talk to people", core: true, note: "The best reason there is, and the one that changes how the rest of the conversation goes." },
         { ar: "Urìd an àʿrif àkthar", en: "I want to know more" },
-        { ar: "Àtaʿallam wàhdi", en: "I am learning on my own" },
-        { ar: "Àtaʿallam min tatbìq fi hàtifi", en: "I am learning from an app on my phone" },
-        { ar: "Àna àtaʿallam mùndhu sàna", en: "I have been learning for a year", note: "<b>Mùndhu</b> again, doing what it does: put it in front of any stretch of time." },
-        { ar: "Àtaʿallam qalìlan kull yàum", en: "I learn a little every day" },
+        { ar: "Ataʿàllam wàhdi", en: "I am learning on my own" },
+        { ar: "Ataʿàllam min tatbìq fi hàtifi", en: "I am learning from an app on my phone" },
+        { ar: "Àna ataʿàllam mùndhu sàna", en: "I have been learning for a year", note: "<b>Mùndhu</b> again, doing what it does: put it in front of any stretch of time." },
+        { ar: "Ataʿàllam qalìlan kull yàum", en: "I learn a little every day" },
         { ar: "Uhìbb al-mùsiqa al-ʿarabìyya", en: "I like Arabic music" },
         { ar: "Uhìbb ash-shiʿr", en: "I like poetry", note: "Say this and be ready: somebody will recite something at you, and being recited at is one of the better things that can happen to you there." }
       ],
       dialogue: [
-        { ask: "Limàdha tàtaʿallam al-ʿarabìyya?", askEn: "Why are you learning Arabic?", reply: "Uhìbb sàut al-ʿarabìyya", en: "I like the sound of Arabic" },
+        { ask: "Limàdha tataʿàllam al-ʿarabìyya?", askEn: "Why are you learning Arabic?", reply: "Uhìbb sàut al-ʿarabìyya", en: "I like the sound of Arabic" },
         { ask: "Mà as-sàbab?", askEn: "What is the reason?", reply: "Hìya lùgha jamìla", en: "It is a beautiful language" },
         { ask: "Shwày shwày", askEn: "A little, bit by bit", reply: "Urìd an àʿrif àkthar", en: "I want to know more" },
         { ask: "Ày nàuʿ min al-mùsiqa?", askEn: "What kind of music?", reply: "Uhìbb al-mùsiqa al-ʿarabìyya", en: "I like Arabic music" }
@@ -4106,9 +4106,9 @@
     { id: "polite", can: "be polite: please, thank you, sorry",
       needs: ["Min fàdlik", "Shùkran jazìlan", "Àsif"] },
     { id: "repeat", can: "say you have not understood and ask for it again",
-      needs: ["Là àfham", "Marra ùkhra, min fàdlik", "Takàllam bibùt'"] },
+      needs: ["Là àfham", "Màrra ùkhra, min fàdlik", "Takàllam bibùt'"] },
     { id: "word", can: "ask what something means and what it is called",
-      needs: ["Màdha yaʿni?", "Kèifa taqùl hàdha?", "Mà hàdha?"] },
+      needs: ["Màdha yàʿni?", "Kèifa taqùl hàdha?", "Mà hàdha?"] },
     { id: "reply", can: "answer a question, not only ask one",
       needs: ["Nàʿam, ʿìndi", "Là, làisa ʿìndi", "Là àʿrif", "Kamà turìd"] },
     { id: "order", can: "order a coffee and ask for the bill",
@@ -4136,7 +4136,7 @@
       want: ["travel"],
       needs: ["Al-fùnduq", "Ghùrfa", "Hal ʿìndakum waifài?"] },
     { id: "time", can: "ask the time and understand the answer",
-      needs: ["Kam as-sàʿa?", "Fi ày sàʿa?", "Fi as-sàʿa thamàniya"] },
+      needs: ["Kam as-sàʿa?", "Fi ày sàʿa?", "Fi as-sàʿa ath-thàmina"] },
     { id: "meet", can: "arrange to meet someone",
       want: ["someone", "work"],
       needs: ["Ghàdan sabàhan", "Al-àn munàsib", "Sa'akùn hunàk"] },
@@ -4192,7 +4192,7 @@
               next: { say: "Mumtàz", sayEn: "Excellent", reply: "Àina nàltaqi?", replyEn: "Where shall we meet?" }
             },
             {
-              reply: "Àsif, là àstatìʿ", replyEn: "Sorry, I cannot",
+              reply: "Àsif, là astatìʿ", replyEn: "Sorry, I cannot",
               next: { say: "Là bà's, màʿa as-salàma", sayEn: "That is fine, goodbye", reply: "Ilà al-liqà'", replyEn: "See you again" }
             }
           ]
@@ -4295,7 +4295,7 @@
       needs: [1, 6, 23],
       turns: [
         { say: "Màrhaban", sayEn: "Hello", reply: "Àhlan", replyEn: "Hi" },
-        { say: "Màdha fàʿalta ams?", sayEn: "What did you do yesterday?", reply: "Dhahàbtu ilà al-bàit", replyEn: "I went home" },
+        { say: "Màdha faʿàlta ams?", sayEn: "What did you do yesterday?", reply: "Dhahàbtu ilà al-bàit", replyEn: "I went home" },
         { say: "Kèifa kàna?", sayEn: "How was it?", reply: "Kàna jamìlan", replyEn: "It was lovely" },
         { say: "Hal akàlta?", sayEn: "Did you eat?", reply: "Nàʿam, akàltu", replyEn: "Yes, I ate" },
         { say: "Ilà al-ghad", sayEn: "See you tomorrow", reply: "Màʿa as-salàma", replyEn: "Goodbye" }
@@ -4309,8 +4309,8 @@
       turns: [
         { say: "Nàʿam, tafàddal", sayEn: "Yes, go ahead", reply: "Hal yùmkin at-taswìr?", replyEn: "May I take photos?" },
         { say: "Là, mamnùʿ", sayEn: "No, it is not allowed", reply: "Là bà's", replyEn: "No problem" },
-        { say: "Tàʿal, ijlis", sayEn: "Come, sit down", reply: "Shùkran", replyEn: "Thank you" },
-        { say: "Hayyà bina", sayEn: "Let us go", reply: "Intàdhir làhza", replyEn: "Wait a moment" }
+        { say: "Taʿàl, ìjlis", sayEn: "Come, sit down", reply: "Shùkran", replyEn: "Thank you" },
+        { say: "Hayyà bina", sayEn: "Let us go", reply: "Ìntadhir làhza", replyEn: "Wait a moment" }
       ]
     },
     {
@@ -4373,7 +4373,7 @@
         { say: "Nàʿam, tafàddal", sayEn: "Yes, go ahead", reply: "Urìd tàdhkara", replyEn: "I want a ticket" },
         { say: "Ilà àina?", sayEn: "Where to?", reply: "Ilà al-matàr, min fàdlik", replyEn: "To the airport, please" },
         { say: "Thalathùn", sayEn: "Thirty", reply: "Sa'àkhudh hàdha", replyEn: "I will take this" },
-        { say: "As-sàʿa khàmsa", sayEn: "At five o'clock", reply: "Shùkran", replyEn: "Thank you" },
+        { say: "As-sàʿa al-khàmisa", sayEn: "At five o'clock", reply: "Shùkran", replyEn: "Thank you" },
         { say: "Màʿa as-salàma", sayEn: "Goodbye", reply: "Ilà al-liqà'", replyEn: "See you again" }
       ]
     },
@@ -4425,7 +4425,7 @@
         { say: "Nàʿam, ʿìndana waifài", sayEn: "Yes, we have wifi", reply: "Mà kàlimat as-sirr?", replyEn: "What is the password?" },
         { say: "Thalàtha, sìtta, tìsʿa", sayEn: "Three, six, nine", reply: "Shùkran", replyEn: "Thank you" },
         { say: "Tafàddal", sayEn: "Here you are", reply: "Hàdha là yàʿmal", replyEn: "This does not work" },
-        { say: "Intàdhir làhza", sayEn: "Wait a moment", reply: "Shùkran jazìlan", replyEn: "Thank you very much" }
+        { say: "Ìntadhir làhza", sayEn: "Wait a moment", reply: "Shùkran jazìlan", replyEn: "Thank you very much" }
       ]
     }
   ];
@@ -4442,7 +4442,7 @@
   var NOW = [
     {
       title: "You did not catch it",
-      lines: ["Là àfham", "Takàllam bibùt'", "Marra ùkhra, min fàdlik", "Màdha yaʿni?", "Là àʿrif"]
+      lines: ["Là àfham", "Takàllam bibùt'", "Màrra ùkhra, min fàdlik", "Màdha yàʿni?", "Là àʿrif"]
     },
     {
       title: "You need something",
@@ -4530,9 +4530,9 @@
     "Kèifa taqùl hàdha bil-ʿarabìyya?": "كَيْفَ تَقُولُ هَذَا بِالْعَرَبِيَّة؟",
     "Hàdha, là dhàlik": "هَذَا، لَا ذَلِك",
     "Nàʿam, hàdha hùwa!": "نَعَمْ، هَذَا هُوَ!",
-    "Intàdhir, ufàkkir": "اِنْتَظِرْ، أُفَكِّر",
+    "Ìntadhir, ufàkkir": "اِنْتَظِرْ، أُفَكِّر",
     "Saʿìdni, nasìtu al-kàlima": "سَاعِدْنِي، نَسِيتُ الْكَلِمَة",
-    "Limàdha tàtaʿallam al-ʿarabìyya?": "لِمَاذَا تَتَعَلَّمُ الْعَرَبِيَّة؟",
+    "Limàdha tataʿàllam al-ʿarabìyya?": "لِمَاذَا تَتَعَلَّمُ الْعَرَبِيَّة؟",
     "Limàdha tataʿallamìn al-ʿarabìyya?": "لِمَاذَا تَتَعَلَّمِينَ الْعَرَبِيَّة؟",
     "Uhìbb sàut al-ʿarabìyya": "أُحِبُّ صَوْتَ الْعَرَبِيَّة",
     "Hìya lùgha jamìla": "هِيَ لُغَة جَمِيلَة",
@@ -4541,10 +4541,10 @@
     "Àna hùna li al-lùgha": "أَنَا هُنَا لِلُّغَة",
     "Urìd an àtakàllam màʿa an-nàs": "أُرِيدُ أَنْ أَتَكَلَّمَ مَعَ النَّاس",
     "Urìd an àʿrif àkthar": "أُرِيدُ أَنْ أَعْرِفَ أَكْثَر",
-    "Àtaʿallam wàhdi": "أَتَعَلَّمُ وَحْدِي",
-    "Àtaʿallam min tatbìq fi hàtifi": "أَتَعَلَّمُ مِنْ تَطْبِيق فِي هَاتِفِي",
-    "Àna àtaʿallam mùndhu sàna": "أَنَا أَتَعَلَّمُ مُنْذُ سَنَة",
-    "Àtaʿallam qalìlan kull yàum": "أَتَعَلَّمُ قَلِيلًا كُلَّ يَوْم",
+    "Ataʿàllam wàhdi": "أَتَعَلَّمُ وَحْدِي",
+    "Ataʿàllam min tatbìq fi hàtifi": "أَتَعَلَّمُ مِنْ تَطْبِيق فِي هَاتِفِي",
+    "Àna ataʿàllam mùndhu sàna": "أَنَا أَتَعَلَّمُ مُنْذُ سَنَة",
+    "Ataʿàllam qalìlan kull yàum": "أَتَعَلَّمُ قَلِيلًا كُلَّ يَوْم",
     "Uhìbb al-mùsiqa al-ʿarabìyya": "أُحِبُّ الْمُوسِيقَى الْعَرَبِيَّة",
     "Uhìbb ash-shiʿr": "أُحِبُّ الشِّعْر",
     "Bidùn bàsal, min fàdlik": "بِدُون بَصَل، مِنْ فَضْلِكَ",
@@ -4578,7 +4578,7 @@
     "Nakhbàki!": "نَخْبَكِ!",
     "Àna là àshrab, làkin tafàddal": "أَنَا لَا أَشْرَب، لَكِنْ تَفَضَّل",
     "Là, shùkran, sa'àshrab mà'": "لَا، شُكْرًا، سَأَشْرَبُ مَاء",
-    "Hal hùnaka bàr qarìb min hùna?": "هَلْ هُنَاك بَار قَرِيب مِنْ هُنَا؟",
+    "Hal hunàka bàr qarìb min hùna?": "هَلْ هُنَاك بَار قَرِيب مِنْ هُنَا؟",
     "Hal shàhadta al-mubàrà?": "هَلْ شَاهَدْتَ الْمُبَارَاة؟",
     "Hal shàhadti al-mubàrà?": "هَلْ شَاهَدْتِ الْمُبَارَاة؟",
     "Man fàza?": "مَنْ فَازَ؟",
@@ -4586,7 +4586,7 @@
     "Man tushàjjiʿ?": "مَنْ تُشَجِّع؟",
     "Man tushajjiʿìn?": "مَنْ تُشَجِّعِين؟",
     "Ushàjjiʿ Milàn": "أُشَجِّعُ مِيلَان",
-    "Hùnaka izdihàm": "هُنَاكَ اِزْدِحَام",
+    "Hunàka izdihàm": "هُنَاكَ اِزْدِحَام",
     "Al-izdihàm shadìd al-yàum": "الِازْدِحَامُ شَدِيد الْيَوْم",
     "At-tarìq mughlàq": "الطَّرِيقُ مُغْلَق",
     "Àna mut'àkhkhir bisàbab al-izdihàm": "أَنَا مُتَأَخِّر بِسَبَبِ الِازْدِحَام",
@@ -4605,7 +4605,7 @@
     "Hal àstatìʿ an usàʿiduki?": "هَلْ أَسْتَطِيعُ أَنْ أُسَاعِدَكِ؟",
     "Ahdàrtu làka shày' saghìr": "أَحْضَرْتُ لَكَ شَيْء صَغِير",
     "Ahdàrtu làki shày' saghìr": "أَحْضَرْتُ لَكِ شَيْء صَغِير",
-    "Haqqan shabìʿtu, làkin kàna ladhìdh": "حَقًّا شَبِعْتُ، لَكِنْ كَانَ لَذِيذ",
+    "Hàqqan shabìʿtu, làkin kàna ladhìdh": "حَقًّا شَبِعْتُ، لَكِنْ كَانَ لَذِيذ",
     "Àsif ʿalà at-ta'khìr": "آسِف عَلَى التَّأْخِير",
     "Yàjib an àdhhab, al-wàqt mut'àkhkhir": "يَجِبُ أَنْ أَذْهَب، الْوَقْتُ مُتَأَخِّر",
     "Al-màrra al-qàdima ʿìndana": "الْمَرَّةُ الْقَادِمَة عِنْدَنَا",
@@ -4617,11 +4617,11 @@
     "Hàdha bàrid": "هَذَا بَارِد",
     "Ghàyyirhu, min fàdlik": "غَيِّرْهُ، مِنْ فَضْلِكَ",
     "Hal hàdha hàrr?": "هَلْ هَذَا حَارّ؟",
-    "Al-mìftah là yàʿmal": "الْمِفْتَاحُ لَا يَعْمَل",
+    "Al-miftàh là yàʿmal": "الْمِفْتَاحُ لَا يَعْمَل",
     "Al-mukàyyif là yàʿmal": "الْمُكَيِّفُ لَا يَعْمَل",
     "Al-waifài là yàʿmal": "الْوَايْفَاي لَا يَعْمَل",
-    "Làisa hùnaka mà' sàkhin": "لَيْسَ هُنَاكَ مَاء سَاخِن",
-    "Hùnaka khàta' fi al-hisàb": "هُنَاكَ خَطَأ فِي الْحِسَاب",
+    "Làisa hunàka mà' sàkhin": "لَيْسَ هُنَاكَ مَاء سَاخِن",
+    "Hunàka khàta' fi al-hisàb": "هُنَاكَ خَطَأ فِي الْحِسَاب",
     "Urìd an arà al-ghùrfa àwwalan": "أُرِيدُ أَنْ أَرَى الْغُرْفَةَ أَوَّلًا",
     "Hal al-futùr mashmùl?": "هَلِ الْفُطُورُ مَشْمُول؟",
     "Urìd wàsl, min fàdlik": "أُرِيدُ وَصْل، مِنْ فَضْلِكَ",
@@ -4663,7 +4663,7 @@
     "Hal tàʿrifìn hàdha ash-shàriʿ?": "هَلْ تَعْرِفِينَ هَذَا الشَّارِع؟",
     "Hàdha al-ʿunwàn khàta'": "هَذَا الْعُنْوَانُ خَطَأ",
     "Àrini ʿalà al-khàrita": "أَرِنِي عَلَى الْخَارِطَة",
-    "Làisa hùnaka irsàl": "لَيْسَ هُنَاكَ إِرْسَال",
+    "Làisa hunàka irsàl": "لَيْسَ هُنَاكَ إِرْسَال",
     "Làisa ʿìndi intèrnet": "لَيْسَ عِنْدِي إِنْتَرْنِت",
     "Battàriyati fàrigha": "بَطَّارِيَّتِي فَارِغَة",
     "Hal yùmkin ash-shàhn hùna?": "هَلْ يُمْكِنُ الشَّحْنُ هُنَا؟",
@@ -4714,17 +4714,17 @@
     "Màdha tàfʿal al-làila?": "مَاذَا تَفْعَلُ اللَّيْلَة؟",
     "Màdha tafʿalìn al-làila?": "مَاذَا تَفْعَلِينَ اللَّيْلَة؟",
     "Hal turìd mashrùb?": "هَلْ تُرِيدُ مَشْرُوب؟",
-    "Hal turìdìn mashrùb?": "هَلْ تُرِيدِينَ مَشْرُوب؟",
+    "Hal turidìn mashrùb?": "هَلْ تُرِيدِينَ مَشْرُوب؟",
     "Màdha tuhìbb an tà'kul?": "مَاذَا تُحِبُّ أَنْ تَأْكُل؟",
     "Màdha tuhibbìn an ta'kulì?": "مَاذَا تُحِبِّينَ أَنْ تَأْكُلِي؟",
     "Àina yà'kul an-nàs jàyyidan hùna?": "أَيْنَ يَأْكُلُ النَّاسُ جَيِّدًا هُنَا؟",
-    "Hal hùnaka màkan shàʿbi qarìb min hùna?": "هَلْ هُنَاك مَكَان شَعْبِي قَرِيب مِنْ هُنَا؟",
+    "Hal hunàka màkan shàʿbi qarìb min hùna?": "هَلْ هُنَاك مَكَان شَعْبِي قَرِيب مِنْ هُنَا؟",
     "Ày màkan tànsah bìhi?": "أَيُّ مَكَانٍ تَنْصَحُ بِهِ؟",
-    "Ày màkan tànsahìn bìhi?": "أَيُّ مَكَانٍ تَنْصَحِينَ بِهِ؟",
+    "Ày màkan tansahìn bìhi?": "أَيُّ مَكَانٍ تَنْصَحِينَ بِهِ؟",
     "Urìd an ujàrrib shày' mahàlli": "أُرِيدُ أَنْ أُجَرِّبَ شَيْء مَحَلِّي",
     "Hal nàdhhab màʿan?": "هَلْ نَذْهَبُ مَعًا؟",
-    "Hal tà'ti maʿì?": "هَلْ تَأْتِي مَعِي؟",
-    "Hal ta'tìn maʿì?": "هَلْ تَأْتِينَ مَعِي؟",
+    "Hal tà'ti màʿi?": "هَلْ تَأْتِي مَعِي؟",
+    "Hal ta'tìn màʿi?": "هَلْ تَأْتِينَ مَعِي؟",
     "Nàltaqi amàm as-sìnama": "نَلْتَقِي أَمَامَ السِّينَمَا",
     "Khudàr": "خُضَار",
     "Fawàkih": "فَوَاكِه",
@@ -4765,13 +4765,13 @@
     "Kam yastàghriq?": "كَمْ يَسْتَغْرِق؟",
     "Kam daqìqa?": "كَمْ دَقِيقَة؟",
     "Khams daqà'iq min hùna": "خَمْسُ دَقَائِقَ مِنْ هُنَا",
-    "ʿÀshr daqà'iq màshyan": "عَشْرُ دَقَائِقَ مَاشِيًا",
+    "ʿÀshr daqà'iq màshiyan": "عَشْرُ دَقَائِقَ مَاشِيًا",
     "Baʿìd jìddan": "بَعِيدٌ جِدًّا",
     "Làisa baʿìdan": "لَيْسَ بَعِيدًا",
     "Hal astatìʿ an àmshi?": "هَلْ أَسْتَطِيعُ أَنْ أَمْشِي؟",
     "Sa'àkhudh tàksi, hùwa baʿìd": "سَآخُذُ تَاكْسِي، هُوَ بَعِيد",
-    "Àna àtaʿallam al-ʿarabìyya màʿak": "أَنَا أَتَعَلَّمُ الْعَرَبِيَّةَ مَعَكَ",
-    "Àna àtaʿallam al-ʿarabìyya màʿaki": "أَنَا أَتَعَلَّمُ الْعَرَبِيَّةَ مَعَكِ",
+    "Àna ataʿàllam al-ʿarabìyya màʿak": "أَنَا أَتَعَلَّمُ الْعَرَبِيَّةَ مَعَكَ",
+    "Àna ataʿàllam al-ʿarabìyya màʿaki": "أَنَا أَتَعَلَّمُ الْعَرَبِيَّةَ مَعَكِ",
     "Uhàwil an àfham": "أُحَاوِلُ أَنْ أَفْهَم",
     "ʿAllìmni hàdha": "عَلِّمْنِي هَذَا",
     "ʿAllimìni hàdha": "عَلِّمِينِي هَذَا",
@@ -4781,8 +4781,8 @@
     "Khudhni màʿak": "خُذْنِي مَعَكَ",
     "Khudhìni màʿaki": "خُذِينِي مَعَكِ",
     "Hayyà bina màʿan": "هَيَّا بِنَا مَعًا",
-    "Taʿàla maʿì": "تَعَالَ مَعِي",
-    "Taʿàli maʿì": "تَعَالِي مَعِي",
+    "Taʿàla màʿi": "تَعَالَ مَعِي",
+    "Taʿàli màʿi": "تَعَالِي مَعِي",
     "Sahhìhni": "صَحِّحْنِي",
     "Sahhihìni": "صَحِّحِينِي",
     "Sahhìhni ìdha akhtà'tu": "صَحِّحْنِي إِذَا أَخْطَأْتُ",
@@ -4819,7 +4819,7 @@
     "Al-màdrasa": "الْمَدْرَسَة",
     "Al-mustàshfa": "الْمُسْتَشْفَى",
     "Ad-dukkàn": "الدُّكَّان",
-    "Hal hùnaka sùbermarket qarìb min hùna?": "هَلْ هُنَاك سُوبَرْمَاركِت قَرِيب مِنْ هُنَا؟",
+    "Hal hunàka sùbermarket qarìb min hùna?": "هَلْ هُنَاك سُوبَرْمَاركِت قَرِيب مِنْ هُنَا؟",
     "Al-jàmiʿ": "الْجَامِع",
     "Al-kanìsa": "الْكَنِيسَة",
     "Al-màthaf": "الْمَتْحَف",
@@ -4834,13 +4834,13 @@
     "Hal al-bànk maftùh?": "هَلِ الْبَنْكُ مَفْتُوح؟",
     "Nàʿam, hùwa qarìb": "نَعَمْ، هُوَ قَرِيب",
     "Al-bànk khàlf al-fùnduq": "الْبَنْكُ خَلْفَ الْفُنْدُق",
-    "Intàdhirni amàm al-bàb": "اِنْتَظِرْنِي أَمَامَ الْبَاب",
-    "Intàdhirìni amàm al-bàb": "اِنْتَظِرِينِي أَمَامَ الْبَاب",
+    "Intadhìrni amàm al-bàb": "اِنْتَظِرْنِي أَمَامَ الْبَاب",
+    "Intadhirìni amàm al-bàb": "اِنْتَظِرِينِي أَمَامَ الْبَاب",
     "Al-màtʿam bijànib al-bànk": "الْمَطْعَمُ بِجَانِبِ الْبَنْك",
     "Al-mahàtta bàina al-bànk wa al-fùnduq": "الْمَحَطَّةُ بَيْنَ الْبَنْكِ وَالْفُنْدُق",
     "Ghùrfati fàuq al-màtbakh": "غُرْفَتِي فَوْقَ الْمَطْبَخ",
     "Al-qìtta tàht as-sarìr": "الْقِطَّةُ تَحْتَ السَّرِير",
-    "Al-mìftah dàkhil al-haqìba": "الْمِفْتَاحُ دَاخِلَ الْحَقِيبَة",
+    "Al-miftàh dàkhil al-haqìba": "الْمِفْتَاحُ دَاخِلَ الْحَقِيبَة",
     "As-sayyàra khàrij al-fùnduq": "السَّيَّارَةُ خَارِجَ الْفُنْدُق",
     "Qàbla dhàlik": "قَبْلَ ذَلِك",
     "Baʿda dhàlik": "بَعْدَ ذَلِك",
@@ -4875,7 +4875,7 @@
     "Antàdhir at-tàksi": "أَنْتَظِرُ التَّاكْسِي",
     "Àjlis hùna": "أَجْلِسُ هُنَا",
     "Àmshi ilà as-sùq": "أَمْشِي إِلَى السُّوق",
-    "Àbhath ʿan al-mìftah": "أَبْحَثُ عَنِ الْمِفْتَاح",
+    "Àbhath ʿan al-miftàh": "أَبْحَثُ عَنِ الْمِفْتَاح",
     "Là atadhàkkar": "لَا أَتَذَكَّرُ",
     "Ànsa al-kàlima": "أَنْسَى الْكَلِمَة",
     "Àbda' al-ʿàmal": "أَبْدَأُ الْعَمَل",
@@ -4922,8 +4922,8 @@
     "Ìghsil yadàik": "اِغْسِلْ يَدَيْكَ",
     "Ìghsili yadàiki": "اِغْسِلِي يَدَيْكِ",
     "Àʿtini yàdak": "أَعْطِنِي يَدَكَ",
-    "Al-mìftah amàm ʿuyùnak": "الْمِفْتَاح أَمَامَ عُيُونِكَ",
-    "Al-mìftah amàm ʿuyùnik": "الْمِفْتَاح أَمَامَ عُيُونِكِ",
+    "Al-miftàh amàm ʿuyùnak": "الْمِفْتَاح أَمَامَ عُيُونِكَ",
+    "Al-miftàh amàm ʿuyùnik": "الْمِفْتَاح أَمَامَ عُيُونِكِ",
     "Hal ʿìndak àlam fi dhàhrak?": "هَلْ عِنْدَكَ أَلَمٌ فِي ظَهْرِكَ؟",
     "Tàmr": "تَمْر",
     "Zaitùn": "زَيْتُون",
@@ -4991,7 +4991,7 @@
     "Qalìlan fàqat": "قَلِيلًا فَقَطْ",
 
     "Min fàdlik": "مِنْ فَضْلِكَ",
-    "Màdha àkalta?": "مَاذَا أَكَلْتَ؟",
+    "Màdha akàlta?": "مَاذَا أَكَلْتَ؟",
     "Hal dhahàbta?": "هَلْ ذَهَبْتَ؟",
     "Àʿjabani": "أَعْجَبَنِي",
     "Hal àʿjabak?": "هَلْ أَعْجَبَكَ؟",
@@ -5007,11 +5007,11 @@
     "Rùbbama fi màrra ùkhra": "رُبَّمَا فِي مَرَّة أُخْرَى",
     "Ìdha àmkan": "إِذَا أَمْكَن",
     "Àna mustaʿìdd": "أَنَا مُسْتَعِدّ",
-    "Àsif, là àstatìʿ": "آسِف، لَا أَسْتَطِيع",
+    "Àsif, là astatìʿ": "آسِف، لَا أَسْتَطِيع",
     "Sa'akùn hunàk": "سَأَكُونُ هُنَاك",
     "Làisa al-àn": "لَيْسَ الْآن",
-    "Nàʿam, làkin làisa ʿìndi nùqud": "نَعَمْ، لَكِنْ لَيْسَ عِنْدِي نُقُود",
-    "Hal ʿìndak al-mìftah?": "هَلْ عِنْدَكَ الْمِفْتَاح؟",
+    "Nàʿam, làkin làisa ʿìndi nuqùd": "نَعَمْ، لَكِنْ لَيْسَ عِنْدِي نُقُود",
+    "Hal ʿìndak al-miftàh?": "هَلْ عِنْدَكَ الْمِفْتَاح؟",
     "Hal tàdhhab al-àn?": "هَلْ تَذْهَبُ الْآن؟",
     "Hal al-àn munàsib?": "هَلِ الْآنَ مُنَاسِب؟",
     "Làkin": "لَكِنْ",
@@ -5021,15 +5021,15 @@
     "Rùbbama": "رُبَّمَا",
     "Àʿtaqid": "أَعْتَقِدُ",
     "Làisa ʿìndi": "لَيْسَ عِنْدِي",
-    "Hùnaka mùshkila": "هُنَاك مُشْكِلَة",
-    "Làisa hùnaka mùshkila": "لَيْسَ هُنَاك مُشْكِلَة",
-    "Maʿì": "مَعِي",
-    "Làisa maʿì": "لَيْسَ مَعِي",
-    "Urìd shày, làkin làisa ʿìndi nùqud": "أُرِيدُ شَاي، لَكِنْ لَيْسَ عِنْدِي نُقُود",
+    "Hunàka mùshkila": "هُنَاك مُشْكِلَة",
+    "Làisa hunàka mùshkila": "لَيْسَ هُنَاك مُشْكِلَة",
+    "Màʿi": "مَعِي",
+    "Làisa màʿi": "لَيْسَ مَعِي",
+    "Urìd shày, làkin làisa ʿìndi nuqùd": "أُرِيدُ شَاي، لَكِنْ لَيْسَ عِنْدِي نُقُود",
     "Àna taʿbàn li'ànna al-jàww hàrr": "أَنَا تَعْبَان لِأَنَّ الْجَوَّ حَارّ",
     "Àkul, thùmma àdhhab": "آكُلُ، ثُمَّ أَذْهَبُ",
     "Fi ày sàʿa?": "فِي أَيِّ سَاعَةٍ؟",
-    "Fi as-sàʿa thamàniya": "فِي السَّاعَةِ ثَمَانِيَة",
+    "Fi as-sàʿa ath-thàmina": "فِي السَّاعَةِ الثَّامِنَة",
     "Wa an-nìsf": "وَالنِّصْف",
     "Wa ar-rùbʿ": "وَالرُّبْع",
     "Fi as-sabàh": "فِي الصَّبَاح",
@@ -5041,8 +5041,8 @@
     "Làhiqan": "لَاحِقًا",
     "Al-àn munàsib": "الْآن مُنَاسِب",
     "Àna mut'àkhkhir": "أَنَا مُتَأَخِّر",
-    "Marra ùkhra, min fàdlik": "مَرَّة أُخْرَى، مِنْ فَضْلِك",
-    "Màdha yaʿni?": "مَاذَا يَعْنِي؟",
+    "Màrra ùkhra, min fàdlik": "مَرَّة أُخْرَى، مِنْ فَضْلِك",
+    "Màdha yàʿni?": "مَاذَا يَعْنِي؟",
     "Kèifa taqùl hàdha?": "كَيْفَ تَقُولُ هَذَا؟",
     "Mà hàdha?": "مَا هَذَا؟",
     "Là àʿrif": "لَا أَعْرِف",
@@ -5053,10 +5053,10 @@
     "Khalàs": "خَلَاص",
     "Yàʿni": "يَعْنِي",
     "Inshàallah": "إِنْ شَاءَ اللَّه",
-    "Yaʿni shùkran": "يَعْنِي شُكْرًا",
+    "Yàʿni shùkran": "يَعْنِي شُكْرًا",
     "Hal fahìmta?": "هَلْ فَهِمْتَ؟",
     "Nàʿam, fahìmtu": "نَعَمْ، فَهِمْتُ",
-    "Là, marra ùkhra": "لَا، مَرَّة أُخْرَى",
+    "Là, màrra ùkhra": "لَا، مَرَّة أُخْرَى",
     "Ilà al-ghad, inshàallah": "إِلَى الْغَد، إِنْ شَاءَ اللَّه",
     "Min fàdliki": "مِنْ فَضْلِكِ",
     "Lau samàht": "لَوْ سَمَحْتَ",
@@ -5101,17 +5101,17 @@
     "Yùʿjibuni": "يُعْجِبُنِي",
     "Lam yùʿjibni": "لَمْ يُعْجِبْنِي",
     "Mumtàz": "مُمْتَاز",
-    "Mumtìʿ": "مُمْتِع",
-    "Mùmill": "مُمِلّ",
+    "Mùmtiʿ": "مُمْتِع",
+    "Mumìll": "مُمِلّ",
     "Sàʿb": "صَعْب",
     "Sàhl": "سَهْل",
     "Nàuʿan mà": "نَوْعًا مَا",
     "ʿAlà hàsab": "عَلَى حَسَب",
-    "Haqqan?": "حَقًّا؟",
+    "Hàqqan?": "حَقًّا؟",
     "Dà'iman": "دَائِمًا",
-    "Àhyanan": "أَحْيَانًا",
+    "Ahyànan": "أَحْيَانًا",
     "Àbadan": "أَبَدًا",
-    "Al-fìlm mumtìʿ": "الْفِيلْمُ مُمْتِع",
+    "Al-fìlm mùmtiʿ": "الْفِيلْمُ مُمْتِع",
     "Hal ta'tìn hùna dà'iman?": "هَلْ تَأْتِينَ هُنَا دَائِمًا؟",
     "Hàdha ràqmi": "هَذَا رَقْمِي",
     "Sa'àttasil biki": "سَأَتَّصِلُ بِكِ",
@@ -5128,11 +5128,11 @@
     "Nàltaqi hunàk": "نَلْتَقِي هُنَاك",
     "Urìd an aràki màrra ùkhra": "أُرِيدُ أَنْ أَرَاكِ مَرَّةً أُخْرَى",
     "Urìd an aràk màrra ùkhra": "أُرِيدُ أَنْ أَرَاكَ مَرَّةً أُخْرَى",
-    "Kàna màsa'an jamìlan": "كَانَ مَسَاءً جَمِيلًا",
+    "Kàna masà'an jamìlan": "كَانَ مَسَاءً جَمِيلًا",
     "Tàbʿan": "طَبْعًا",
     "Sahìh": "صَحِيح",
-    "Hàddithini àkthar": "حَدِّثِينِي أَكْثَر",
-    "Hàddithni àkthar": "حَدِّثْنِي أَكْثَر",
+    "Haddithìni àkthar": "حَدِّثِينِي أَكْثَر",
+    "Haddìthni àkthar": "حَدِّثْنِي أَكْثَر",
     "Wa baʿd?": "وَبَعْد؟",
     "Yà salàm!": "يَا سَلَام!",
     "Mà shà' Allàh": "مَا شَاءَ اللَّه",
@@ -5146,8 +5146,8 @@
     "Hal ànta mutazàwwij?": "هَلْ أَنْتَ مُتَزَوِّج؟",
     "Àna mutazàwwij": "أَنَا مُتَزَوِّج",
     "Àna mutazàwwija": "أَنَا مُتَزَوِّجَة",
-    "Lastu mutazàwwij": "لَسْتُ مُتَزَوِّجًا",
-    "Lastu mutazàwwija": "لَسْتُ مُتَزَوِّجَةً",
+    "Làstu mutazàwwij": "لَسْتُ مُتَزَوِّجًا",
+    "Làstu mutazàwwija": "لَسْتُ مُتَزَوِّجَةً",
     "Hal ʿìndaki àtfal?": "هَلْ عِنْدَكِ أَطْفَال؟",
     "Hal ʿìndak àtfal?": "هَلْ عِنْدَكَ أَطْفَال؟",
     "ʿÌndi wàlad wa bint": "عِنْدِي وَلَدٌ وَبِنْت",
@@ -5160,24 +5160,24 @@
     "Àna hùna li al-ʿàmal": "أَنَا هُنَا لِلْعَمَل",
     "Àna hùna li as-siyàha": "أَنَا هُنَا لِلسِّيَاحَة",
     "Màdha tàfʿal hùna?": "مَاذَا تَفْعَلُ هُنَا؟",
-    "Màdha tànsahìn?": "مَاذَا تَنْصَحِين؟",
+    "Màdha tansahìn?": "مَاذَا تَنْصَحِين؟",
     "Màdha tànsah?": "مَاذَا تَنْصَح؟",
     "Àna nabàti": "أَنَا نَبَاتِي",
     "Àna nabatìyya": "أَنَا نَبَاتِيَّة",
     "Là àkul làhm": "لَا آكُلُ لَحْمًا",
-    "Là àshrab al-kùhul": "لَا أَشْرَبُ الْكُحُول",
+    "Là àshrab al-kuhùl": "لَا أَشْرَبُ الْكُحُول",
     "Hal fìhi làhm khinzìr?": "هَلْ فِيهِ لَحْمُ خِنْزِير؟",
     "Bidùn sùkkar, min fàdlik": "بِدُونِ سُكَّر، مِنْ فَضْلِكَ",
     "Ladhìdh!": "لَذِيذ!",
     "Shabìʿtu, shùkran": "شَبِعْتُ، شُكْرًا",
     "Àkthar min al-làzim": "أَكْثَرُ مِنَ اللَّازِم",
-    "Àna àdʿuki": "أَنَا أَدْعُوكِ",
-    "Àna àdʿuk": "أَنَا أَدْعُوكَ",
+    "Àna adʿùki": "أَنَا أَدْعُوكِ",
+    "Àna adʿùk": "أَنَا أَدْعُوكَ",
     "Hal nàqsim al-hisàb?": "هَلْ نَقْسِمُ الْحِسَاب؟",
     "Al-hisàb ʿalàyya": "الْحِسَابُ عَلَيَّ",
     "As-sàmak ladhìdh hùna": "السَّمَكُ لَذِيذٌ هُنَا",
     "Là, àbadan": "لَا، أَبَدًا",
-    "Hal turìdìn àkthar?": "هَلْ تُرِيدِينَ أَكْثَر؟",
+    "Hal turidìn àkthar?": "هَلْ تُرِيدِينَ أَكْثَر؟",
     "Ànti kal-qàmar": "أَنْتِ كَالْقَمَر",
     "Ànta kal-qàmar": "أَنْتَ كَالْقَمَر",
     "Uhìbb hàdha fìki": "أُحِبُّ هَذَا فِيكِ",
@@ -5189,19 +5189,19 @@
     "Tìslam yadàki": "تِسْلَمْ يَدَاكِ",
     "Tìslam yadàk": "تِسْلَمْ يَدَاكَ",
     "Sàhha": "صَحَّة",
-    "Nàwwarti al-màkan": "نَوَّرْتِ الْمَكَان",
-    "Nàwwart al-màkan": "نَوَّرْتَ الْمَكَان",
+    "Nawwàrti al-màkan": "نَوَّرْتِ الْمَكَان",
+    "Nawwàrta al-màkan": "نَوَّرْتَ الْمَكَان",
     "Min ʿuyùni": "مِنْ عُيُونِي",
     "Allàh yukhallìki": "اللَّهُ يُخَلِّيكِ",
     "Allàh yukhallìk": "اللَّهُ يُخَلِّيكَ",
     "Yà rèit": "يَا رَيْت",
-    "Tikràm ʿàinuki": "تِكْرَمْ عَيْنُكِ",
-    "Tikràm ʿàinuk": "تِكْرَمْ عَيْنُكَ",
+    "Tìkram ʿàinuki": "تِكْرَمْ عَيْنُكِ",
+    "Tìkram ʿàinuk": "تِكْرَمْ عَيْنُكَ",
     "Hal tuhìbb hàdha?": "هَلْ تُحِبُّ هَذَا؟",
-    "Allàh yuʿàfìk": "اللَّهُ يُعَافِيك",
+    "Allàh yuʿafìk": "اللَّهُ يُعَافِيك",
     "Allàh yuʿafìki": "اللَّهُ يُعَافِيكِ",
     "Allàh yusàllimuk": "اللَّهُ يُسَلِّمُك",
-    "Allàh yusallìmuki": "اللَّهُ يُسَلِّمُكِ",
+    "Allàh yusàllimuki": "اللَّهُ يُسَلِّمُكِ",
     "ʿAlà qàlbik": "عَلَى قَلْبِك",
     "ʿAlà qàlbiki": "عَلَى قَلْبِكِ",
     "Mabrùk": "مَبْرُوك",
@@ -5213,21 +5213,21 @@
     "Hàdha min dhàuqiki": "هَذَا مِنْ ذَوْقِكِ",
     "Tìslam": "تِسْلَم",
     "Shwày shwày": "شوي شوي",
-    "Àna àtaʿallam": "أَنَا أَتَعَلَّم",
-    "Là, ànta kàrim": "لَا، أَنْتَ كَرِيم",
+    "Àna ataʿàllam": "أَنَا أَتَعَلَّم",
+    "Là, ànta karìm": "لَا، أَنْتَ كَرِيم",
     "Là, ànti karìma": "لَا، أَنْتِ كَرِيمَة",
     "Yà ustàdh": "يَا أُسْتَاذ",
     "Yà madàm": "يَا مَدَام",
     "Yà ànisa": "يَا آنِسَة",
     "Yà hàjj": "يَا حَاجّ",
     "Yà hàjja": "يَا حَاجَّة",
-    "Yà dùktor": "يَا دُكْتُور",
-    "Yà mùʿallim": "يَا مُعَلِّم",
+    "Yà duktòr": "يَا دُكْتُور",
+    "Yà muʿàllim": "يَا مُعَلِّم",
     "Allàh karìm": "اللَّهُ كَرِيم",
-    "Sanàra mà yàhduth": "سَنَرَى مَا يَحْدُث",
+    "Sànara mà yàhduth": "سَنَرَى مَا يَحْدُث",
     "Ghàdan natahàddath": "غَدًا نَتَحَدَّث",
-    "Là ùrid an ùzʿijak": "لَا أُرِيدُ أَنْ أُزْعِجَك",
-    "Là ùrid an ùzʿijaki": "لَا أُرِيدُ أَنْ أُزْعِجَكِ",
+    "Là urìd an ùzʿijak": "لَا أُرِيدُ أَنْ أُزْعِجَك",
+    "Là urìd an ùzʿijaki": "لَا أُرِيدُ أَنْ أُزْعِجَكِ",
     "Shùkran, hàdha kàfi": "شُكْرًا، هَذَا كَافِي",
     "Hal turìd àkthar?": "هَلْ تُرِيدُ أَكْثَر؟",
     "Kitàbi": "كِتَابِي",
@@ -5257,7 +5257,7 @@
     "Limàdha tuhìbb hàdha?": "لِمَاذَا تُحِبُّ هَذَا؟",
     "Limàdha tuhibbìn hàdha?": "لِمَاذَا تُحِبِّينَ هَذَا؟",
     "Limàdha là turìd shày?": "لِمَاذَا لَا تُرِيدُ شَاي؟",
-    "Limàdha hùnaka mùshkila?": "لِمَاذَا هُنَاكَ مُشْكِلَة؟",
+    "Limàdha hunàka mùshkila?": "لِمَاذَا هُنَاكَ مُشْكِلَة؟",
     "Limàdha hàdha ghàli?": "لِمَاذَا هَذَا غَالِي؟",
     "Là sàbab": "لَا سَبَب",
     "Ilà al-liqà' qarìban": "إِلَى اللِّقَاءِ قَرِيبًا",
@@ -5298,7 +5298,7 @@
     "Yàum as-sabt": "يَوْمُ السَّبْت",
     "Kam as-sàʿa?": "كَمِ السَّاعَة؟",
     "Kam as-sàʿa al-àn?": "كَمِ السَّاعَةُ الْآنَ؟",
-    "As-sàʿa khàmsa": "السَّاعَةُ خَمْسَة",
+    "As-sàʿa al-khàmisa": "السَّاعَةُ الْخَامِسَة",
     "Ày yàum al-yàum?": "أَيُّ يَوْمٍ الْيَوْم؟",
     "Al-yàum yàum al-jùmʿa": "الْيَوْمُ يَوْمُ الْجُمْعَة",
 
@@ -5367,28 +5367,28 @@
 
     "Al-làun": "اللَّوْن",
     "Àhmar": "أَحْمَر",
-    "Hàmra": "حَمْرَاء",
+    "Hamrà'": "حَمْرَاء",
     "Àzraq": "أَزْرَق",
-    "Zàrqa": "زَرْقَاء",
+    "Zarqà'": "زَرْقَاء",
     "Àkhdar": "أَخْضَر",
-    "Khàdra": "خَضْرَاء",
+    "Khadrà'": "خَضْرَاء",
     "Àsfar": "أَصْفَر",
-    "Sàfra": "صَفْرَاء",
+    "Safrà'": "صَفْرَاء",
     "Àbyad": "أَبْيَض",
-    "Bàida": "بَيْضَاء",
+    "Baidà'": "بَيْضَاء",
     "Àswad": "أَسْوَد",
-    "Sàuda": "سَوْدَاء",
+    "Saudà'": "سَوْدَاء",
     "Bùnni": "بُنِّي",
     "Ramàdi": "رَمَادِي",
     "Mà làunuh?": "مَا لَوْنُهُ؟",
     "Al-bàit al-àbyad": "الْبَيْتُ الْأَبْيَض",
-    "As-samà' zàrqa": "السَّمَاءُ زَرْقَاء",
-    "Sayyàra hàmra": "سَيَّارَة حَمْرَاء",
+    "As-samà' zarqà'": "السَّمَاءُ زَرْقَاء",
+    "Sayyàra hamrà'": "سَيَّارَة حَمْرَاء",
     "Mà làun as-samà'?": "مَا لَوْنُ السَّمَاء؟",
     "Ày làun tuhìbb?": "أَيَّ لَوْنٍ تُحِبّ؟",
     "Uhìbb al-àkhdar": "أُحِبُّ الْأَخْضَر",
-    "Hal hìya hàmra?": "هَلْ هِيَ حَمْرَاء؟",
-    "Là, hìya sàuda": "لَا، هِيَ سَوْدَاء",
+    "Hal hìya hamrà'?": "هَلْ هِيَ حَمْرَاء؟",
+    "Là, hìya saudà'": "لَا، هِيَ سَوْدَاء",
 
     "Mà mìhnatuk?": "مَا مِهْنَتُكَ؟",
     "Mà mìhnatuki?": "مَا مِهْنَتُكِ؟",
@@ -5564,7 +5564,7 @@
     "Ghùrfat an-nàum": "غُرْفَةُ النَّوْم",
     "Al-bàb": "الْبَاب",
     "Ash-shùbbak": "الشُّبَّاك",
-    "Al-mìftah": "الْمِفْتَاح",
+    "Al-miftàh": "الْمِفْتَاح",
     "Kùrsi": "كُرْسِي",
     "Tàwila": "طَاوِلَة",
     "Sarìr": "سَرِير",
@@ -5574,7 +5574,7 @@
     "ʿAlà": "عَلَى",
     "Al-kitàb ʿalà at-tàwila": "الْكِتَابُ عَلَى الطَّاوِلَة",
     "Àna fi al-bàit": "أَنَا فِي الْبَيْت",
-    "Àina al-mìftah?": "أَيْنَ الْمِفْتَاح؟",
+    "Àina al-miftàh?": "أَيْنَ الْمِفْتَاح؟",
     "ʿAlà at-tàwila": "عَلَى الطَّاوِلَة",
     "Àina ànta?": "أَيْنَ أَنْتَ؟",
     "Àina al-kitàb?": "أَيْنَ الْكِتَاب؟",
@@ -5613,9 +5613,9 @@
     "Katàbtu": "كَتَبْتُ",
     "Qarà'tu": "قَرَأْتُ",
     "Ra'àitu": "رَأَيْتُ",
-    "Fàʿaltu": "فَعَلْتُ",
-    "Màdha fàʿalta?": "مَاذَا فَعَلْتَ؟",
-    "Màdha fàʿalta ams?": "مَاذَا فَعَلْتَ أَمْس؟",
+    "Faʿàltu": "فَعَلْتُ",
+    "Màdha faʿàlta?": "مَاذَا فَعَلْتَ؟",
+    "Màdha faʿàlta ams?": "مَاذَا فَعَلْتَ أَمْس؟",
     "Àina kùnta?": "أَيْنَ كُنْتَ؟",
     "Kàna jamìlan": "كَانَ جَمِيلًا",
     "Hal akàlta?": "هَلْ أَكَلْتَ؟",
@@ -5631,7 +5631,7 @@
     "Sa'àkhudh hàdha": "سَآخُذُ هَذَا",
     "Urìd hàdha": "أُرِيدُ هَذَا",
     "Là urìd": "لَا أُرِيد",
-    "Nùqud": "نُقُود",
+    "Nuqùd": "نُقُود",
     "Sa'ufàkkir": "سَأُفَكِّر",
     "Hàdha jamìl": "هَذَا جَمِيل",
     "Kam hàdha?": "كَمْ هَذَا؟",
@@ -5646,20 +5646,20 @@
     "Mamnùʿ": "مَمْنُوع",
     "Hal yùmkin at-taswìr?": "هَلْ يُمْكِنُ التَّصْوِير؟",
     "Mamnùʿ at-taswìr": "مَمْنُوع التَّصْوِير",
-    "Intàdhir làhza": "اِنْتَظِرْ لَحْظَة",
+    "Ìntadhir làhza": "اِنْتَظِرْ لَحْظَة",
     "Làhza min fàdlik": "لَحْظَة مِنْ فَضْلِكَ",
     "Hayyà bina": "هَيَّا بِنَا",
-    "Tàʿal": "تَعَال",
-    "Ijlis": "اِجْلِسْ",
-    "Ijlisì": "اِجْلِسِي",
+    "Taʿàl": "تَعَال",
+    "Ìjlis": "اِجْلِسْ",
+    "Ìjlisi": "اِجْلِسِي",
     "Là tàqlaq": "لَا تَقْلَق",
     "Hal yùmkin ad-dukhùl?": "هَلْ يُمْكِنُ الدُّخُول؟",
     "Là, mamnùʿ": "لَا، مَمْنُوع",
-    "Tàʿal, ijlis": "تَعَالَ، اِجْلِسْ",
+    "Taʿàl, ìjlis": "تَعَالَ، اِجْلِسْ",
 
     "Sayyàra": "سَيَّارَة",
     "Tàksi": "تَاكْسِي",
-    "Dàrraja": "دَرَّاجَة",
+    "Darràja": "دَرَّاجَة",
     "Al-mìtro": "الْمِتْرُو",
     "Safìna": "سَفِينَة",
     "Sà'iq": "سَائِق",
@@ -5668,7 +5668,7 @@
     "Bikàm ilà al-fùnduq?": "بِكَمْ إِلَى الْفُنْدُق؟",
     "Qif hùna, min fàdlik": "قِفْ هُنَا، مِنْ فَضْلِكَ",
     "Bi as-sayyàra": "بِالسَّيَّارَة",
-    "Màshyan": "مَاشِيًا",
+    "Màshiyan": "مَاشِيًا",
     "Sarìʿ": "سَرِيع",
     "Batì'": "بَطِيء",
     "Kam sàʿa?": "كَمْ سَاعَة؟",
@@ -5706,7 +5706,7 @@
     { en: "You need to get a stranger's attention and ask them for something politely.", from: 5,
       has: ["Lau samàht", "Min fàdlik", "Àsif", "Tafàddal", "Nàʿam", "Là"] },
     { en: "The evening has gone well and you are saying goodbye, keen to meet again.", from: 33,
-      has: ["Màʿa as-salàma", "Ilà al-liqà'", "Tùsbih ʿalà khèir", "Kàna màsa'an jamìlan", "Hàdha ràqmi", "Urìd an aràki màrra ùkhra"] },
+      has: ["Màʿa as-salàma", "Ilà al-liqà'", "Tùsbih ʿalà khèir", "Kàna masà'an jamìlan", "Hàdha ràqmi", "Urìd an aràki màrra ùkhra"] },
     { en: "You have just sat down at a café and are ordering something to eat and drink.", from: 9,
       has: ["Mà'", "Qàhwa", "Urìd mà', min fàdlik", "Àna jà'iʿ", "Àna ʿatshàn", "Al-hisàb, min fàdlik"] },
     { en: "You are lost in a town and stop someone to ask for directions.", from: 10,
@@ -5718,21 +5718,21 @@
     { en: "Someone you just met asks you for coffee, and you have to answer.", from: 18,
       has: ["Hal nàshrab qàhwa màʿan?", "Bikùll surùr", "Là, shùkran", "Àsifa, àna mashghùla", "Ilà al-liqà' qarìban"] },
     { en: "You have lost the thread of what someone just said and need to get back on track.", from: 27,
-      has: ["Marra ùkhra, min fàdlik", "Màdha yaʿni?", "Kèifa taqùl hàdha?", "Là àʿrif", "Fahìmtu", "Tàyyib", "Inshàallah"] },
+      has: ["Màrra ùkhra, min fàdlik", "Màdha yàʿni?", "Kèifa taqùl hàdha?", "Là àʿrif", "Fahìmtu", "Tàyyib", "Inshàallah"] },
     { en: "You feel unwell and need to explain what is wrong and find help.", from: 22,
       has: ["Àna marìd", "ʿÌndi àlam hùna", "ʿÌndi sudàʿ", "ʿÌndi hùmma", "Ahtàj tabìb", "Àina as-saydalìyya?", "Àna àhsan al-yàum"] },
     { en: "Someone asks what you did yesterday.", from: 23,
-      has: ["Kùntu fi al-bàit", "Dhahàbtu ilà al-bàit", "Màdha àkalta?", "Àʿjabani", "Hal àʿjabak?", "Màdha fàʿalta ams?", "Kàna jamìlan"] },
+      has: ["Kùntu fi al-bàit", "Dhahàbtu ilà al-bàit", "Màdha akàlta?", "Àʿjabani", "Hal àʿjabak?", "Màdha faʿàlta ams?", "Kàna jamìlan"] },
     { en: "You are haggling over the price of something at the market.", from: 24,
       has: ["Ghàli", "Ghàli jìddan", "Hal ʿìndak takhfìd?", "Sa'àkhudh hàdha", "Là urìd", "Sa'ufàkkir", "Kam hàdha?"] },
     { en: "You are getting to know someone: their hobbies and how long they have been here.", from: 31,
       has: ["Màdha tuhibbìn an tafʿalì?", "Uhìbb al-mùsiqa", "Uhìbb al-aflàm", "Uhìbb as-sàfar", "Mùndhu matà ànti hùna?", "Hal taʿmalìn àm tadrusìn?", "Uhìbbuhu jìddan"] },
     { en: "Someone asks whether you are married and who you live with.", from: 35,
-      has: ["Hal ànti mutazàwwija?", "Àna mutazàwwij", "Lastu mutazàwwij", "Hal ʿìndaki àtfal?", "Aʿìsh wàhdi", "Aʿìsh màʿa ùsrati", "Àna hùna li al-ʿàmal"] },
+      has: ["Hal ànti mutazàwwija?", "Àna mutazàwwij", "Làstu mutazàwwij", "Hal ʿìndaki àtfal?", "Aʿìsh wàhdi", "Aʿìsh màʿa ùsrati", "Àna hùna li al-ʿàmal"] },
     { en: "You are at the table with others, ordering, mentioning what you cannot eat, and settling the bill.", from: 36,
-      has: ["Màdha tànsahìn?", "Àna nabàti", "Là àkul làhm", "Bidùn sùkkar, min fàdlik", "Ladhìdh!", "Hal nàqsim al-hisàb?", "Al-hisàb ʿalàyya"] },
+      has: ["Màdha tansahìn?", "Àna nabàti", "Là àkul làhm", "Bidùn sùkkar, min fàdlik", "Ladhìdh!", "Hal nàqsim al-hisàb?", "Al-hisàb ʿalàyya"] },
     { en: "Someone pays you a compliment or blessing and you need to answer it correctly.", from: 38,
-      has: ["Allàh yuʿtìki al-ʿàfiya", "Allàh yuʿàfìk", "Tìslam yadàki", "Allàh yusàllimuk", "Mabrùk", "Allàh yubàrik fìk", "Sàhha", "ʿAlà qàlbik"] },
+      has: ["Allàh yuʿtìki al-ʿàfiya", "Allàh yuʿafìk", "Tìslam yadàki", "Allàh yusàllimuk", "Mabrùk", "Allàh yubàrik fìk", "Sàhha", "ʿAlà qàlbik"] },
   ];
 
   // The highest-return two seconds in the language: a line that has one
@@ -5745,11 +5745,11 @@
     { say: "Màrhaban", back: "Àhlan" },
     { say: "Àhlan wa sàhlan", back: "Àhlan bìk" },
     { say: "Shùkran", back: "ʿÀfwan" },
-    { say: "Allàh yuʿtìki al-ʿàfiya", back: "Allàh yuʿàfìk" },
+    { say: "Allàh yuʿtìki al-ʿàfiya", back: "Allàh yuʿafìk" },
     { say: "Tìslam yadàki", back: "Allàh yusàllimuk" },
     { say: "Sàhha", back: "ʿAlà qàlbik" },
     { say: "Mabrùk", back: "Allàh yubàrik fìk" },
-    { say: "Nàwwarti al-màkan", back: "Hàdha min dhàuqik" },
+    { say: "Nawwàrti al-màkan", back: "Hàdha min dhàuqik" },
     { say: "Tasharràft", back: "Wa àna àidan" },
     { say: "Kèifa hàluk?", back: "Àna bikhèir, shùkran" },
     { say: "Màʿa as-salàma", back: "Ilà al-liqà'" },
@@ -5838,7 +5838,7 @@
     {
       rule: "The question words are the giveaway",
       why: "Four words carry most of the difference. Learn these and half of what you hear stops being a wall.",
-      keys: ["Àina al-hammàm?", "Màdha yaʿni?", "Kam as-sìʿr?", "Mà ìsmuk?"]
+      keys: ["Àina al-hammàm?", "Màdha yàʿni?", "Kam as-sìʿr?", "Mà ìsmuk?"]
     },
     {
       rule: "The present tense wears a b-",
@@ -5873,13 +5873,14 @@
     {
       rule: "And some words are simply other words",
       why: "No rule will get you these. They are the ones worth learning as they are.",
-      keys: ["Nùqud", "Hàdha kathìr", "Hàdha sadìqi", "Làkin"]
+      keys: ["Nuqùd", "Hàdha kathìr", "Hàdha sadìqi", "Làkin"]
     }
   ];
 
   // Keyed on the fusha phrase, so everything else in the app - progress,
   // conversations, the phrasebook - keeps working on one set of keys.
   var DIALECT = {
+    "Àrbaʿa": { lev: ["Àrbʿa", "أربعة"] },
     "Àfʿal": { lev: ["Bàʿmel", "بعمل"] },
     "Anàm": { lev: ["Bnàm", "بنام"] },
     "Àftah ash-shùbbak": { lev: ["Bìftah ash-shùbbak", "بفتح الشباك"] },
@@ -5908,9 +5909,9 @@
     "Kèifa taqùl hàdha bil-ʿarabìyya?": { lev: ["Kìf bitʾùl hàda bil-ʿàrabi?", "كيف بتقول هدا بالعربي؟"] },
     "Hàdha, là dhàlik": { lev: ["Hàda, mish hadàk", "هدا مش هداك"] },
     "Nàʿam, hàdha hùwa!": { lev: ["Èh, hàda hùwe!", "إي هدا هو!"] },
-    "Intàdhir, ufàkkir": { lev: ["Stànna, ʿam fàkker", "ستنى عم فكر"] },
+    "Ìntadhir, ufàkkir": { lev: ["Stànna, ʿam fàkker", "ستنى عم فكر"] },
     "Saʿìdni, nasìtu al-kàlima": { lev: ["Saʿèdni, nsìt al-kìlme", "ساعدني نسيت الكلمة"] },
-    "Limàdha tàtaʿallam al-ʿarabìyya?": { lev: ["Lèish ʿam tìtʿallam ʿàrabi?", "ليش عم تتعلم عربي؟"] },
+    "Limàdha tataʿàllam al-ʿarabìyya?": { lev: ["Lèish ʿam tìtʿallam ʿàrabi?", "ليش عم تتعلم عربي؟"] },
     "Limàdha tataʿallamìn al-ʿarabìyya?": { lev: ["Lèish ʿam tìtʿallami ʿàrabi?", "ليش عم تتعلمي عربي؟"] },
     "Uhìbb sàut al-ʿarabìyya": { lev: ["Bhìbb sòt al-ʿàrabi", "بحب صوت العربي"] },
     "Hìya lùgha jamìla": { lev: ["Hìyye lùgha hìlwe", "هي لغة حلوة"] },
@@ -5919,10 +5920,10 @@
     "Àna hùna li al-lùgha": { lev: ["Àna hòn lal-lùgha", "أنا هون للغة"] },
     "Urìd an àtakàllam màʿa an-nàs": { lev: ["Bìddi ìhki maʿ an-nàs", "بدي إحكي مع الناس"] },
     "Urìd an àʿrif àkthar": { lev: ["Bìddi àʿref àktar", "بدي أعرف أكتر"] },
-    "Àtaʿallam wàhdi": { lev: ["ʿAm ìtʿallam làhali", "عم إتعلم لحالي"] },
-    "Àtaʿallam min tatbìq fi hàtifi": { lev: ["ʿAm ìtʿallam min tatbìʾ bit-telefòn", "عم إتعلم من تطبيق بالتلفون"] },
-    "Àna àtaʿallam mùndhu sàna": { lev: ["Sàrli sàne ʿam ìtʿallam", "صرلي سنة عم إتعلم"] },
-    "Àtaʿallam qalìlan kull yàum": { lev: ["ʿAm ìtʿallam shwày kill yòm", "عم إتعلم شوي كل يوم"] },
+    "Ataʿàllam wàhdi": { lev: ["ʿAm itʿàllam làhali", "عم إتعلم لحالي"] },
+    "Ataʿàllam min tatbìq fi hàtifi": { lev: ["ʿAm itʿàllam min tatbìʾ bit-telefòn", "عم إتعلم من تطبيق بالتلفون"] },
+    "Àna ataʿàllam mùndhu sàna": { lev: ["Sàrli sàne ʿam itʿàllam", "صرلي سنة عم إتعلم"] },
+    "Ataʿàllam qalìlan kull yàum": { lev: ["ʿAm itʿàllam shwày kill yòm", "عم إتعلم شوي كل يوم"] },
     "Uhìbb al-mùsiqa al-ʿarabìyya": { lev: ["Bhìbb al-mùsiqa al-ʿarabìyye", "بحب الموسيقى العربية"] },
     "Uhìbb ash-shiʿr": { lev: ["Bhìbb ash-shiʿr", "بحب الشعر"] },
     "Bidùn bàsal, min fàdlik": { lev: ["Bàla bàsal, lau samàht", "بلا بصل لو سمحت"] },
@@ -5949,7 +5950,7 @@
     "Nakhbàki!": { lev: ["Kàsik!", "كاسك!"] },
     "Àna là àshrab, làkin tafàddal": { lev: ["Àna mà bìshrab, bas tfàddal", "أنا ما بشرب بس تفضل"] },
     "Là, shùkran, sa'àshrab mà'": { lev: ["Làʾ shùkran, rah ìshrab mày", "لأ شكرا رح إشرب مي"] },
-    "Hal hùnaka bàr qarìb min hùna?": { lev: ["Fìh bàr arìb min hòn?", "فيه بار قريب من هون؟"] },
+    "Hal hunàka bàr qarìb min hùna?": { lev: ["Fìh bàr arìb min hòn?", "فيه بار قريب من هون؟"] },
     "Hal shàhadta al-mubàrà?": { lev: ["Shift al-màtch?", "شفت الماتش؟"] },
     "Hal shàhadti al-mubàrà?": { lev: ["Shìfti al-màtch?", "شفتي الماتش؟"] },
     "Man fàza?": { lev: ["Mìn rìbeh?", "مين ربح؟"] },
@@ -5957,7 +5958,7 @@
     "Man tushàjjiʿ?": { lev: ["Mìn bitshàjjeʿ?", "مين بتشجع؟"] },
     "Man tushajjiʿìn?": { lev: ["Mìn bitshajjʿi?", "مين بتشجعي؟"] },
     "Ushàjjiʿ Milàn": { lev: ["Bshàjjeʿ Milàn", "بشجع ميلان"] },
-    "Hùnaka izdihàm": { lev: ["Fi zàhme", "في زحمة"] },
+    "Hunàka izdihàm": { lev: ["Fi zàhme", "في زحمة"] },
     "Al-izdihàm shadìd al-yàum": { lev: ["Az-zàhme ktìr al-yòm", "الزحمة كتير اليوم"] },
     "At-tarìq mughlàq": { lev: ["At-tarìʾ msàkkar", "الطريق مسكر"] },
     "Àna mut'àkhkhir bisàbab al-izdihàm": { lev: ["Àna mit'àkhkhir bisàbab az-zàhme", "أنا متأخر بسبب الزحمة"] },
@@ -5976,7 +5977,7 @@
     "Hal àstatìʿ an usàʿiduki?": { lev: ["Bàʾder sàʿdik?", "بقدر ساعدك؟"] },
     "Ahdàrtu làka shày' saghìr": { lev: ["Jibtìllak shi zghìr", "جبتلك شي زغير"] },
     "Ahdàrtu làki shày' saghìr": { lev: ["Jibtìllik shi zghìr", "جبتلك شي زغير"] },
-    "Haqqan shabìʿtu, làkin kàna ladhìdh": { lev: ["Wàllah shbìʿt, bas kàn ktìr tàyyeb", "والله شبعت بس كان كتير طيب"] },
+    "Hàqqan shabìʿtu, làkin kàna ladhìdh": { lev: ["Wàllah shbìʿt, bas kàn ktìr tàyyeb", "والله شبعت بس كان كتير طيب"] },
     "Àsif ʿalà at-ta'khìr": { lev: ["Àsef ʿat-ta'khìr", "آسف عالتأخير"] },
     "Yàjib an àdhhab, al-wàqt mut'àkhkhir": { lev: ["Làzem ròh, sàr wàʾt", "لازم روح صار وقت"] },
     "Al-màrra al-qàdima ʿìndana": { lev: ["Al-màrra al-jàyye ʿànna", "المرة الجاية عنا"] },
@@ -5988,11 +5989,11 @@
     "Hàdha bàrid": { lev: ["Hàda bàred", "هدا بارد"] },
     "Ghàyyirhu, min fàdlik": { lev: ["Ghàyyiro, lau samàht", "غيرو لو سمحت"] },
     "Hal hàdha hàrr?": { lev: ["Hàda hàrr?", "هدا حار؟"] },
-    "Al-mìftah là yàʿmal": { lev: ["Al-miftàh mà byìshtighel", "المفتاح ما بيشتغل"] },
+    "Al-miftàh là yàʿmal": { lev: ["Al-miftàh mà byìshtighel", "المفتاح ما بيشتغل"] },
     "Al-mukàyyif là yàʿmal": { lev: ["Al-mkàyyef mà byìshtighel", "المكيف ما بيشتغل"] },
     "Al-waifài là yàʿmal": { lev: ["Al-waifài mà byìshtighel", "الوايفاي ما بيشتغل"] },
-    "Làisa hùnaka mà' sàkhin": { lev: ["Mà fi mày sùkhne", "ما في مي سخنة"] },
-    "Hùnaka khàta' fi al-hisàb": { lev: ["Fi ghàlat bil-hsàb", "في غلط بالحساب"] },
+    "Làisa hunàka mà' sàkhin": { lev: ["Mà fi mày sùkhne", "ما في مي سخنة"] },
+    "Hunàka khàta' fi al-hisàb": { lev: ["Fi ghàlat bil-hsàb", "في غلط بالحساب"] },
     "Urìd an arà al-ghùrfa àwwalan": { lev: ["Bìddi shùf al-ghùrfe àwwal", "بدي شوف الغرفة أول"] },
     "Hal al-futùr mashmùl?": { lev: ["Al-ftùr mashmùl?", "الفطور مشمول؟"] },
     "Urìd wàsl, min fàdlik": { lev: ["Bìddi wàsel, lau samàht", "بدي وصل لو سمحت"] },
@@ -6034,7 +6035,7 @@
     "Hal tàʿrifìn hàdha ash-shàriʿ?": { lev: ["Btàʿrfi hàda ash-shàreʿ?", "بتعرفي هدا الشارع؟"] },
     "Hàdha al-ʿunwàn khàta'": { lev: ["Hàda al-ʿunwàn ghàlat", "هدا العنوان غلط"] },
     "Àrini ʿalà al-khàrita": { lev: ["Warrìni ʿal-khàrta", "وريني عالخارطة"] },
-    "Làisa hùnaka irsàl": { lev: ["Mà fi irsàl", "ما في إرسال"] },
+    "Làisa hunàka irsàl": { lev: ["Mà fi irsàl", "ما في إرسال"] },
     "Làisa ʿìndi intèrnet": { lev: ["Mà ʿàndi intèrnet", "ما عندي إنترنت"] },
     "Battàriyati fàrigha": { lev: ["Battarìti khìlsit", "بطاريتي خلصت"] },
     "Hal yùmkin ash-shàhn hùna?": { lev: ["Fìni ìshhan hòn?", "فيني إشحن هون؟"] },
@@ -6079,16 +6080,16 @@
     "Màdha tàfʿal al-làila?": { lev: ["Shu rah tìʿmal al-lèile?", "شو رح تعمل الليلة؟"] },
     "Màdha tafʿalìn al-làila?": { lev: ["Shu rah tìʿmali al-lèile?", "شو رح تعملي الليلة؟"] },
     "Hal turìd mashrùb?": { lev: ["Bìddak tìshrab shi?", "بدك تشرب شي؟"] },
-    "Hal turìdìn mashrùb?": { lev: ["Bìddik tìshrabi shi?", "بدك تشربي شي؟"] },
+    "Hal turidìn mashrùb?": { lev: ["Bìddik tìshrabi shi?", "بدك تشربي شي؟"] },
     "Màdha tuhìbb an tà'kul?": { lev: ["Shu bithìbb tòkol?", "شو بتحب توكل؟"] },
     "Màdha tuhibbìn an ta'kulì?": { lev: ["Shu bithìbbi tòkli?", "شو بتحبي توكلي؟"] },
     "Àina yà'kul an-nàs jàyyidan hùna?": { lev: ["Wèin byòklu mnìh hòn?", "وين بياكلوا منيح هون؟"] },
-    "Hal hùnaka màkan shàʿbi qarìb min hùna?": { lev: ["Fìh mahàll shàʿbi arìb min hòn?", "فيه محل شعبي قريب من هون؟"] },
+    "Hal hunàka màkan shàʿbi qarìb min hùna?": { lev: ["Fìh mahàll shàʿbi arìb min hòn?", "فيه محل شعبي قريب من هون؟"] },
     "Ày màkan tànsah bìhi?": { lev: ["Ày mahàll bitìnsah?", "أي محل بتنصح؟"] },
-    "Ày màkan tànsahìn bìhi?": { lev: ["Ày mahàll bitìnsahi?", "أي محل بتنصحي؟"] },
+    "Ày màkan tansahìn bìhi?": { lev: ["Ày mahàll bitìnsahi?", "أي محل بتنصحي؟"] },
     "Urìd an ujàrrib shày' mahàlli": { lev: ["Bìddi jàrreb shi mahàlli", "بدي جرب شي محلي"] },
     "Hal nàdhhab màʿan?": { lev: ["Nròh sàwa?", "نروح سوا؟"] },
-    "Hal tà'ti maʿì?": { lev: ["Bìtiji màʿi?", "بتيجي معي؟"] },
+    "Hal tà'ti màʿi?": { lev: ["Bìtiji màʿi?", "بتيجي معي؟"] },
     "Nàltaqi amàm as-sìnama": { lev: ["Bnitlàʾa ʾuddàm as-sìnama", "بنتلاقى قدام السينما"] },
     "Khudàr": { lev: ["Khùdra", "خضرة"] },
     "Fawàkih": { lev: ["Fawàke", "فواكه"] },
@@ -6120,13 +6121,13 @@
     "Kam yastàghriq?": { lev: ["Addèsh bìddo wàʾt?", "قديش بدو وقت؟"] },
     "Kam daqìqa?": { lev: ["Kam daʾìʾa?", "كم دقيقة؟"] },
     "Khams daqà'iq min hùna": { lev: ["Khams daʾàyeʾ ʿan hòn", "خمس دقايق عن هون"] },
-    "ʿÀshr daqà'iq màshyan": { lev: ["ʿÀshr daʾàyeʾ màshi", "عشر دقايق ماشي"] },
+    "ʿÀshr daqà'iq màshiyan": { lev: ["ʿÀshr daʾàyeʾ màshi", "عشر دقايق ماشي"] },
     "Baʿìd jìddan": { lev: ["Bʿìd ktìr", "بعيد كتير"] },
     "Làisa baʿìdan": { lev: ["Mish bʿìd", "مش بعيد"] },
     "Hal astatìʿ an àmshi?": { lev: ["Fìni ìmshi?", "فيني إمشي؟"] },
     "Sa'àkhudh tàksi, hùwa baʿìd": { lev: ["Rah àkhod tàksi, bʿìd", "رح آخد تاكسي بعيد"] },
-    "Àna àtaʿallam al-ʿarabìyya màʿak": { lev: ["ʿAm ìtʿallam ʿàrabi màʿak", "عم إتعلم عربي معك"] },
-    "Àna àtaʿallam al-ʿarabìyya màʿaki": { lev: ["ʿAm ìtʿallam ʿàrabi màʿik", "عم إتعلم عربي معك"] },
+    "Àna ataʿàllam al-ʿarabìyya màʿak": { lev: ["ʿAm itʿàllam ʿàrabi màʿak", "عم إتعلم عربي معك"] },
+    "Àna ataʿàllam al-ʿarabìyya màʿaki": { lev: ["ʿAm itʿàllam ʿàrabi màʿik", "عم إتعلم عربي معك"] },
     "Uhàwil an àfham": { lev: ["ʿAm bhàwel ìfham", "عم بحاول إفهم"] },
     "ʿAllìmni hàdha": { lev: ["ʿAllìmni hàda", "علمني هدا"] },
     "ʿAllimìni hàdha": { lev: ["ʿAllimìni hàda", "علميني هدا"] },
@@ -6136,8 +6137,8 @@
     "Khudhni màʿak": { lev: ["Khùdni màʿak", "خدني معك"] },
     "Khudhìni màʿaki": { lev: ["Khudìni màʿik", "خديني معك"] },
     "Hayyà bina màʿan": { lev: ["Yàlla nròh sàwa", "يلا نروح سوا"] },
-    "Taʿàla maʿì": { lev: ["Tàʿa màʿi", "تعا معي"] },
-    "Taʿàli maʿì": { lev: ["Tàʿi màʿi", "تعي معي"] },
+    "Taʿàla màʿi": { lev: ["Tàʿa màʿi", "تعا معي"] },
+    "Taʿàli màʿi": { lev: ["Tàʿi màʿi", "تعي معي"] },
     "Sahhìhni": { lev: ["Sahhèhni", "صححني"] },
     "Sahhihìni": { lev: ["Sahhehìni", "صححيني"] },
     "Sahhìhni ìdha akhtà'tu": { lev: ["Sahhèhni ìza ghlìt", "صححني إذا غلطت"] },
@@ -6172,7 +6173,7 @@
     "Al-bànk mughlàq al-yàum": { lev: ["Al-bànk msàkkar al-yòm", "البنك مسكر اليوم"] },
     "Al-màdrasa": { lev: ["Al-màdrase", "المدرسة"] },
     "Ad-dukkàn": { lev: ["Al-mahàll", "المحل"] },
-    "Hal hùnaka sùbermarket qarìb min hùna?": { lev: ["Fìh sùbermarket arìb min hòn?", "فيه سوبرماركت قريب من هون؟"] },
+    "Hal hunàka sùbermarket qarìb min hùna?": { lev: ["Fìh sùbermarket arìb min hòn?", "فيه سوبرماركت قريب من هون؟"] },
     "Al-kanìsa": { lev: ["Al-kanìse", "الكنيسة"] },
     "Al-maidàn": { lev: ["As-sàha", "الساحة"] },
     "Al-hadìqa": { lev: ["Al-hadìʾa", "الحديقة"] },
@@ -6183,13 +6184,13 @@
     "Hal al-bànk maftùh?": { lev: ["Al-bànk maftùh?", "البنك مفتوح؟"] },
     "Nàʿam, hùwa qarìb": { lev: ["Èh, hùwe arìb", "إي هو قريب"] },
     "Al-bànk khàlf al-fùnduq": { lev: ["Al-bànk wàra al-fùnduq", "البنك ورا الفندق"] },
-    "Intàdhirni amàm al-bàb": { lev: ["Stannàni ʾuddàm al-bàb", "ستناني قدام الباب"] },
-    "Intàdhirìni amàm al-bàb": { lev: ["Stannìni ʾuddàm al-bàb", "ستنيني قدام الباب"] },
+    "Intadhìrni amàm al-bàb": { lev: ["Stannàni ʾuddàm al-bàb", "ستناني قدام الباب"] },
+    "Intadhirìni amàm al-bàb": { lev: ["Stannìni ʾuddàm al-bàb", "ستنيني قدام الباب"] },
     "Al-màtʿam bijànib al-bànk": { lev: ["Al-màtʿam jamb al-bànk", "المطعم جمب البنك"] },
     "Al-mahàtta bàina al-bànk wa al-fùnduq": { lev: ["Al-mahàtta bèin al-bànk w al-fùnduq", "المحطة بين البنك والفندق"] },
     "Ghùrfati fàuq al-màtbakh": { lev: ["Ghùrfti fòʾ al-màtbakh", "غرفتي فوق المطبخ"] },
     "Al-qìtta tàht as-sarìr": { lev: ["Al-bìsse tàht as-sarìr", "البسة تحت السرير"] },
-    "Al-mìftah dàkhil al-haqìba": { lev: ["Al-miftàh jùwwa ash-shànta", "المفتاح جوا الشنطة"] },
+    "Al-miftàh dàkhil al-haqìba": { lev: ["Al-miftàh jùwwa ash-shànta", "المفتاح جوا الشنطة"] },
     "As-sayyàra khàrij al-fùnduq": { lev: ["As-sayyàra bàrra al-fùnduq", "السيارة برا الفندق"] },
     "Qàbla dhàlik": { lev: ["ʾAbl hadàk", "قبل هداك"] },
     "Baʿda dhàlik": { lev: ["Baʿd hadàk", "بعد هداك"] },
@@ -6220,7 +6221,7 @@
     "Antàdhir at-tàksi": { lev: ["Bìstanna at-tàksi", "بستنى التاكسي"] },
     "Àjlis hùna": { lev: ["Bàʾʿod hòn", "بقعد هون"] },
     "Àmshi ilà as-sùq": { lev: ["Bìmshi ʿas-sùq", "بمشي عالسوق"] },
-    "Àbhath ʿan al-mìftah": { lev: ["Bidàwwir ʿal-mìftah", "بدور عالمفتاح"] },
+    "Àbhath ʿan al-miftàh": { lev: ["Bidàwwir ʿal-miftàh", "بدور عالمفتاح"] },
     "Là atadhàkkar": { lev: ["Mà bìtzakkar", "ما بتذكر"] },
     "Ànsa al-kàlima": { lev: ["Bànsa al-kìlme", "بنسى الكلمة"] },
     "Àbda' al-ʿàmal": { lev: ["Bàlish ash-shùghel", "بلش الشغل"] },
@@ -6252,7 +6253,7 @@
     "ʿÌndi àlam fi ʿuyùni min hàtifi": { lev: ["Byùjaʿni ʿyùni mn tilifòni", "بيوجعني عيوني من تلفوني"] },
     "Ìghsil yadàik": { lev: ["Ìghsil ìdeik", "اغسل إيديك"] },
     "Àʿtini yàdak": { lev: ["ʿAtìni ìdak", "عطيني إيدك"] },
-    "Al-mìftah amàm ʿuyùnak": { lev: ["Al-mìftah ʾuddàm ʿyùnak", "المفتاح قدام عيونك"] },
+    "Al-miftàh amàm ʿuyùnak": { lev: ["Al-miftàh ʾuddàm ʿyùnak", "المفتاح قدام عيونك"] },
     "Hal ʿìndak àlam fi dhàhrak?": { lev: ["ʿÀndak wàjaʿ b-dàhrak?", "عندك وجع بضهرك؟"] },
     "Zaitùn": { lev: ["Zeitùn", "زيتون"] },
     "Futùr": { lev: ["Ftùr", "فطور"] },
@@ -6347,10 +6348,10 @@
     "Min àina ànti?": {
       egy: ["Ìnti minèin?", "انت منين؟"], lev: ["Min wèin ìnti?", "من وين انتِ؟"], gulf: ["Min wèin ìnti?", "من وين انت؟"]
     },
-    "Marra ùkhra, min fàdlik": {
+    "Màrra ùkhra, min fàdlik": {
       lev: ["Màrra tànye, lau samàht", "مرة تانية لو سمحت"]
     },
-    "Màdha yaʿni?": {
+    "Màdha yàʿni?": {
       lev: ["Shu yàʿni?", "شو يعني؟"]
     },
     "Kèifa taqùl hàdha?": {
@@ -6374,7 +6375,7 @@
     "Nàʿam, fahìmtu": {
       lev: ["Èh, fhìmt", "إي فهمت"]
     },
-    "Là, marra ùkhra": {
+    "Là, màrra ùkhra": {
       lev: ["Làʾ, màrra tànye", "لأ مرة تانية"]
     },
     "Ilà al-ghad, inshàallah": {
@@ -6401,19 +6402,19 @@
     "Làisa ʿìndi": {
       lev: ["Mà ʿàndi", "ما عندي"]
     },
-    "Hùnaka mùshkila": {
+    "Hunàka mùshkila": {
       lev: ["Fìh mùshkile", "فيه مشكلة"]
     },
-    "Làisa hùnaka mùshkila": {
+    "Làisa hunàka mùshkila": {
       lev: ["Mà fìh mùshkile", "ما فيه مشكلة"]
     },
-    "Maʿì": {
+    "Màʿi": {
       lev: ["Màʿi", "معي"]
     },
-    "Làisa maʿì": {
+    "Làisa màʿi": {
       lev: ["Mà màʿi", "ما معي"]
     },
-    "Urìd shày, làkin làisa ʿìndi nùqud": {
+    "Urìd shày, làkin làisa ʿìndi nuqùd": {
       lev: ["Bìddi shày, bas mà ʿàndi masàri", "بدي شاي بس ما عندي مصاري"]
     },
     "Àna taʿbàn li'ànna al-jàww hàrr": {
@@ -6425,7 +6426,7 @@
     "Fi ày sàʿa?": {
       lev: ["Ày sàʿa?", "أي ساعة؟"]
     },
-    "Fi as-sàʿa thamàniya": {
+    "Fi as-sàʿa ath-thàmina": {
       lev: ["As-sàʿa tmàne", "الساعة تمانة"]
     },
     "Wa an-nìsf": {
@@ -6461,10 +6462,10 @@
     "Àna mut'àkhkhir": {
       lev: ["Àna mit'àkhkhir", "أنا متأخر"]
     },
-    "Nàʿam, làkin làisa ʿìndi nùqud": {
+    "Nàʿam, làkin làisa ʿìndi nuqùd": {
       lev: ["Èh, bas mà ʿàndi masàri", "إي بس ما عندي مصاري"]
     },
-    "Hal ʿìndak al-mìftah?": {
+    "Hal ʿìndak al-miftàh?": {
       lev: ["ʿÀndak al-miftàh?", "عندك المفتاح؟"]
     },
     "Hal tàdhhab al-àn?": {
@@ -6480,7 +6481,7 @@
       lev: ["Làʾ, mà ʿàndi", "لأ ما عندي"]
     },
     "Bi at-ta'kìd": {
-      lev: ["Àkid", "أكيد"]
+      lev: ["Akìd", "أكيد"]
     },
     "Kamà turìd": {
       lev: ["Zay mà bìddak", "زي ما بدك"]
@@ -6500,7 +6501,7 @@
     "Àna mustaʿìdd": {
       lev: ["Àna jàhez", "أنا جاهز"]
     },
-    "Àsif, là àstatìʿ": {
+    "Àsif, là astatìʿ": {
       lev: ["Àsef, mà bàʾder", "آسف ما بقدر"]
     },
     "Sa'akùn hunàk": {
@@ -6509,7 +6510,7 @@
     "Làisa al-àn": {
       lev: ["Mish hàllaʾ", "مش هلق"]
     },
-    "Màdha àkalta?": {
+    "Màdha akàlta?": {
       lev: ["Shu akàlt?", "شو أكلت؟"]
     },
     "Hal dhahàbta?": {
@@ -6650,7 +6651,7 @@
     "Kam as-sàʿa?": {
       egy: ["As-sàʿa kam?", "الساعة كام؟"], lev: ["Addèsh as-sàʿa?", "قديش الساعة؟"], gulf: ["As-sàʿa kam?", "الساعة كم؟"]
     },
-    "As-sàʿa khàmsa": {
+    "As-sàʿa al-khàmisa": {
       lev: ["As-sàʿa khàmse", "الساعة خمسة"]
     },
     "Kam as-sàʿa al-àn?": {
@@ -6824,7 +6825,7 @@
     "Al-bàit al-àbyad": {
       lev: ["Al-bèit al-àbyad", "البيت الأبيض"]
     },
-    "As-samà' zàrqa": {
+    "As-samà' zarqà'": {
       lev: ["As-sàma zàrʾa", "السما زرقا"]
     },
     "Mà làun as-samà'?": {
@@ -6836,10 +6837,10 @@
     "Uhìbb al-àkhdar": {
       lev: ["Bhèbb al-àkhdar", "بحب الأخضر"]
     },
-    "Hal hìya hàmra?": {
+    "Hal hìya hamrà'?": {
       lev: ["Hìyye hàmra?", "هي حمرا؟"]
     },
-    "Là, hìya sàuda": {
+    "Là, hìya saudà'": {
       lev: ["Làʾ, hìyye sòda", "لأ هي سودا"]
     },
     "Mà mìhnatuk?": {
@@ -7044,7 +7045,7 @@
       egy: ["Otobìs", "أوتوبيس"], lev: ["Al-bàs", "الباص"], gulf: ["Bàs", "باص"]
     },
     "Tàdhkara": {
-      lev: ["Tàzkara", "تزكرة"]
+      lev: ["Tàzkara", "تذكرة"]
     },
     "Haqìba": {
       lev: ["Shànta", "شنطة"]
@@ -7146,13 +7147,13 @@
       lev: ["ʿÀndak hiwayàt?", "عندك هوايات؟"]
     },
     "Uhìbb al-mùsiqa": {
-      lev: ["Bhìb al-mùsiqa", "بحب الموسيقى"]
+      lev: ["Bhìbb al-mùsiqa", "بحب الموسيقى"]
     },
     "Ày nàuʿ min al-mùsiqa?": {
       lev: ["Shu nàuʿ al-mùsiqa?", "شو نوع الموسيقى؟"]
     },
     "Uhìbb al-aflàm": {
-      lev: ["Bhìb al-aflàm", "بحب الأفلام"]
+      lev: ["Bhìbb al-aflàm", "بحب الأفلام"]
     },
     "Mà fìlmuki al-mufàddal?": {
       lev: ["Shu àhla fìlm ʿàndik?", "شو أحلى فيلم عندك؟"]
@@ -7161,10 +7162,10 @@
       lev: ["Shu àhla fìlm ʿàndak?", "شو أحلى فيلم عندك؟"]
     },
     "Uhìbb as-sàfar": {
-      lev: ["Bhìb as-sàfar", "بحب السفر"]
+      lev: ["Bhìbb as-sàfar", "بحب السفر"]
     },
     "Uhìbb at-tabkh": {
-      lev: ["Bhìb at-tàbekh", "بحب الطبخ"]
+      lev: ["Bhìbb at-tàbekh", "بحب الطبخ"]
     },
     "Àlʿab kùrat al-qàdam": {
       lev: ["Bìlʿab kùra", "بلعب كرة"]
@@ -7214,16 +7215,16 @@
     "Nàuʿan mà": {
       lev: ["Nùss nùss", "نص نص"]
     },
-    "Haqqan?": {
+    "Hàqqan?": {
       lev: ["Wàllah?", "والله؟"]
     },
     "Dà'iman": {
       lev: ["Dàyman", "دايما"]
     },
-    "Àhyanan": {
+    "Ahyànan": {
       lev: ["Marràt", "مرات"]
     },
-    "Al-fìlm mumtìʿ": {
+    "Al-fìlm mùmtiʿ": {
       lev: ["Al-fìlm hìlu", "الفيلم حلو"]
     },
     "Hal ta'tìn hùna dà'iman?": {
@@ -7274,16 +7275,16 @@
     "Urìd an aràk màrra ùkhra": {
       lev: ["Bìddi shùfak màrra tànye", "بدي شوفك مرة تانية"]
     },
-    "Kàna màsa'an jamìlan": {
+    "Kàna masà'an jamìlan": {
       lev: ["Kàn màsa hìlu", "كان مسا حلو"]
     },
     "Sahìh": {
       lev: ["Sahh", "صح"]
     },
-    "Hàddithini àkthar": {
+    "Haddithìni àkthar": {
       lev: ["Ihkìli àktar", "احكيلي أكتر"]
     },
-    "Hàddithni àkthar": {
+    "Haddìthni àkthar": {
       lev: ["Ihkìli àktar", "احكيلي أكتر"]
     },
     "Wa baʿd?": {
@@ -7316,10 +7317,10 @@
     "Àna mutazàwwija": {
       lev: ["Àna mitzàwwje", "أنا متزوجة"]
     },
-    "Lastu mutazàwwij": {
+    "Làstu mutazàwwij": {
       lev: ["Mà ana mitzàwwej", "ما أنا متزوج"]
     },
-    "Lastu mutazàwwija": {
+    "Làstu mutazàwwija": {
       lev: ["Mà ana mitzàwwje", "ما أنا متزوجة"]
     },
     "Hal ʿìndaki àtfal?": {
@@ -7335,13 +7336,13 @@
       lev: ["Mà ʿàndi wlàd", "ما عندي ولاد"]
     },
     "Aʿìsh wàhdi": {
-      lev: ["ʿAyesh làhali", "عايش لحالي"]
+      lev: ["ʿÀyesh làhali", "عايش لحالي"]
     },
     "Aʿìsh màʿa ùsrati": {
-      lev: ["ʿAyesh maʿ ʿèilti", "عايش مع عيلتي"]
+      lev: ["ʿÀyesh maʿ ʿèilti", "عايش مع عيلتي"]
     },
     "Aʿìsh màʿa sadìq": {
-      lev: ["ʿAyesh maʿ sàheb", "عايش مع صاحب"]
+      lev: ["ʿÀyesh maʿ sàheb", "عايش مع صاحب"]
     },
     "Hal ànti hùna wàhdaki?": {
       lev: ["Ìnti hòn làhalik?", "إنتي هون لحالك؟"]
@@ -7358,7 +7359,7 @@
     "Màdha tàfʿal hùna?": {
       lev: ["Shu ʿam tìʿmal hòn?", "شو عم تعمل هون؟"]
     },
-    "Màdha tànsahìn?": {
+    "Màdha tansahìn?": {
       lev: ["Shu bitìnsahi?", "شو بتنصحي؟"]
     },
     "Màdha tànsah?": {
@@ -7373,7 +7374,7 @@
     "Là àkul làhm": {
       lev: ["Mà bòkol làhme", "ما بوكل لحمة"]
     },
-    "Là àshrab al-kùhul": {
+    "Là àshrab al-kuhùl": {
       lev: ["Mà bìshrab kuhùl", "ما بشرب كحول"]
     },
     "Hal fìhi làhm khinzìr?": {
@@ -7388,10 +7389,10 @@
     "Àkthar min al-làzim": {
       lev: ["Àktar min al-làzem", "أكتر من اللازم"]
     },
-    "Àna àdʿuki": {
+    "Àna adʿùki": {
       lev: ["Àna ʿàzmik", "أنا عازمك"]
     },
-    "Àna àdʿuk": {
+    "Àna adʿùk": {
       lev: ["Àna ʿàzemak", "أنا عازمك"]
     },
     "Hal nàqsim al-hisàb?": {
@@ -7406,7 +7407,7 @@
     "Là, àbadan": {
       lev: ["Làʾ, àbadan", "لأ أبدا"]
     },
-    "Hal turìdìn àkthar?": {
+    "Hal turidìn àkthar?": {
       lev: ["Bìddik kamàn?", "بدك كمان؟"]
     },
     "Ànti kal-qàmar": {
@@ -7440,13 +7441,13 @@
       lev: ["Tìslam ìdeik", "تسلم إيديك"]
     },
     "Sàhha": {
-      lev: ["Sàhtein", "صحتين"]
+      lev: ["Sahtèin", "صحتين"]
     },
-    "Nàwwarti al-màkan": {
-      lev: ["Nàwwarti", "نورتي"]
+    "Nawwàrti al-màkan": {
+      lev: ["Nawwàrti", "نورتي"]
     },
-    "Nàwwart al-màkan": {
-      lev: ["Nàwwart", "نورت"]
+    "Nawwàrta al-màkan": {
+      lev: ["Nawwàrta", "نورت"]
     },
     "Min ʿuyùni": {
       lev: ["Min ʿyùni", "من عيوني"]
@@ -7457,16 +7458,16 @@
     "Allàh yukhallìk": {
       lev: ["Allàh ykhallìk", "الله يخليك"]
     },
-    "Tikràm ʿàinuki": {
-      lev: ["Tikràm ʿèinik", "تكرم عينك"]
+    "Tìkram ʿàinuki": {
+      lev: ["Tìkram ʿèinik", "تكرم عينك"]
     },
-    "Tikràm ʿàinuk": {
-      lev: ["Tikràm ʿèinak", "تكرم عينك"]
+    "Tìkram ʿàinuk": {
+      lev: ["Tìkram ʿèinak", "تكرم عينك"]
     },
     "Hal tuhìbb hàdha?": {
       lev: ["Bithìbb hàda?", "بتحب هدا؟"]
     },
-    "Allàh yuʿàfìk": {
+    "Allàh yuʿafìk": {
       lev: ["Allàh yʿàfik", "الله يعافيك"]
     },
     "Allàh yuʿafìki": {
@@ -7475,7 +7476,7 @@
     "Allàh yusàllimuk": {
       lev: ["Allàh yislàmak", "الله يسلمك"]
     },
-    "Allàh yusallìmuki": {
+    "Allàh yusàllimuki": {
       lev: ["Allàh yislàmik", "الله يسلمك"]
     },
     "ʿAlà qàlbik": {
@@ -7502,10 +7503,10 @@
     "Hàdha min dhàuqiki": {
       lev: ["Hàda min zòʾik", "هدا من ذوقك"]
     },
-    "Àna àtaʿallam": {
-      lev: ["ʿAm ìtʿallam", "عم إتعلم"]
+    "Àna ataʿàllam": {
+      lev: ["ʿAm itʿàllam", "عم إتعلم"]
     },
-    "Là, ànta kàrim": {
+    "Là, ànta karìm": {
       lev: ["Làʾ, ìnta karìm", "لأ إنتَ كريم"]
     },
     "Là, ànti karìma": {
@@ -7520,19 +7521,19 @@
     "Yà hàjja": {
       lev: ["Yà hàjje", "يا حاجة"]
     },
-    "Yà mùʿallim": {
+    "Yà muʿàllim": {
       lev: ["Yà mʿàllem", "يا معلم"]
     },
-    "Sanàra mà yàhduth": {
+    "Sànara mà yàhduth": {
       lev: ["Mnshùf shu bìsir", "منشوف شو بصير"]
     },
     "Ghàdan natahàddath": {
       lev: ["Bùkra mnìhki", "بكرا منحكي"]
     },
-    "Là ùrid an ùzʿijak": {
+    "Là urìd an ùzʿijak": {
       lev: ["Mà bìddi ìzʿjak", "ما بدي إزعجك"]
     },
-    "Là ùrid an ùzʿijaki": {
+    "Là urìd an ùzʿijaki": {
       lev: ["Mà bìddi ìzʿjik", "ما بدي إزعجك"]
     },
     "Shùkran, hàdha kàfi": {
@@ -7622,7 +7623,7 @@
     "Limàdha là turìd shày?": {
       lev: ["Lèish mà bìddak shày?", "ليش ما بدك شاي؟"]
     },
-    "Limàdha hùnaka mùshkila?": {
+    "Limàdha hunàka mùshkila?": {
       lev: ["Lèish fìh mùshkile?", "ليش فيه مشكلة؟"]
     },
     "Limàdha hàdha ghàli?": {
@@ -7742,7 +7743,7 @@
     "Ghùrfat an-nàum": {
       lev: ["Ghùrfet an-nòm", "غرفة النوم"]
     },
-    "Al-mìftah": {
+    "Al-miftàh": {
       lev: ["Al-miftàh", "المفتاح"]
     },
     "Tàwila": {
@@ -7769,7 +7770,7 @@
     "Àna fi al-bàit": {
       lev: ["Àna bil-bèit", "أنا بالبيت"]
     },
-    "Àina al-mìftah?": {
+    "Àina al-miftàh?": {
       egy: ["Fèin il-muftàh?", "فين المفتاح؟"], lev: ["Wèin al-miftàh?", "وين المفتاح؟"]
     },
     "ʿAlà at-tàwila": {
@@ -7874,13 +7875,13 @@
     "Ra'àitu": {
       lev: ["Shift", "شفت"]
     },
-    "Fàʿaltu": {
+    "Faʿàltu": {
       lev: ["ʿMìlt", "عملت"]
     },
-    "Màdha fàʿalta?": {
+    "Màdha faʿàlta?": {
       lev: ["Shu ʿmìlt?", "شو عملت؟"]
     },
-    "Màdha fàʿalta ams?": {
+    "Màdha faʿàlta ams?": {
       egy: ["ʿAmàlt èh imbàrih?", "عملت إيه إمبارح؟"], lev: ["Shu ʿmìlt mbàrih?", "شو عملت مبارح؟"]
     },
     "Àina kùnta?": {
@@ -7919,7 +7920,7 @@
     "Là urìd": {
       egy: ["Mish ʿàyiz", "مش عايز"], lev: ["Mà bìddi", "ما بدي"], gulf: ["Mà àbi", "ما أبي"]
     },
-    "Nùqud": {
+    "Nuqùd": {
       egy: ["Filùs", "فلوس"], lev: ["Masàri", "مصاري"], gulf: ["Filùs", "فلوس"]
     },
     "Sa'ufàkkir": {
@@ -7952,7 +7953,7 @@
     "Hal yùmkin at-taswìr?": {
       lev: ["Mùmken sàwwer?", "ممكن صور؟"]
     },
-    "Intàdhir làhza": {
+    "Ìntadhir làhza": {
       egy: ["Istànna làhza", "استنى لحظة"], lev: ["Stànna shwày", "استنى شوي"]
     },
     "Làhza min fàdlik": {
@@ -7961,10 +7962,10 @@
     "Hayyà bina": {
       egy: ["Yàlla bìna", "يلا بينا"], lev: ["Yàlla", "يلا"], gulf: ["Yàlla", "يلا"]
     },
-    "Tàʿal": {
+    "Taʿàl": {
       lev: ["Tàʿa", "تعا"]
     },
-    "Ijlis": {
+    "Ìjlis": {
       egy: ["Òʿʿod", "أقعد"], lev: ["Ùʾʿod", "اقعد"]
     },
     "Là tàqlaq": {
@@ -7976,13 +7977,13 @@
     "Là, mamnùʿ": {
       lev: ["Làʾ, mamnùʿ", "لأ ممنوع"]
     },
-    "Tàʿal, ijlis": {
+    "Taʿàl, ìjlis": {
       lev: ["Tàʿa, ùʾʿod", "تعا اقعد"]
     },
     "Sayyàra": {
       egy: ["ʿArabèyya", "عربية"]
     },
-    "Dàrraja": {
+    "Darràja": {
       lev: ["Bisiklèit", "بسكليت"]
     },
     "Safìna": {
@@ -8006,7 +8007,7 @@
     "Bi as-sayyàra": {
       lev: ["Bis-sayyàra", "بالسيارة"]
     },
-    "Màshyan": {
+    "Màshiyan": {
       lev: ["Màshi", "ماشي"]
     },
     "Kam sàʿa?": {
@@ -8053,19 +8054,19 @@
       "Àna mutawàttir": 1, "Àna murtàh": 1, "Shàʿr": 1,
       "Tàmr": 1, "Làban": 1, "Halìb": 1, "Nàʿnaʿ": 1, "Shày bi-nàʿnaʿ": 1,
       "Sàhn": 1, "Kùb": 1, "Sùkkar": 1,
-      "Mumtàz": 1, "Mumtìʿ": 1, "Mùmill": 1, "Sàʿb": 1, "ʿAlà hàsab": 1, "Àbadan": 1,
+      "Mumtàz": 1, "Mùmtiʿ": 1, "Mumìll": 1, "Sàʿb": 1, "ʿAlà hàsab": 1, "Àbadan": 1,
       "Tàbʿan": 1, "Yà salàm!": 1, "Mà shà' Allàh": 1, "Miskìn": 1,
       "Ladhìdh!": 1, "Yà rèit": 1, "Mabrùk": 1, "Tìslam": 1, "Shwày shwày": 1,
-      "Yà madàm": 1, "Yà hàjj": 1, "Yà dùktor": 1, "Allàh karìm": 1,
-      "Tàyyib": 1, "Tamàm": 1, "Khalàs": 1, "Yàʿni": 1, "Inshàallah": 1, "Yaʿni shùkran": 1,
+      "Yà madàm": 1, "Yà hàjj": 1, "Yà duktòr": 1, "Allàh karìm": 1,
+      "Tàyyib": 1, "Tamàm": 1, "Khalàs": 1, "Yàʿni": 1, "Inshàallah": 1, "Yàʿni shùkran": 1,
       "Àhlan": 1, "Àhlan wa sàhlan": 1, "As-salàmu ʿalàikum": 1, "Wa ʿalàikum as-salàm": 1,
       "Sabàh al-khèir": 1, "Sabàh an-nùr": 1, "Masà' al-khèir": 1, "Masà' an-nùr": 1,
       "Al-hàmdu lillàh": 1, "Shùkran": 1, "Àna taʿbàn": 1, "Àna min Itàlya": 1,
       "Àna min Lubnàn": 1, "Àna min Misr": 1, "Lau samàht": 1, "Lau samàht!": 1, "Sifr": 1,
-      "Wàhid": 1, "Àrbaʿa": 1, "Sàbʿa": 1, "Tìsʿa": 1, "Shày": 1, "ʿAsìr": 1, "Khubz": 1,
+      "Wàhid": 1, "Sàbʿa": 1, "Tìsʿa": 1, "Shày": 1, "ʿAsìr": 1, "Khubz": 1,
       "Sàmak": 1, "Àna ʿatshàn": 1, "Shày, shùkran": 1, "Ùkhti": 1, "Ìbni": 1, "Àhmar": 1,
       "Àkhdar": 1, "Àsfar": 1, "Àbyad": 1, "Àswad": 1, "Bùnni": 1, "Ramàdi": 1,
-      "Sayyàra hàmra": 1, "Àna muhàndis": 1, "Àna mudàrris": 1, "Àna tàlib": 1, "Al-màktab": 1,
+      "Sayyàra hamrà'": 1, "Àna muhàndis": 1, "Àna mudàrris": 1, "Àna tàlib": 1, "Al-màktab": 1,
       "Àna mashghùl": 1, "Hayawàn": 1, "Kalb": 1, "Hisàn": 1, "Jàmal": 1, "Àrnab": 1, "Àsad": 1,
       "Bantalòn": 1, "Fustàn": 1, "Sàʿa": 1, "As-sàfar": 1, "Al-matàr": 1, "Jawàz sàfar": 1,
       "Al-fùnduq": 1, "Al-waifài": 1, "Lau samàhti": 1, "Bikùll surùr": 1, "Ash-shàms": 1,
@@ -8098,6 +8099,8 @@
      ============================================================ */
 
   var GLOSS = {
+    "al-khàmisa": "the fifth (the hour)", "ath-thàmina": "the eighth (the hour)",
+    "as-sàdisa": "the sixth (the hour)",
     "bì": "me (after bi)", "lì": "me (after li)", 
     "àfʿal": "I do", "anàm": "I sleep", "àftah": "I open", "ùghliq": "I close",
     "àshtari": "I buy", "abìʿ": "I sell", "àsil": "I arrive", "aʿùd": "I go back",
@@ -8107,7 +8110,7 @@
     "ash-shùrb": "drinking", "ufàkkir": "I am thinking",
     "bil-ʿarabìyya": "in Arabic", "lùgha": "a language", "al-lùgha": "the language",
     "sàut": "sound, voice", "rumansìyya": "romantic (a feminine thing)",
-    "àtakàllam": "I speak, I talk", "tàtaʿallam": "you are learning",
+    "àtakàllam": "I speak, I talk", "tataʿàllam": "you are learning",
     "tataʿallamìn": "you are learning (to a woman)", "tatbìq": "an app",
     "sàʿba": "hard (a feminine thing)", "shiʿr": "poetry", "ash-shiʿr": "poetry",
     "sàlsa": "sauce", "àdif": "add", "jùbna": "cheese", "milh": "salt",
@@ -8175,78 +8178,78 @@
     "ʿàmaluk": "your work", "ʿàmaluki": "your work (to a woman)",
     "ʿalàik": "on you", "ʿalàiki": "on you (to a woman)",
     "yadàk": "your hands", "yadàki": "your hands (to a woman)", "taʿàla": "come",
-    "adh-dhùhr": "the noon", "àhmad": "Ahmad (a man's name)", "akàlta": "you ate",
+    "adh-dhùhr": "the noon", "àhmad": "Ahmad (a man's name)", 
     "al-faràgh": "the free time", "al-ghad": "tomorrow", "al-ithnàin": "Monday",
-    "al-kùhul": "the alcohol", "al-mufàddal": "the favourite", "al-qàdam": "the foot",
+    "al-kuhùl": "the alcohol", "al-mufàddal": "the favourite", "al-qàdam": "the foot",
     "al-arbiʿà'": "Wednesday", "al-ʿàfiya": "the strength, the health", "am": "or",
     "amàn": "safety, protection", "arbaʿùn": "forty", "aràk": "I see you",
     "as-salàmu": "the peace", "as-samà'": "the sky", "at-tabkh": "the cooking",
     "ath-thulathà'": "Tuesday", "ayyàm": "days", "aʿìsh": "I live", "bi-nàʿnaʿ": "with mint",
     "bik": "you (after bi)", "biki": "you (after bi, to a woman)", "bikàm": "for how much",
-    "bikùll": "with all", "bàida": "white (with a feminine noun)", "bàituk": "your house",
+    "bikùll": "with all", "baidà'": "white (with a feminine noun)", "bàituk": "your house",
     "bàituki": "your house (to a woman)", "bàituna": "our house", "bìk": "you (after bi)",
     "bìki": "you (after bi, to a woman)", "bùnni": "brown", "dhàuqik": "your taste",
     "dhàuqiki": "your taste (to a woman)", "dà'iman": "always", "dàmuk": "your blood",
-    "dàmuki": "your blood (to a woman)", "dùktor": "doctor", "fà'r": "a mouse",
+    "dàmuki": "your blood (to a woman)", "duktòr": "doctor", "fà'r": "a mouse",
     "fàdlik": "your kindness (min fàdlik, please)", "fàdliki": "your kindness (to a woman)",
     "faqàdtu": "I have lost", "fìlmuk": "your film", "fìlmuki": "your film (to a woman)",
-    "ghùrfat": "the room of", "ghùrfatik": "your room", "haqqan": "really", "hum": "they",
-    "hàddithini": "tell me (to a woman)", "hàddithni": "tell me", "hàjj": "an older man",
+    "ghùrfat": "the room of", "ghùrfatik": "your room", "hàqqan": "really", "hum": "they",
+    "haddithìni": "tell me (to a woman)", "haddìthni": "tell me", "hàjj": "an older man",
     "hàjja": "an older woman", "hàluki": "your condition (to a woman)", "hàsab": "it depends",
-    "hùrr": "free", "hùrra": "free (a woman)", "ijlisì": "sit down (to a woman)",
+    "hùrr": "free", "hùrra": "free (a woman)", "ìjlisi": "sit down (to a woman)",
     "ìthna": "two (in ithnà ʿàshar, twelve)", "ithnàn": "two",
     "jamìlan": "lovely (the form after kàna)", "jà'iʿa": "hungry (a woman)",
     "jàddati": "my grandmother", "jàddi": "my grandfather", "kal-qàmar": "like the moon",
     "karìma": "kind, generous (a woman)", "khamsùn": "fifty", "khinzìr": "pig, pork",
-    "khàdra": "green (with a feminine noun)", "khàmsa": "five", "kitàbi": "my book",
+    "khadrà'": "green (with a feminine noun)", "khàmsa": "five", "kitàbi": "my book",
     "kitàbuha": "her book", "kitàbuhu": "his book", "kitàbuk": "your book",
     "kitàbuki": "your book (to a woman)", "kitàbuna": "our book", "kàfi": "enough",
-    "kàlimat": "the word of", "kàrim": "kind, generous", "kùnta": "you were",
-    "kùrat": "the ball of", "ladhìdh": "delicious", "lastu": "I am not", "limàdha": "why",
+    "kàlimat": "the word of", "karìm": "kind, generous", "kùnta": "you were",
+    "kùrat": "the ball of", "ladhìdh": "delicious", "làstu": "I am not", "limàdha": "why",
     "làunuh": "its colour", "mabrùk": "congratulations", "madàm": "madam",
     "marco": "Marco (a name)", "marìda": "ill (a woman)", "milàno": "Milan",
     "miskìn": "poor thing", "mudàrrisa": "a teacher (a woman)",
-    "muhàndisa": "an engineer (a woman)", "mumtàz": "excellent", "mumtìʿ": "enjoyable, fun",
-    "mutazàwwij": "married", "mutazàwwija": "married (a woman)", "màsa'an": "an evening",
-    "mìhnatuk": "your job", "mìhnatuki": "your job (to a woman)", "mùmill": "boring",
-    "mùndhu": "since", "mùʿallim": "boss, mate", "nabatìyya": "vegetarian (a woman)",
+    "muhàndisa": "an engineer (a woman)", "mumtàz": "excellent", "mùmtiʿ": "enjoyable, fun",
+    "mutazàwwij": "married", "mutazàwwija": "married (a woman)", "masà'an": "an evening",
+    "mìhnatuk": "your job", "mìhnatuki": "your job (to a woman)", "mumìll": "boring",
+    "mùndhu": "since", "muʿàllim": "boss, mate", "nabatìyya": "vegetarian (a woman)",
     "natahàddath": "we will talk", "nàhnu": "we", "nàqsim": "we split",
     "nàuʿan": "somewhat, sort of", "qarìban": "soon", "qàlbik": "your heart",
     "qàlbiki": "your heart (to a woman)", "qùltu": "I said", "risàla": "a message",
     "ramàdi": "grey", "ràqmi": "my number", "sa'àttasil": "I will call", "sabʿùn": "seventy",
     "sadìqa": "a friend (a woman)", "sàfarik": "your travel",
-    "saghìra": "small (with a feminine noun)", "sahìh": "true, right", "sanàra": "we will see",
+    "saghìra": "small (with a feminine noun)", "sahìh": "true, right", "sànara": "we will see",
     "sara": "Sara (a woman's name)", "shabìʿtu": "I am full",
     "shà'": "he willed (ma sha' Allah)", "sifr": "zero", "sittùn": "sixty",
-    "sà'iha": "a tourist (a woman)", "sàbʿa": "seven", "sàfra": "yellow (with a feminine noun)",
+    "sà'iha": "a tourist (a woman)", "sàbʿa": "seven", "safrà'": "yellow (with a feminine noun)",
     "sàhha": "health, enjoy it", "sàhl": "easy", "sàmaka": "a fish", "sàna": "a year",
-    "sàuda": "black (with a feminine noun)", "sàʿb": "difficult", "sìtta": "six",
+    "saudà'": "black (with a feminine noun)", "sàʿb": "difficult", "sìtta": "six",
     "tabìba": "a doctor (a woman)", "tadrusìn": "you study (to a woman)",
     "tafàddali": "here you are, go ahead (to a woman)", "tafʿalì": "you do (to a woman)",
     "tafʿalìn": "you do (to a woman)", "tatakallamìn": "you speak (to a woman)",
     "taʿbàna": "tired (a woman)", "taʿmalìn": "you work (to a woman)", "thalathùn": "thirty",
     "thalàtha": "three", "thamanùn": "eighty", "thamàniya": "eight", "tisʿùn": "ninety",
-    "turìdìn": "you want (to a woman)", "tà'ir": "a bird",
+    "turidìn": "you want (to a woman)", "tà'ir": "a bird",
     "tàbʿan": "of course", "tàdrus": "you study", "tàfʿal": "you do",
     "tàliba": "a student (a woman)", "tàqlaq": "you worry", 
     "tuhibbìn": "you like (to a woman)", "tùsbih": "may you wake", "ustàdh": "sir, teacher",
     "wadàʿan": "farewell", "wàhdak": "on your own", "wàhdaki": "on your own (to a woman)",
     "wàhdi": "on my own", "wàlad": "a boy", "wàqt": "time", "yukhallìk": "may he keep you",
     "yukhallìki": "may he keep you (to a woman)", "yubàrik": "may he bless",
-    "yusallìmuki": "may he keep you safe (to a woman)", "yusàllimuk": "may he keep you safe",
+    "yusàllimuki": "may he keep you safe (to a woman)", "yusàllimuk": "may he keep you safe",
     "yuʿafìki": "may he keep you well (to a woman)", "yuʿtìk": "may he give you",
-    "yuʿtìki": "may he give you (to a woman)", "yuʿàfìk": "may he keep you well",
+    "yuʿtìki": "may he give you (to a woman)", "yuʿafìk": "may he keep you well",
     "yàhduth": "it happens", "yàʿmal": "it works",
     "yùʿjibni": "it pleases me (lam yùʿjibni, I did not like it)",
-    "yùʿjibuni": "I like it, it pleases me", "zàrqa": "blue (with a feminine noun)",
-    "zàujati": "my wife", "zàuji": "my husband", "abìk": "your father", "àdʿuk": "I invite you",
-    "àdʿuki": "I invite you (to a woman)", "àhmar": "red", "àhyanan": "sometimes",
+    "yùʿjibuni": "I like it, it pleases me", "zarqà'": "blue (with a feminine noun)",
+    "zàujati": "my wife", "zàuji": "my husband", "abìk": "your father", "adʿùk": "I invite you",
+    "adʿùki": "I invite you (to a woman)", "àhmar": "red", "ahyànan": "sometimes",
     "àkthar": "more", "àlʿab": "I play", "àm": "or", "ànisa": "miss",
     "aràki": "I see you (to a woman)", "àrbaʿa": "four", "àsad": "a lion", "àsfar": "yellow",
     "àswad": "black", "àtfal": "children", "àzraq": "blue", "ìbnati": "my daughter",
     "ìbni": "my son", "ìbʿath": "send", "ìbʿathi": "send (to a woman)", "ìsmu": "the name of",
     "ìsmuha": "her name", "ìsmuhu": "his name", "ìttasil": "call",
-    "ìttasili": "call (to a woman)", "uhìbbuhu": "I like it", "ùrid": "I want",
+    "ìttasili": "call (to a woman)", "uhìbbuhu": "I like it", 
     "ùzʿijak": "I trouble you", "ùzʿijaki": "I trouble you (to a woman)", "ʿalàyya": "on me",
     "ʿatshàna": "thirsty (a woman)", "ʿishrùn": "twenty", "ʿàinuk": "your eye",
     "ʿàinuki": "your eye (to a woman)", "ʿàmalak": "your work", "ʿàshara": "ten",
@@ -8257,7 +8260,7 @@
     "nàs": "people", "yà'kul": "he eats, people eat", "jàyyidan": "well",
     "màkan": "a place", "shàʿbi": "local, of the people", "mashrùb": "a drink",
     "tà'kul": "you eat", "ta'kulì": "you eat (to a woman)",
-    "tànsah": "you recommend", "tànsahìn": "you recommend (to a woman)",
+    "tànsah": "you recommend", "tansahìn": "you recommend (to a woman)",
     "bìhi": "of it, about it", "ujàrrib": "I try", "shày'": "something, a thing",
     "mahàlli": "local", "nàdhhab": "shall we go", "tà'ti": "you come",
     "ta'tìn": "you come (to a woman)", "nàltaqi": "we meet, shall we meet",
@@ -8275,7 +8278,7 @@
     "yastàghriq": "it takes (an amount of time)", 
     "an": "that, to (joining one verb to another)", "khams": "five (before a plural)",
     "ʿàshr": "ten (before a plural)", "baʿìdan": "far (the form after làisa)",
-    "uhàwil": "I try", "àtaʿallam": "I am learning", "màʿak": "with you",
+    "uhàwil": "I try", "ataʿàllam": "I am learning", "màʿak": "with you",
     "màʿaki": "with you (to a woman)", "ʿallìmni": "teach me",
     "ʿallimìni": "teach me (to a woman)", "àrini": "show me", "bibùt'": "slowly",
     "khudhìni": "take me (to a woman)", "taʿàli": "come (to a woman)",
@@ -8295,7 +8298,7 @@
     "shàriʿ": "street", "maidàn": "square", "hadìqa": "park, garden",
     "sifàra": "embassy", "barìd": "post, mail",
     "mughlàq": "closed", "khàlf": "behind", 
-    "intàdhirni": "wait for me", "intàdhirìni": "wait for me (to a woman)",
+    "intadhìrni": "wait for me", "intadhirìni": "wait for me (to a woman)",
     "bijànib": "next to", "bàina": "between", "fàuq": "above", "tàht": "under",
     "dàkhil": "inside", "khàrij": "outside", "qàbla": "before", "baʿda": "after",
     "dhàlik": "that", "àwwal": "first", "àkhir": "last", "thàniya": "second",
@@ -8349,7 +8352,7 @@
     "liqà'": "meeting", "al-liqà'": "the meeting", "bàit": "house", "matàr": "airport", "fùnduq": "hotel",
     "mahàtta": "station", "màtʿam": "restaurant", "hammàm": "bathroom",
     "sùq": "market", "màktab": "office", "màtbakh": "kitchen", "ghùrfa": "room",
-    "sìʿr": "price", "hisàb": "bill", "nùqud": "money", "ghàli": "expensive",
+    "sìʿr": "price", "hisàb": "bill", "nuqùd": "money", "ghàli": "expensive",
     "ràkhis": "cheap", "kabìr": "big", "saghìr": "small", "jamìl": "beautiful",
     "jadìd": "new", "qadìm": "old", "qarìb": "near", "baʿìd": "far",
     "sarìʿ": "fast", "batì'": "slow", "hàrr": "hot", "bàrid": "cold",
@@ -8371,23 +8374,23 @@
     "sayyàra": "car", "qitàr": "train", "hàfila": "bus", "tà'ira": "plane",
     "tàdhkara": "ticket", "haqìba": "suitcase", "jawàz": "passport",
     "sàfar": "travel",
-    "marra": "a time, an occasion", "ùkhra": "another", "làkin": "but",
+    "màrra": "a time, an occasion", "ùkhra": "another", "làkin": "but",
     "ta'kìd": "certainty (bi at-ta'kìd, certainly)", "kamà": "as, like",
     "àʿjabani": "it pleased me", "àʿjabak": "it pleased you", "lam": "did not",
-    "àkalta": "you ate", "dhahàbta": "you went",
+    "akàlta": "you ate", "dhahàbta": "you went",
     "muwàfiq": "in agreement", "màniʿ": "an objection", "ìdha": "if",
     "àmkan": "it is possible", "mustaʿìdd": "ready", "àstatìʿ": "I can",
     "sa'akùn": "I will be",
     "li'ànna": "because", "thùmma": "and then", "àidan": "also, too",
     "rùbbama": "maybe", "àʿtaqid": "I think", "làisa": "is not, are not",
-    "hùnaka": "there is", "maʿì": "with me, on me",
+    "hunàka": "there is", "màʿi": "with me, on me",
     "nìsf": "half", "rùbʿ": "a quarter", "sabàh": "morning", "dhùhr": "noon",
     "masà'": "evening", "làila": "night", "sabàhan": "in the morning",
     "usbùʿ": "a week", "qàdim": "next, coming", "làhiqan": "later",
-    "munàsib": "suitable, all right", "mut'àkhkhir": "late", "yaʿni": "it means; I mean",
+    "munàsib": "suitable, all right", "mut'àkhkhir": "late", 
     "yàʿni": "it means; I mean", "taqùl": "you say", "nasìtu": "I have forgotten",
     "fahìmtu": "I have understood", "fahìmta": "you understood", "tàyyib": "all right, fine",
-    "tamàm": "perfect", "khalàs": "that is it, done", "inshàallah": "God willing", "ʿasìr": "juice", "àrnab": "rabbit", "mìftah": "key", "kitàb": "book", "hàtif": "phone",
+    "tamàm": "perfect", "khalàs": "that is it, done", "inshàallah": "God willing", "ʿasìr": "juice", "àrnab": "rabbit", "miftàh": "key", "kitàb": "book", "hàtif": "phone",
     "kùrsi": "chair", "tàwila": "table", "sarìr": "bed", "bàb": "door",
     "làun": "colour", "mìhna": "job", "ʿàmal": "work", "shàrika": "company",
     "kùntu": "I was", "dhahàbtu": "I went", "akàltu": "I ate",
@@ -8416,16 +8419,16 @@
     "màʿan": "together", "surùr": "pleasure", "latìfa": "kind (to a woman)",
     "jamìla": "beautiful (a woman, or a feminine thing)", "mashghùla": "busy (to a woman)",
     "àsifa": "sorry (from a woman)", "bìdun": "without",
-    "dukhùl": "entering", "taswìr": "photography", "tàʿal": "come",
-    "ijlis": "sit down", "intàdhir": "wait", "hayyà": "come on",
+    "dukhùl": "entering", "taswìr": "photography", "taʿàl": "come",
+    "ìjlis": "sit down", "ìntadhir": "wait", "hayyà": "come on",
     "bina": "with us", "wasàlna": "we have arrived", "qif": "stop",
-    "màshyan": "on foot", "mìtro": "metro", "safìna": "ship",
-    "dàrraja": "bicycle", "bantalòn": "trousers", "fustàn": "dress",
+    "màshiyan": "on foot", "mìtro": "metro", "safìna": "ship",
+    "darràja": "bicycle", "bantalòn": "trousers", "fustàn": "dress",
     "mìʿtaf": "coat", "qùbbaʿa": "hat", "nadhdhàra": "glasses",
     "shùbbak": "window", "nàum": "sleep", "ùsrati": "my family",
     "sadìqi": "my friend", "àbi": "my father", "ùmmi": "my mother",
     "àkhi": "my brother", "ùkhti": "my sister", "làdaik": "you have",
-    "fàʿalta": "you did", "fàʿaltu": "I did", "kàna": "it was",
+    "faʿàlta": "you did", "faʿàltu": "I did", "kàna": "it was",
     "sharìbtu": "I drank", "katàbtu": "I wrote", "qarà'tu": "I read",
     "ra'àitu": "I saw", "àlbas": "I wear", "tàlbas": "you wear",
     "tuhìbb": "you like", "turìd": "you want", "tahtàj": "you need",
@@ -8439,6 +8442,8 @@
   // Every word below appears in a Levantine line somewhere in the course;
   // anything the two varieties share falls through to the fus-ha table.
   var GLOSS_LEV = {
+    "hàmra": "red (a feminine thing)",
+    "àrbʿa": "four",
     "bàʿmel": "I do", "bnàm": "I sleep", "bìftah": "I open", "bsàkker": "I close",
     "bìshtri": "I buy", "bbìʿ": "I sell", "bòsal": "I arrive", "bìrjaʿ": "I go back",
     "bshìl": "I carry", "bjìb": "I bring", "bìbʿat": "I send", "bhòtt": "I put",
@@ -8555,7 +8560,7 @@
     "bìstanna": "I wait", "bàʾʿod": "I sit", "bìmshi": "I walk", "bidàwwir": "I look for",
     "bìtzakkar": "I remember", "bànsa": "I forget", "bàlish": "I start",
     "bàdrus": "I study", "bitʾder": "you can", "tsàʿidni": "you help me",
-    "at-tàksi": "the taxi", "ʿas-sùq": "to the market", "ʿal-mìftah": "for the key",
+    "at-tàksi": "the taxi", "ʿas-sùq": "to the market", "ʿal-miftàh": "for the key",
     "wàʾtak": "your time", "mn": "from", "ʿatìni": "give me", "ìdak": "your hand",
     "tàmr": "dates", "làban": "yoghurt", "kùb": "a glass", "sàhn": "a plate",
     "mabsùt": "happy, pleased", "zaʿlàn": "upset, sad", "ghadbàn": "angry",
@@ -8578,7 +8583,7 @@
     "yʿàfik": "may he keep you well", "yʿàfiki": "may he keep you well (to a woman)",
     "yislàmak": "may he keep you safe", "yislàmik": "may he keep you safe (to a woman)",
     "àlbak": "your heart", "àlbik": "your heart (to a woman)", "ybàrek": "may he bless",
-    "zòʾak": "your taste", "zòʾik": "your taste (to a woman)", "ìtʿallam": "I am learning",
+    "zòʾak": "your taste", "zòʾik": "your taste (to a woman)", "itʿàllam": "I am learning",
     "karìm": "generous, kind", "karìme": "generous, kind (a woman)", "ustàz": "sir, teacher",
     "ànse": "miss", "hàjje": "an older woman", "mʿàllem": "boss, mate",
     "mnshùf": "we will see", "bìsir": "happens", "mnìhki": "we will talk",
@@ -8587,15 +8592,15 @@
     "dàmmak": "your blood", "khafìf": "light", "yaʿtìki": "may he give you (to a woman)",
     "yaʿtìk": "may he give you", "al-ʿàfye": "the strength, the health",
     "tìslam": "may it be safe", "ìdeiki": "your hands (to a woman)", "ìdeik": "your hands",
-    "sàhtein": "two healths, enjoy it", "nàwwarti": "you lit it up (to a woman)",
-    "nàwwart": "you lit it up", "ʿyùni": "my eyes", "ykhallìki": "may he keep you (to a woman)",
-    "ykhallìk": "may he keep you", "rèit": "would that", "tikràm": "may it be honoured",
+    "sahtèin": "two healths, enjoy it", "nawwàrti": "you lit it up (to a woman)",
+    "nawwàrta": "you lit it up", "ʿyùni": "my eyes", "ykhallìki": "may he keep you (to a woman)",
+    "ykhallìk": "may he keep you", "rèit": "would that", "tìkram": "may it be honoured",
     "ʿèinik": "your eye (to a woman)", "ʿèinak": "your eye", 
     "ana": "I", "bint": "a girl, a daughter", "sàheb": "a friend",
     "àbadan": "never, not at all", "bìddik": "you want (to a woman)",
     "mitzàwwje": "married (a woman)", "mitzàwwej": "married", "wlàd": "children",
     "sàbi": "a boy", "làhali": "on my own", "làhalik": "on your own (to a woman)",
-    "làhalak": "on your own", "ʿayesh": "living", "la": "for, to",
+    "làhalak": "on your own", "ʿàyesh": "living", "la": "for, to",
     "siyàha": "tourism", "bitìnsahi": "you recommend (to a woman)", "bitìnsah": "you recommend",
     "nabàti": "vegetarian", "nabatìyye": "vegetarian (a woman)", "kuhùl": "alcohol",
     "khanzìr": "pork, pig", "làhem": "meat", "bidùn": "without", "sùkkar": "sugar",
@@ -8613,7 +8618,7 @@
     "bithìbb": "you like",
     "tìʿmali": "you do (to a woman)", "tìʿmal": "you do",
     "ʿàndik": "you have (to a woman)", "hiwayàt": "hobbies",
-    "bhìb": "I like", "bhìbb": "I like", "al-mùsiqa": "the music", "nàuʿ": "kind, sort",
+    "bhìbb": "I like", "al-mùsiqa": "the music", "nàuʿ": "kind, sort",
     "al-aflàm": "the films", "àhla": "nicest, best", "fìlm": "film",
     "at-tàbekh": "the cooking", "bìlʿab": "I play", "kùra": "ball, football",
     "wàʾt": "time", "al-fàdi": "the free, the empty", "sàne": "year",
@@ -8656,7 +8661,7 @@
     "tfàddal": "here you are, go ahead", "tìsbah": "may you wake",
     "tsharràfna": "pleased to meet you", "màshi": "going along; on foot",
     "kamàn": "too, also", "bas": "but; only, just", "baʿd": "after",
-    "àkid": "certainly", "zay": "like, as", "mwàfeʾ": "in agreement",
+    "akìd": "certainly", "zay": "like, as", "mwàfeʾ": "in agreement",
     "ʿàjabni": "I liked it", "ʿàjabak": "you liked it", "ʿrìft": "I knew",
     "màniʿ": "an objection", "ìza": "if", "jàhez": "ready",
     "bàʾder": "I can", "kùn": "be (rah kùn, I will be)", "mish": "not", "laʾìnno": "because",
@@ -8706,7 +8711,7 @@
     "as-sèif": "summer", "ash-shìte": "winter", "fasl": "a season",
     "as-sàma": "the sky", "al-lòn": "the colour", "lòn": "colour", "lòno": "its colour",
     "al-àbyad": "the white one", "al-àkhdar": "the green one", "àzraʾ": "blue",
-    "zàrʾa": "blue (feminine)", "hàmra": "red (feminine)", "sòda": "black (feminine)",
+    "zàrʾa": "blue (feminine)", "hamrà'": "red (feminine)", "sòda": "black (feminine)",
     "ʿasfùr": "a bird", "sàmake": "a fish", "fàr": "a mouse", "bìsse": "a cat",
     "al-bìsse": "the cat", "jàmal": "a camel", "al-hayawanàt": "the animals",
     "zghìr": "small", "zghìre": "small (feminine)", "kbìr": "big", "jdìd": "new",
@@ -12050,9 +12055,9 @@
   // understand, which is the one that ends the thread. All three are in
   // lesson 27, so being repaired at is itself practice.
   var REPAIRS = [
-    { ar: "Marra ùkhra, min fàdlik", en: "Once more, please",
+    { ar: "Màrra ùkhra, min fàdlik", en: "Once more, please",
       note: "It did not catch that. Say it again, or pick one below." },
-    { ar: "Màdha yaʿni?", en: "What does that mean?",
+    { ar: "Màdha yàʿni?", en: "What does that mean?",
       note: "Still lost. Try one of the lines below: those it will understand." },
     { ar: "Là àfham", en: "I do not understand",
       note: "That one is beyond it. It is starting something else." }
@@ -15097,7 +15102,7 @@
   var KIND_SET = {
     formula: {
       "shùkran": 1, "ʿàfwan": 1, "inshàallah": 1, "khalàs": 1, "yàlla": 1,
-      "maʿlèsh": 1, "wàllah": 1, "wàlaw": 1, "bkhàtrak": 1, "sàhtein": 1,
+      "maʿlèsh": 1, "wàllah": 1, "wàlaw": 1, "bkhàtrak": 1, "sahtèin": 1,
       "hayyà": 1, "màrhaba": 1, "àhlan": 1, "sàhlan": 1, "màrhaban": 1,
       "tamàm": 1, "tàyyib": 1, "tàyyeb": 1, "mabrùk": 1
     },
@@ -15234,7 +15239,7 @@
       r: "b-ʿ-d", ar: "بعد", sense: "distance and after",
       words: ["baʿìd", "àbʿad", "baʿìdan", "bʿìd", "baʿda", "baʿdèin", "bìbʿed"]
     },
-    { r: "j-l-s", ar: "جلس", sense: "sitting", words: ["ijlis", "ijlisì", "àjlis"] },
+    { r: "j-l-s", ar: "جلس", sense: "sitting", words: ["ìjlis", "ìjlisi", "àjlis"] },
     {
       r: "t-l-b", ar: "طلب", sense: "asking for",
       words: ["àtlub", "tàlabt", "tàlib", "tàliba"]
@@ -15257,7 +15262,7 @@
     },
     {
       r: "'-k-l", ar: "أكل", sense: "eating",
-      words: ["àkul", "tà'kul", "ta'kulì", "akàltu", "àkalta", "yà'kul", "al-àkl", "bòkol", "akàlt", "tòkol", "tòkli", "byòklu", "kùl", "kòl", "al-àkel"]
+      words: ["àkul", "tà'kul", "ta'kulì", "akàltu", "akàlta", "yà'kul", "al-àkl", "bòkol", "akàlt", "tòkol", "tòkli", "byòklu", "kùl", "kòl", "al-àkel"]
     },
     {
       r: "sh-r-b", ar: "شرب", sense: "drinking",
@@ -15269,11 +15274,11 @@
     },
     {
       r: "s-l-m", ar: "سلم", sense: "peace and safety",
-      words: ["salàm", "salàma", "as-salàmu", "salàmatuk", "salàmatuki", "salàmtak", "salàmtik", "sàllim", "sàllemli", "yusàllimuk", "yusallìmuki", "tìslam", "yislàmak", "yislàmik"]
+      words: ["salàm", "salàma", "as-salàmu", "salàmatuk", "salàmatuki", "salàmtak", "salàmtik", "sàllim", "sàllemli", "yusàllimuk", "yusàllimuki", "tìslam", "yislàmak", "yislàmik"]
     },
     {
       r: "h-b-b", ar: "حبب", sense: "loving",
-      words: ["uhìbb", "tuhìbb", "tuhibbìn", "uhìbbuhu", "bhìb", "bhìbb", "bthèbb", "bithìbb", "bithìbbi", "bhìbbo", "bhèbb"]
+      words: ["uhìbb", "tuhìbb", "tuhibbìn", "uhìbbuhu", "bhìbb", "bthèbb", "bithìbb", "bithìbbi", "bhìbbo", "bhèbb"]
     },
     {
       r: "r-'-y", ar: "رأي", sense: "opinion and seeing",
@@ -15289,7 +15294,7 @@
     },
     {
       r: "n-dh-r", ar: "نظر", sense: "waiting and looking",
-      words: ["antàdhir", "intàdhir", "intàdhirni", "intàdhirìni", "nadhdhàra"]
+      words: ["antàdhir", "ìntadhir", "intadhìrni", "intadhirìni", "nadhdhàra"]
     },
     { r: "m-r-d", ar: "مرض", sense: "illness", words: ["marìd", "marìda"] },
     {
@@ -15328,7 +15333,7 @@
     },
     {
       r: "m-r-r", ar: "مرر", sense: "times",
-      words: ["marra", "màrra", "marratàin", "marratèin"]
+      words: ["màrra", "marratàin", "marratèin"]
     },
     {
       r: "y-w-m", ar: "يوم", sense: "day",
@@ -15364,7 +15369,7 @@
     { r: "sh-k-r", ar: "شكر", sense: "thanks", words: ["shùkran", "jazìlan"] },
     {
       r: "s-h-h", ar: "صحح", sense: "health and correctness",
-      words: ["sàhha", "sahìh", "sahhìhni", "sahhihìni", "sahhèhni", "sahhehìni", "sàhtein"]
+      words: ["sàhha", "sahìh", "sahhìhni", "sahhihìni", "sahhèhni", "sahhehìni", "sahtèin"]
     },
     {
       r: "ʿ-j-b", ar: "عجب", sense: "liking",
@@ -15403,11 +15408,11 @@
     { r: "ʿ-y-l", ar: "عيل", sense: "household", words: ["al-ʿà'ila", "al-ʿèile", "ʿèilti"] },
     {
       r: "k-r-m", ar: "كرم", sense: "generosity",
-      words: ["kàrim", "karìm", "karìma", "karìme", "tikràm"]
+      words: ["karìm", "karìma", "karìme", "tìkram"]
     },
     {
       r: "h-q-q", ar: "حقق", sense: "truth and reality",
-      words: ["haqqan", "haqìqi", "haqiqìya", "haʾìʾi", "haʾiʾìyye"]
+      words: ["hàqqan", "haqìqi", "haqiqìya", "haʾìʾi", "haʾiʾìyye"]
     },
     { r: "n-w-m", ar: "نوم", sense: "sleep", words: ["nàum", "an-nòm"] },
     { r: "l-b-s", ar: "لبس", sense: "wearing", words: ["àlbas", "tàlbas", "malàbis", "làbes"] },
@@ -15429,7 +15434,7 @@
     { r: "gh-s-l", ar: "غسل", sense: "washing", words: ["ìghsil", "ìghsili"] },
     {
       r: "ʿ-l-m", ar: "علم", sense: "learning and teaching",
-      words: ["ìtʿallam", "àtaʿallam", "ʿallìmni", "ʿallimìni", "mʿàllem", "mùʿallim", "ustàdh", "ustàdhi", "ustàdhati", "ustàz", "ustàzi", "ustàzti"]
+      words: ["itʿàllam", "ataʿàllam", "ʿallìmni", "ʿallimìni", "mʿàllem", "muʿàllim", "ustàdh", "ustàdhi", "ustàdhati", "ustàz", "ustàzi", "ustàzti"]
     },
     {
       r: "h-w-l", ar: "حول", sense: "trying and state",
@@ -15444,16 +15449,16 @@
       words: ["kàlima", "kàlimat", "kàlmet", "al-kìlme", "kìlme", "takàllam", "tatakàllam", "tatakallamìn"]
     },
     { r: "s-'-r", ar: "سعر", sense: "price", words: ["sìʿr", "sìʿer"] },
-    { r: "n-q-d", ar: "نقد", sense: "money", words: ["nùqud", "nàqdan"] },
+    { r: "n-q-d", ar: "نقد", sense: "money", words: ["nuqùd", "nàqdan"] },
     { r: "h-d-y", ar: "هدي", sense: "gift and calm", words: ["hadìyya", "hdìyye"] },
     {
       r: "d-ʿ-w", ar: "دعو", sense: "invitation",
-      words: ["ad-dàʿwa", "ʿad-dàʿwa", "àdʿuk", "àdʿuki"]
+      words: ["ad-dàʿwa", "ʿad-dàʿwa", "adʿùk", "adʿùki"]
     },
     { r: "b-r-k", ar: "برك", sense: "blessing", words: ["mabrùk", "yubàrik", "ybàrek"] },
     {
       r: "ʿ-f-w", ar: "عفو", sense: "pardon and health",
-      words: ["ʿàfwan", "al-ʿàfye", "yuʿàfìk", "yuʿafìki", "yʿàfik", "yʿàfiki"]
+      words: ["ʿàfwan", "al-ʿàfye", "yuʿafìk", "yuʿafìki", "yʿàfik", "yʿàfiki"]
     },
   ];
 
@@ -15978,21 +15983,21 @@
   var FRAMES = [
     { stem: "Urìd", ar: "أُرِيدُ", en: "I want ___", needs: 9,
       words: ["Shày", "Qàhwa", "ʿAsìr", "Khubz", "Arùzz", "Làhm", "Dajàj", "Sàmak",
-        "Tàdhkara", "Ghùrfa", "Sayyàra", "Dàrraja", "Kitàb", "Hàtif", "Dawà'", "Haqìba", "Sàʿa"] },
+        "Tàdhkara", "Ghùrfa", "Sayyàra", "Darràja", "Kitàb", "Hàtif", "Dawà'", "Haqìba", "Sàʿa"] },
 
     { stem: "Ahtàj", ar: "أَحْتَاجُ", en: "I need ___", needs: 16,
-      words: ["Dawà'", "Tàksi", "Ghùrfa", "Tàdhkara", "Nùqud", "Mà'", "Kùrsi",
+      words: ["Dawà'", "Tàksi", "Ghùrfa", "Tàdhkara", "Nuqùd", "Mà'", "Kùrsi",
         "Hàtif", "Sayyàra", "Haqìba", "Kitàb"] },
 
     { stem: "ʿÌndi", ar: "عِنْدِي", en: "I have ___", needs: 7,
       dia: { lev: ["ʿÀndi", "عندي"] },
-      words: ["Qìtta", "Kalb", "Hisàn", "Àrnab", "Sayyàra", "Dàrraja", "Kitàb", "Hàtif",
-        "Sàʿa", "Tàdhkara", "Ghùrfa", "Nùqud", "Haqìba", "Kùrsi", "Tàwila", "Sarìr", "Dawà'"] },
+      words: ["Qìtta", "Kalb", "Hisàn", "Àrnab", "Sayyàra", "Darràja", "Kitàb", "Hàtif",
+        "Sàʿa", "Tàdhkara", "Ghùrfa", "Nuqùd", "Haqìba", "Kùrsi", "Tàwila", "Sarìr", "Dawà'"] },
 
     { stem: "Àina", ar: "أَيْنَ", en: "Where is ___?", needs: 10, q: true,
       dia: { lev: ["Wèin", "وين"] },
       words: ["Al-fùnduq", "Al-matàr", "Al-qitàr", "Al-hàfila", "Al-bàit", "Al-màtbakh",
-        "Al-bàb", "Al-mìftah", "Al-màktab", "As-sùq", "Al-mìtro", "Ash-shùbbak"] },
+        "Al-bàb", "Al-miftàh", "Al-màktab", "As-sùq", "Al-mìtro", "Ash-shùbbak"] },
 
     { stem: "Uhìbb", ar: "أُحِبُّ", en: "I like ___", needs: 14,
       words: ["Ar-rabìʿ", "As-sàif", "Al-kharìf", "Ash-shità", "Ash-shàms",
@@ -16022,8 +16027,8 @@
     { stem: "Hal ʿìndak", ar: "هَلْ عِنْدَكَ", en: "Do you have ___?", needs: 11, q: true,
       dia: { lev: ["ʿÀndak", "عندك"] },
       words: ["Shày", "Qàhwa", "Mà'", "ʿAsìr", "Khubz", "Tàdhkara", "Ghùrfa", "Dawà'",
-        "Nùqud", "Hàtif", "Kitàb", "Sayyàra", "Kùrsi", "Tàwila", "Sàʿa", "Haqìba",
-        "Qìtta", "Kalb", "Dàrraja", "Tàksi"] },
+        "Nuqùd", "Hàtif", "Kitàb", "Sayyàra", "Kùrsi", "Tàwila", "Sàʿa", "Haqìba",
+        "Qìtta", "Kalb", "Darràja", "Tàksi"] },
 
     { stem: "Hal turìd", ar: "هَلْ تُرِيدُ", en: "Would you like ___?", needs: 5, q: true,
       dia: { lev: ["Bìddak", "بدك"] },
@@ -16767,13 +16772,13 @@
     { en: "She asks what you like doing.", ok: ["Uhìbb al-mùsiqa", "Uhìbb al-aflàm", "Uhìbb as-sàfar", "Uhìbb at-tabkh"] },
     { en: "You want to know whether she has been here long.", ok: ["Mùndhu matà ànti hùna?"] },
     { en: "She asks how long you have been here. It is a year.", ok: ["Àna hùna mùndhu sàna"] },
-    { en: "She asks what you thought of the film.", ok: ["Mumtàz", "Mumtìʿ", "Lam yùʿjibni", "Nàuʿan mà"] },
-    { en: "Someone says something surprising and you want them to go on.", ok: ["Haqqan?"] },
+    { en: "She asks what you thought of the film.", ok: ["Mumtàz", "Mùmtiʿ", "Lam yùʿjibni", "Nàuʿan mà"] },
+    { en: "Someone says something surprising and you want them to go on.", ok: ["Hàqqan?"] },
     { en: "You are asked whether you come here often, and you do not.",
-      ok: ["Àhyanan", "Àbadan"],
+      ok: ["Ahyànan", "Àbadan"],
       no: ["Hal ànti hùna wàhdaki?"],
       why: "Answering a question with that one reads as checking whether she is alone, which is not a friendly thing to be asked by a stranger." },
-    { en: "The evening is over and it went well.", ok: ["Kàna màsa'an jamìlan", "Urìd an aràki màrra ùkhra"] },
+    { en: "The evening is over and it went well.", ok: ["Kàna masà'an jamìlan", "Urìd an aràki màrra ùkhra"] },
     { en: "She agrees to meet again. You have no way to reach her.",
       ok: ["Mà raqm hàtifiki?", "Hàdha ràqmi"],
       no: ["Ànti jamìla"],
@@ -16817,7 +16822,7 @@
     { en: "You have finished eating and you want to pay.", ok: ["Al-hisàb, min fàdlik"] },
     { en: "You are checking into a hotel and you want the wifi.", ok: ["Hal ʿìndakum waifài?"] },
     { en: "The light in the room does not come on.", ok: ["Hàdha là yàʿmal"] },
-    { en: "You cannot get into your room and the key is gone.", ok: ["Àina al-mìftah?"] },
+    { en: "You cannot get into your room and the key is gone.", ok: ["Àina al-miftàh?"] },
     { en: "Your bag is not where you left it.", ok: ["Faqàdtu haqìbati"] },
     { en: "Worse than the bag: your passport.", ok: ["Faqàdtu jawàz sàfari"] },
     { en: "You need the police, and quickly.", ok: ["Àina ash-shùrta?"] },
@@ -16837,16 +16842,16 @@
     { en: "You are on the platform and nobody has said when the train comes.", ok: ["Matà al-qitàr?"] },
     { en: "Someone has apologised for a mix-up and it is genuinely fine.", ok: ["Là bà's", "ʿÀfwan"] },
     { en: "You have knocked something over in a shop.", ok: ["Àsif"] },
-    { en: "Someone is telling you to hurry and you need a second.", ok: ["Làhza min fàdlik", "Intàdhir làhza"] },
+    { en: "Someone is telling you to hurry and you need a second.", ok: ["Làhza min fàdlik", "Ìntadhir làhza"] },
 
     // Not a tourist any more: the neighbour, the colleague, the baker who
     // knows your face. These are the exchanges that repeat.
     { en: "A neighbour you pass every morning says sabàh al-khèir.", ok: ["Sabàh an-nùr"] },
     { en: "The baker knows your face by now and asks how you are.", ok: ["Al-hàmdu lillàh", "Àna bikhèir", "Là bà's"] },
     { en: "A colleague asks if you want a coffee.", ok: ["Bi at-ta'kìd", "Bikùll surùr", "Min ʿuyùni", "Là, shùkran"] },
-    { en: "Someone asks whether you have any change on you.", ok: ["Nàʿam, ʿìndi", "Là, làisa ʿìndi", "Làisa maʿì"] },
-    { en: "You are invited somewhere on a day you cannot go.", ok: ["Àsif, là àstatìʿ", "Rùbbama fi màrra ùkhra"] },
-    { en: "They propose eight o'clock and it suits you.", ok: ["Bi at-ta'kìd", "Tamàm", "Fi as-sàʿa thamàniya"] },
+    { en: "Someone asks whether you have any change on you.", ok: ["Nàʿam, ʿìndi", "Là, làisa ʿìndi", "Làisa màʿi"] },
+    { en: "You are invited somewhere on a day you cannot go.", ok: ["Àsif, là astatìʿ", "Rùbbama fi màrra ùkhra"] },
+    { en: "They propose eight o'clock and it suits you.", ok: ["Bi at-ta'kìd", "Tamàm", "Fi as-sàʿa ath-thàmina"] },
     { en: "They ask whether now is a good moment.", ok: ["Al-àn munàsib", "Làisa al-àn"] },
     { en: "You have agreed to meet and want to say you will turn up.", ok: ["Sa'akùn hunàk"] },
     { en: "Someone asks what you did yesterday.", ok: ["Dhahàbtu ilà al-bàit", "Kùntu fi al-bàit", "Akàltu"] },
@@ -16855,14 +16860,14 @@
     { en: "Someone asks where you live.", ok: ["Àskun fi Milàno"] },
     { en: "You are leaving the office at the end of the day.", ok: ["Màʿa as-salàma", "Ilà al-ghad", "Ilà al-liqà'", "Ilà al-liqà' qarìban", "Fi amàn Allàh"] },
     { en: "You want to fix something for first thing tomorrow.", ok: ["Ghàdan sabàhan"] },
-    { en: "They ask whether next week would work.", ok: ["Al-usbùʿ al-qàdim", "Bi at-ta'kìd", "Allàh karìm", "Àsif, là àstatìʿ"] },
-    { en: "A friend is mid-story and you have lost the thread.", ok: ["Marra ùkhra, min fàdlik", "Là àfham"] },
+    { en: "They ask whether next week would work.", ok: ["Al-usbùʿ al-qàdim", "Bi at-ta'kìd", "Allàh karìm", "Àsif, là astatìʿ"] },
+    { en: "A friend is mid-story and you have lost the thread.", ok: ["Màrra ùkhra, min fàdlik", "Là àfham"] },
     { en: "You are stuck in traffic and will not be on time.", ok: ["Àna mut'àkhkhir"] },
     { en: "Someone thanks you for holding the door.", ok: ["ʿÀfwan", "Là bà's"] },
     { en: "You want to agree with what has just been said.", ok: ["Àna muwàfiq", "Tamàm", "Tàyyib"] },
     { en: "Someone asks whether you mind them opening the window.", ok: ["Là màniʿ", "Tafàddal"] },
     { en: "They are asking you to decide and you would rather they did.", ok: ["Kamà turìd"] },
-    { en: "You are at the door and they ask if you are ready.", ok: ["Àna mustaʿìdd", "Làhza min fàdlik", "Intàdhir làhza"] },
+    { en: "You are at the door and they ask if you are ready.", ok: ["Àna mustaʿìdd", "Làhza min fàdlik", "Ìntadhir làhza"] },
     { en: "It has been a long day and someone asks how it is going.", ok: ["Àna taʿbàn"] },
     { en: "Somebody is fussing over a small mistake of yours.", ok: ["Là bà's", "Àsif"] },
     { en: "A friend says they will come, God willing.", ok: ["Tamàm", "Tàyyib"] },
@@ -17336,7 +17341,7 @@
     { ar: "Nàuʿan mà", side: "maybe" },
 
     { ar: "Àsifa, àna mashghùla", side: "no", note: "The polite refusal, and the one to learn first. It is complete: it does not want a follow-up question." },
-    { ar: "Àsif, là àstatìʿ", side: "no" },
+    { ar: "Àsif, là astatìʿ", side: "no" },
     { ar: "Làisa al-àn", side: "no", note: "Not now. A no about this moment, not about you." },
     { ar: "Là, shùkran", side: "no" },
     { ar: "Là, làisa ʿìndi", side: "no" },
@@ -17398,6 +17403,7 @@
     // runs on is two nouns and a rising tone, and the ear has to know it
     // whole rather than off a first word that never comes.
     if (w[0] === "akhir" && w[1] === "sir") return "howmuch";
+    if (w[0] === "haqqan") return "yesno";
 
     if (w[0] === "shu") return "what";
     if (w[0] === "min" && (w[1] === "wein" || w[1] === "aina")) return "wherefrom";
@@ -17434,7 +17440,7 @@
     if (w[0] === "mundhu" && w[1] === "mata") return "when";
     if (w[0] === "ila" && w[1] === "mata") return "when";
     if ((w[0] === "wa" || w[0] === "w") && (w[1] === "baʿd" || w[1] === "bad" || w[1] === "baʿdein" || w[1] === "badein")) return "when";
-    if (w[0] === "haqqan") return "yesno";
+    if (w[0] === "hàqqan") return "yesno";
     if (w[0] === "kam" || w[0] === "bikam") return "howmuch";
     if (w[0] === "ma" || w[0] === "madha") return "what";
     if (w[0] === "man") return "who";
