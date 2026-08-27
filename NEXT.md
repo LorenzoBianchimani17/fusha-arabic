@@ -54,10 +54,50 @@ you are already looking at them, and act on the selection from there.
 Tapping a lesson must still open it, so the selection needs a way in
 that does not fight the tap.
 
-One decision to make before building it: what the selection does.
-Review drawn from those lessons only is what the existing plumbing
-already supports. Studying them back to back as one run is a different
-thing and needs new session code. Ask before choosing.
+Decided 2026-08-27: once lessons are ticked, offer **both** modes -
+review drawn from those alone (the existing plumbing) and studying
+them back to back as one run (new session code).
+
+## Agreed on 2026-08-27, in the order they were agreed
+
+1. **Pick lessons from the course list** - above.
+2. **Free talk that opens the other way round.** `talkScope()` and
+   `setTalkScope()` already exist and already take several lessons, and
+   the scope picker is already on the screen: that half is built. What
+   is missing is who starts. Today the other side always opens and you
+   always answer. Wanted: you opening as the foreigner, and then the
+   reverse - you playing the local answering a tourist, which makes you
+   produce answers instead of questions. Held to the lessons fed in.
+3. **Roots.** Group the dictionary by consonantal skeleton, so k-t-b
+   shows kitàb, àktub, màktab together. Vocabulary that costs the
+   review pool nothing, which is the only kind left worth having.
+4. **A speed drill.** Today the voice has one slow/normal switch. Want
+   a drill that starts near 0.7 and ratchets towards 1.15 as you get it
+   right, and tells you where you stopped. Comprehension speed is what
+   fails in the street, not vocabulary.
+5. **Which sound you personally get wrong.** The mic compares whole
+   phrases. Aggregate what the recogniser returns by sound and report
+   it: your ح is heard as h eight times in ten, your ع is fine.
+6. **Answer in your own words.** Every drill runs English to Arabic or
+   back. Nothing asks you to answer a question with your own true
+   information. Ilà matà ànta hùna? and you type the real answer.
+7. **A warning before a phrase that commits you.** The `how: "direct"`
+   tag exists and is never surfaced in a session. Show it once, the
+   first time.
+8. **Words the author is not sure of, marked in the app.** Replaces the
+   idea of a printable sheet for a native speaker, which was rejected
+   on 2026-08-27 as too slow: he wants to be speaking it when he lands.
+   Instead, flag the entries whose Levantine or vocalisation is a
+   judgement call, verify the ones that can be verified, and leave the
+   rest carrying a visible mark so a native can be asked about exactly
+   those and nothing else. Every agent draft in this repo ended with a
+   "least sure about" list; that is the raw material and it is
+   currently thrown away.
+9. **Trip triage, opt in only.** Naming a departure date lets the app
+   put everything you will not need in the first week below the line
+   and bring the daily pool back under what a session can carry.
+   Agreed on condition it is **never the default**: the app must not
+   ask for a date, and must work exactly as now until one is given.
 
 
 - **Two-turn chains** in the conversations, a **weekly plan**, and the
