@@ -8878,6 +8878,7 @@
     finishedLessons().forEach(function (l) {
       visiblePhrases(l).forEach(function (p) {
         if (knownRec(l.id, p.ar)) return;
+        if (graduated(l.id, p.ar)) return;
         if (packedAside(p.ar)) return;
         pool++;
       });
@@ -10081,7 +10082,16 @@
     // missing stays in rotation instead of ageing out.
     if (right) {
       if (mode !== "held") rec.s = Math.min(MAX_STRENGTH, rec.s + 1);
+      // Sittings spent at the top, and the day you first got there.
+      // Nothing else in the app could tell a phrase you have held for
+      // three months from one you reached the top of last Tuesday.
+      if (rec.s === MAX_STRENGTH) {
+        if (rec.topFrom === undefined) rec.topFrom = today();
+        rec.top = (rec.top || 0) + 1;
+      }
     } else {
+      rec.top = 0;
+      delete rec.topFrom;
       rec.s = Math.max(0, rec.s - (mode === "soft" ? 1 : 2));
       // Kept so a phrase that keeps slipping can be recognised as one,
       // and so today's misses can lead tomorrow.
@@ -10220,7 +10230,69 @@
   }
 
   // Asleep now, but due to be checked again.
-  function isDueCheck(rec) { return !!rec && knownAge(rec) >= RECHECK_AFTER; }
+  function isDueCheck(rec) {
+    if (!rec) return false;
+    if ((rec.passes || 0) >= GRADUATE_CHECKS) return false;
+    return knownAge(rec) >= RECHECK_AFTER;
+  }
+
+  /* ------------------------------------------------------------
+     LEAVING - nothing ever left. A phrase you set aside came back
+     every ten days for ever, and a phrase you had cold for a year
+     kept its place in a pool that now wants more rounds a day than
+     the longest session gives. Both of those are the same mistake:
+     no way of being finished with something.
+
+     Two ways out, and both have to be earned rather than claimed.
+     Either you hold it at the top of the scale across three separate
+     sittings spread over three months, or you set it aside and it
+     comes back and catches you out three times running and does not.
+     It can be brought back with one tap, and a phrase brought back
+     starts again from where it stood.
+     ------------------------------------------------------------ */
+
+  var GRADUATE_HITS = 3;      // sittings at the top
+  var GRADUATE_DAYS = 90;     // spread over at least this long
+  var GRADUATE_CHECKS = 3;    // or clean checks on something set aside
+
+  function heldOut(lessonId, ar) {
+    return !!(store.out || {})[phraseKey(lessonId, ar)];
+  }
+
+  function graduated(lessonId, ar) {
+    if (heldOut(lessonId, ar)) return false;
+    var rec = rawStrength(lessonId, ar);
+    if (rec && rec.s >= MAX_STRENGTH && (rec.top || 0) >= GRADUATE_HITS &&
+      rec.topFrom !== undefined && (today() - rec.topFrom) >= GRADUATE_DAYS) return true;
+    var k = knownRec(lessonId, ar);
+    return !!k && (k.passes || 0) >= GRADUATE_CHECKS;
+  }
+
+  // Brought back by hand: a mark that says never mind, keep asking me.
+  function bringBack(lessonId, ar) {
+    if (!store.out) store.out = {};
+    store.out[phraseKey(lessonId, ar)] = 1;
+    var k = knownRec(lessonId, ar);
+    if (k) { k.passes = 0; k.day = today(); }
+    save();
+  }
+
+  function letGo(lessonId, ar) {
+    if (!store.out) return;
+    delete store.out[phraseKey(lessonId, ar)];
+    save();
+  }
+
+  function graduatedList() {
+    var out = [];
+    LESSONS.forEach(function (l) {
+      l.phrases.forEach(function (p) {
+        if (isHidden(l.id, p.ar)) return;
+        if (graduated(l.id, p.ar)) out.push({ ar: p.ar, en: p.en, lesson: l });
+      });
+    });
+    return out;
+  }
 
   function knownCount() {
     return Object.keys(store.known || {}).length;
@@ -10385,6 +10457,7 @@
     finishedLessons().forEach(function (l) {
       phrasesOf(l).forEach(function (item) {
         if (isHidden(l.id, item.ar)) return;
+        if (graduated(l.id, item.ar)) return;
         // Put aside for the trip: still in the lesson, still readable,
         // simply not what comes round while the days are short.
         if (packedAside(item.ar)) { packedOut++; return; }
@@ -14871,9 +14944,30 @@
         '<p class="fold-lead">Nothing parked. When two phrases do the same job, ' +
         "<b>One job, several phrases</b> lets you keep one and only recognise the other.</p></div>";
 
+    var gone = graduatedList();
+    var goneBlock = gone.length
+      ? '<div class="pb-group"><h3>Finished with &#183; ' + gone.length + "</h3>" +
+        '<p class="fold-lead">These have left the rotation for good. Either you held one at the top ' +
+        "of the scale across " + GRADUATE_HITS + " sittings spread over " + GRADUATE_DAYS +
+        " days, or you set it aside and it came back " + GRADUATE_CHECKS +
+        " times running and failed to catch you out. Nothing in this app was ever finished before " +
+        "and the pool paid for it. One tap puts any of them back.</p>" +
+        gone.map(function (it) {
+          return '<div class="pb-row">' + sayBtn(it.ar, true) +
+            '<span class="pb-text"><span class="ar">' + esc(disp(it.ar)) + "</span>" +
+            '<span class="pb-en">' + esc(it.en) + "</span></span>" +
+            '<button class="pill pill--md aside" data-act="bring-back" data-id="' + esc(it.ar) +
+            '" data-lesson="' + it.lesson.id + '">Ask me again</button></div>';
+        }).join("") + "</div>"
+      : '<div class="pb-group"><h3>Finished with</h3>' +
+        '<p class="fold-lead">Nothing yet. A phrase leaves for good once you have held it at the top ' +
+        "across " + GRADUATE_HITS + " sittings over " + GRADUATE_DAYS +
+        " days, or once something you set aside has come back " + GRADUATE_CHECKS +
+        " times and not caught you out. Until then everything keeps coming round.</p></div>";
+
     return topbarHTML("Your words") +
       '<p class="pb-lead">What you have taken out of rotation, and how to put it back. Tap any line to hear it.</p>' +
-      knownBlock + passiveBlock + hiddenBlock +
+      goneBlock + knownBlock + passiveBlock + hiddenBlock +
       (idx.known.length || idx.hidden.length || idx.passive.length
         ? '<div class="btn-row btn-row-stack">' +
           (idx.known.length ? '<button class="btn btn-ghost" data-act="unknow-all">Return all set aside</button>' : "") +
@@ -18380,7 +18474,14 @@
   function roundNote(t) {
     if (t.isBack) return "One of the ones worth having back first";
     if (t.isEcho) return "The same one again, on purpose";
-    if (t.isCheck) return "A phrase you set aside, coming back for its check";
+    if (t.isCheck) {
+      var ck = t.phrase ? knownRec(lessonOf(t, t.phrase) ? lessonOf(t, t.phrase).id : 0, t.phrase.ar) : null;
+      var left = ck ? GRADUATE_CHECKS - (ck.passes || 0) : GRADUATE_CHECKS;
+      return "A phrase you set aside, coming back for its check" +
+        (left > 0 && left < GRADUATE_CHECKS
+          ? " - " + left + " more clean and it stops coming back"
+          : "");
+    }
     if (t.isMiss) return "You missed this one recently";
     if (t.isLeech) return "This one keeps slipping, so here it is in pieces";
     return "";
@@ -19259,6 +19360,19 @@
     if (right && !secondTry && task.points > 0) session.earned += 1;
     if (!task.isRetry && !task.noMemory) noteMode(task, right && !secondTry);
     if (!right && phrase && !task.isRetry) noteMiss(task, phrase);
+    // A phrase you set aside is only really gone once it has come back
+    // and failed to catch you out, three times running. Missing one
+    // sends the count to nothing, which is the point of a check.
+    if (task.isCheck && phrase) {
+      var ckl = lessonOf(task, phrase);
+      var ck = ckl ? knownRec(ckl.id, phrase.ar) : null;
+      if (ck) {
+        if (right && !secondTry) ck.passes = (ck.passes || 0) + 1;
+        else ck.passes = 0;
+        ck.day = today();
+        save();
+      }
+    }
     // Getting there on the second go is not knowing it: the round moves
     // on, but the phrase does not climb for it.
     if (right && secondTry) {
@@ -20234,6 +20348,11 @@
     if (act === "save-file") { saveToFile(); return; }
     if (act === "backup" || act === "search" || act === "dict-search" || act === "typing"
       || act === "yours-typing" || act === "my-way-typing") return;
+    if (act === "bring-back") {
+      bringBack(Number(el.getAttribute("data-lesson")), el.getAttribute("data-id"));
+      render();
+      return;
+    }
     if (act === "my-way") {
       if (session) session.myWay = { at: session.i, draft: "", read: null };
       render();

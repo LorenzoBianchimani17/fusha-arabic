@@ -6583,5 +6583,74 @@ section("saying it your way, and being sent back to where you met a word");
 }
 
 
+section("being finished with a phrase, which nothing here ever was");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+  st.str = {}; st.known = {}; st.out = {};
+  const ar = LESSONS[0].phrases[0].ar;
+
+  check("a phrase you have never met has not left", !D.graduated(1, ar));
+
+  // route one: held at the top, across sittings, over months
+  for (let i = 0; i < 8; i++) D.bumpStrength(1, ar, true);
+  check("getting it right a lot on one day is not enough",
+    !D.graduated(1, ar));
+  const rec = st.str["1|" + ar];
+  check("but the app now knows it is at the top and when it got there",
+    rec.s === D.MAX_STRENGTH && typeof rec.topFrom === "number" &&
+    rec.top >= D.GRADUATE_HITS);
+  rec.topFrom = D.today() - D.GRADUATE_DAYS;
+  check("held there long enough, it is finished with", D.graduated(1, ar));
+
+  check("and it is out of the rotation", !D.studied().some(x => x.ar === ar));
+  rec.top = 1;
+  check("one sitting at the top is not three", !D.graduated(1, ar));
+  rec.top = D.GRADUATE_HITS;
+  check("and missing it once wipes the run", (function () {
+    D.bumpStrength(1, ar, false);
+    return !D.graduated(1, ar);
+  })());
+
+  // route two: set aside, and it stops catching you out
+  st.str = {}; st.known = {}; st.out = {};
+  D.setKnown(1, ar);
+  check("setting it aside is not the same as being finished with it",
+    !D.graduated(1, ar));
+  const k = st.known["1|" + ar];
+  k.passes = D.GRADUATE_CHECKS - 1;
+  check("nor is nearly enough clean checks", !D.graduated(1, ar));
+  k.passes = D.GRADUATE_CHECKS;
+  check("but a full run of them is", D.graduated(1, ar));
+  check("and it stops being asked for its check", !D.isDueCheck ||
+    !D.studied().some(x => x.ar === ar));
+
+  // one tap brings it back
+  D.bringBack(1, ar);
+  check("bringing it back does exactly that", !D.graduated(1, ar));
+  check("and it is in the rotation again", D.studied().some(x => x.ar === ar));
+  check("with its check count started over", (st.known["1|" + ar] || {}).passes === 0);
+  D.letGo(1, ar);
+
+  // the screen
+  st.str = {}; st.known = {}; st.out = {};
+  click({ "data-go": "words" });
+  check("with nothing finished the screen says what it would take",
+    /Nothing yet/.test(strip(screenOnly())) &&
+    new RegExp(String(D.GRADUATE_DAYS) + " days").test(strip(screenOnly())));
+  D.setKnown(1, ar);
+  st.known["1|" + ar].passes = D.GRADUATE_CHECKS;
+  click({ "data-go": "words" });
+  check("and once something is, it is listed", /Finished with/.test(strip(screenOnly())));
+  check("with a way to ask for it again", /data-act="bring-back"/.test(h));
+  click({ "data-act": "bring-back", "data-id": ar, "data-lesson": "1" });
+  check("which works from the screen too", !D.graduated(1, ar));
+
+  st.str = {}; st.known = {}; st.out = {};
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);
