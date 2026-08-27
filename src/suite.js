@@ -6411,5 +6411,59 @@ section("before you go, and only if you say so");
 }
 
 
+section("changing what you ordered, and ordering a drink");
+{
+  const D = global.__data;
+  const how = LESSONS.find(l => l.id === 63);
+  const bar = LESSONS.find(l => l.id === 64);
+  check("there is a lesson about changing an order", !!how);
+  check("and one about a bar", !!bar);
+
+  // the point of 63 is that bidùn stops being one frozen phrase
+  const withouts = LESSONS.flatMap(l => l.phrases).filter(p => /^Bid\u00f9n /.test(p.ar));
+  check(`without is now a word rather than one sentence (${withouts.length})`, withouts.length >= 3);
+  check("and it says so where you meet it",
+    /put it in front of anything you do not want/.test(
+      how.phrases.find(p => p.ar.indexOf("b\u00e0sal") !== -1).note));
+  check("the street form of it is given, since it is a different word",
+    D.DIALECT["Bid\u00f9n b\u00e0sal, min f\u00e0dlik"].lev[0].indexOf("B\u00e0la") === 0);
+
+  // the things you put in it
+  ["S\u00e0lsa", "Milh", "F\u00f9lful", "Z\u00e0it", "J\u00f9bna", "L\u00e0imun", "Th\u00f9m"]
+    .forEach(ar => check("it can name " + ar, how.phrases.some(p => p.ar === ar)));
+  check("and the fast food you put them on",
+    ["Sandw\u00ecch", "Bat\u00e0ta m\u00e0qliyya"].every(ar => how.phrases.some(p => p.ar === ar)));
+  check("with, more, add and another are all there",
+    ["Ma\u02bfa s\u00e0lsa", "S\u00e0lsa \u00e0kthar, min f\u00e0dlik",
+     "\u00c0dif j\u00f9bna, min f\u00e0dlik", "W\u00e0hid \u00e0khar, min f\u00e0dlik"]
+      .every(ar => how.phrases.some(p => p.ar === ar)));
+  check("and takeaway, which is one accent from my travel",
+    how.phrases.some(p => p.ar.indexOf("Saf\u00e0ri") === 0) &&
+    D.normalise("Saf\u00e0ri") === D.normalise("safari"));
+
+  // 64: the bar it could not order in
+  ["B\u00ecra", "Nab\u00ecdh", "K\u00f2kt\u00e8l", "Zuj\u00e0ja", "K\u00e0's"]
+    .forEach(ar => check("the bar knows " + ar, bar.phrases.some(p => p.ar === ar)));
+  check("ice, both ways round",
+    bar.phrases.some(p => p.ar === "Ma\u02bfa th\u00e0lj") &&
+    bar.phrases.some(p => p.ar === "Bid\u00f9n th\u00e0lj"));
+  check("and it says ice and snow are one word",
+    /snow from the weather lesson/.test(bar.phrases.find(p => p.ar === "Ma\u02bfa th\u00e0lj").note));
+  check("turning a drink down without making it a moment is core",
+    bar.phrases.some(p => p.ar.indexOf("l\u00e0kin taf\u00e0ddal") !== -1 && p.core));
+  check("and there is a second way out that names what you will have instead",
+    bar.phrases.some(p => p.ar.indexOf("sa'\u00e0shrab m\u00e0'") !== -1));
+
+  // both lessons held to the same standard as the rest
+  [how, bar].forEach(l => {
+    check("lesson " + l.id + " is all speakable", l.phrases.every(p => !!SCRIPT[p.ar]));
+    check("lesson " + l.id + " exists in Levantine",
+      l.phrases.every(p => (D.DIALECT[p.ar] || {}).lev || (D.SAME.lev || {})[p.ar]));
+    check("lesson " + l.id + " has its dialogue covered both ways",
+      (l.dialogue || []).every(d => SCRIPT[d.ask] && SCRIPT[d.reply]));
+  });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);
