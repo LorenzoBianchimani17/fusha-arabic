@@ -6482,5 +6482,106 @@ section("changing what you ordered, and ordering a drink");
 }
 
 
+section("saying it your way, and being sent back to where you met a word");
+{
+  const D = global.__data;
+  unlockAll();
+  const st = peek().store;
+
+  // where you first met a word
+  const early = D.firstLessonOf("marh\u00e0ban");
+  check("a word knows a lesson you met it in", !!early && early.lesson.id === 1);
+  check("and a word the course never uses knows nothing",
+    D.firstLessonOf("zzzqqq") === null);
+  check("the article form and the bare form are not confused",
+    (D.firstLessonOf("al-b\u00e0it") || {}).lesson !== undefined);
+
+  // it only labels what is genuinely behind you
+  const late = LESSONS.find(l => l.id === 57);
+  const html = D.glossHTML("H\u00e0dha al-\u02bfunw\u00e0n", late);
+  check("a breakdown in a late lesson points back at the earlier ones",
+    /gloss-back/.test(html) && /lesson \d+/.test(html));
+  check("and the button goes to that lesson", /data-go="lesson" data-id="\d+"/.test(html));
+  const first = D.glossHTML("H\u00e0dha al-\u02bfunw\u00e0n", LESSONS[0]);
+  check("in the first lesson there is nothing behind you, so no label",
+    !/gloss-back/.test(first));
+  check("and with no lesson to compare against it stays quiet",
+    !/gloss-back/.test(D.glossHTML("H\u00e0dha al-\u02bfunw\u00e0n")));
+
+  // your own way of saying it
+  st.games = { quiz: true, build: false, match: false, dialog: false, write: false, listen: false, say: false, dictate: false };
+  click({ "data-go": "home" });
+  click({ "data-go": "play", "data-id": "1" });
+  check("a round offers to let you try it your way", /data-act="my-way"/.test(h));
+  click({ "data-act": "my-way" });
+  check("which opens a box", /data-act="my-way-typing"/.test(h));
+  check("saying plainly that it is not marked and does not touch the round",
+    /does not touch the round/.test(strip(screenOnly())));
+  check("with nothing to read until you write something",
+    /data-act="my-way-check" disabled/.test(h));
+
+  const task = peek().session.tasks[peek().session.i];
+  const want = task.phrase.ar;
+
+  // 1. it is the line itself
+  type("my-way-typing", want);
+  click({ "data-act": "my-way-check" });
+  check("your own words being the very line is recognised as that",
+    /That is the line it was after/.test(strip(screenOnly())));
+
+  // 2. a real line from the course, but not this one
+  const other = LESSONS[0].phrases.find(p => p.ar !== want);
+  click({ "data-act": "my-way-close" });
+  click({ "data-act": "my-way" });
+  type("my-way-typing", other.ar);
+  click({ "data-act": "my-way-check" });
+  check("another real line is named as real, and no more than that",
+    /a real line from the course/.test(strip(screenOnly())) &&
+    /cannot tell you it fits/.test(strip(screenOnly())));
+
+  // 3. built out of words you have, but not a line
+  click({ "data-act": "my-way-close" });
+  click({ "data-act": "my-way" });
+  type("my-way-typing", "An\u00e0 h\u00f9na m\u00e0'");
+  click({ "data-act": "my-way-check" });
+  check("a sentence you invented out of your own words says so",
+    /Every word in it is one the course gave you/.test(strip(screenOnly())));
+  check("and hands the judgement back to you rather than pretending",
+    /for you to judge/.test(strip(screenOnly())));
+  check("showing what you actually said, word by word", /class="fam-word"/.test(h));
+
+  // 4. a word from nowhere
+  click({ "data-act": "my-way-close" });
+  click({ "data-act": "my-way" });
+  type("my-way-typing", "zzzqqq wwwxxx");
+  click({ "data-act": "my-way-check" });
+  check("a word it does not know is admitted as such",
+    /cannot tell you anything about this one/.test(strip(screenOnly())));
+  check("and named", /zzzqqq/.test(strip(screenOnly())));
+
+  // and none of it counted
+  const before = JSON.stringify(peek().store.str || {});
+  click({ "data-act": "my-way-close" });
+  check("closing it puts you back in the round", !/data-act="my-way-typing"/.test(h));
+  check("and nothing about the round changed",
+    JSON.stringify(peek().store.str || {}) === before &&
+    peek().session.state === "asking");
+  check("the test never offers it, because there it would be a way round",
+    (function () {
+      const was = peek().session.isTest;
+      peek().session.isTest = true;
+      click({ "data-act": "my-way" });
+      const gone = !/data-act="my-way"/.test(h) && !/data-act="my-way-typing"/.test(h);
+      peek().session.isTest = was;
+      peek().session.myWay = null;
+      return gone;
+    })());
+
+  st.games = undefined;
+  st.str = {};
+  click({ "data-go": "home" });
+}
+
+
 console.log("\n" + (fail.length ? "FAILURES (" + fail.length + "): " + fail.join("; ") : "ALL CHECKS PASS"));
 process.exit(fail.length ? 1 : 0);

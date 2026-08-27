@@ -71,7 +71,7 @@ HOOKS = (
     ' TRIP_WEEKS: TRIP_WEEKS, daysToTrip: daysToTrip, setTrip: setTrip, tripOn: tripOn,'
     ' packing: packing, packedSet: packedSet, packedAside: packedAside,'
     ' packCounts: packCounts, setPacked: setPacked, visiblePhrases: visiblePhrases,'
-    ' studied: studied };'
+    ' studied: studied, firstLessonOf: firstLessonOf, myWayRead: myWayRead, glossHTML: glossHTML };'
 )
 
 START = '\n  applyHash(typeof window.location !== "undefined" ? window.location.hash : "");'

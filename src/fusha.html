@@ -1021,6 +1021,29 @@
 
   .dict-row { width: 100%; text-align: left; cursor: pointer; }
 
+  .my-way {
+    margin-top: var(--s-5);
+    padding: var(--s-5);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--r-md);
+    background: var(--surface);
+  }
+
+  .my-way .fold-lead { margin-top: 0; }
+  .my-way .fam-word { cursor: default; }
+
+  .gloss-back {
+    margin-left: auto;
+    padding: 1px var(--s-3);
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line);
+    font-size: var(--t-1);
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+
+  .gloss-back:hover { border-color: var(--line-strong); color: var(--ink-2); }
+
   .ear-row {
     display: flex;
     align-items: center;
@@ -17960,12 +17983,59 @@
       pickerHTML("choose what this lesson drills") + "</div></details>";
   }
 
-  function glossHTML(ar) {
+  // A word broken out of a phrase in lesson forty is often a word you
+  // first met in lesson three, and until now nothing said so. Knowing
+  // that it is not new is half of not being frightened of the card, and
+  // being able to go back and look is the other half.
+  var WORD_FIRST = null, WORD_FIRST_BARE = null;
+
+  function firstLessonOf(word) {
+    if (!WORD_FIRST) {
+      WORD_FIRST = {};
+      WORD_FIRST_BARE = {};
+      dictIndex().list.forEach(function (r) {
+        var best = null;
+        r.lines.forEach(function (line) {
+          var lid = lessonTeaching(line);
+          var l = lid ? lessonById(lid) : null;
+          if (!l) return;
+          var at = LESSONS.indexOf(l);
+          if (at !== -1 && (best === null || at < best.at)) best = { at: at, lesson: l };
+        });
+        if (!best) return;
+        // Keyed exactly first, because al-bàit and bàit are two rows
+        // with two histories and the article one must not squat on the
+        // bare one's key. The stripped forms go in a second map that is
+        // only consulted when the exact one has nothing.
+        var raw = String(r.word).toLowerCase();
+        if (!WORD_FIRST[raw]) WORD_FIRST[raw] = best;
+        var flat = normalise(r.word);
+        if (!WORD_FIRST[flat]) WORD_FIRST[flat] = best;
+        var bare = bareWord(raw);
+        if (!WORD_FIRST_BARE[bare] || best.at < WORD_FIRST_BARE[bare].at) {
+          WORD_FIRST_BARE[bare] = best;
+        }
+      });
+    }
+    var w = String(word).toLowerCase().replace(/[?!.,;:"]/g, "");
+    return WORD_FIRST[w] || WORD_FIRST[normalise(w)] ||
+      WORD_FIRST_BARE[bareWord(w)] || WORD_FIRST_BARE[normalise(bareWord(w))] || null;
+  }
+
+  function glossHTML(ar, from) {
     var parts = glossesFor(disp(ar));
     if (!parts.length) return "";
+    var here = from ? LESSONS.indexOf(from) : -1;
     return '<div class="gloss">' + parts.map(function (g) {
+      var seen = firstLessonOf(g.word);
+      var older = seen && here !== -1 && seen.at < here;
       return '<span class="gloss-row"><span class="ar">' + esc(g.word) + "</span>" +
-        '<span class="gloss-eq">=</span><span class="gloss-en">' + esc(g.gloss) + "</span></span>";
+        '<span class="gloss-eq">=</span><span class="gloss-en">' + esc(g.gloss) + "</span>" +
+        (older
+          ? '<button class="gloss-back" data-go="lesson" data-id="' + seen.lesson.id +
+            '" title="' + esc(seen.lesson.title) + '">' +
+            "lesson " + lessonNo(seen.lesson) + " &rarr;</button>"
+          : "") + "</span>";
     }).join("") + "</div>";
   }
 
@@ -18266,7 +18336,7 @@
       (learn.shown
         ? '<div class="flash-rule"></div><div class="flash-en">' + esc(p.en) + "</div>" +
           (learn.guessed ? guessBackHTML(p) : "") +
-          glossHTML(p.ar) + note + aside
+          glossHTML(p.ar, l) + note + aside
         : guessHTML(p)) +
       "</div>" +
       '<div class="btn-row">' +
@@ -18378,7 +18448,90 @@
       (session.grewShown && session.i >= session.tasks.length - EXTRA_ROUNDS
         ? '<p class="round-why">Going well, so a few more.</p>'
         : note ? '<p class="round-why">' + esc(note) + "</p>" : "") +
-      '<div class="fade-in">' + body + "</div>" + verdictHTML(t);
+      '<div class="fade-in">' + body + "</div>" + myWayHTML(t) + verdictHTML(t);
+  }
+
+  /* ------------------------------------------------------------
+     YOUR WAY - being made to produce one exact sentence is not how
+     anybody speaks. This lets you try your own version of the same
+     job first. It is deliberately not a marker: a machine in a
+     static file cannot tell you whether a sentence you invented
+     says what you meant. It says the only three things it honestly
+     can, and the third of them - here is what you actually said,
+     word by word - is the one worth having. It never touches the
+     score.
+     ------------------------------------------------------------ */
+
+  function myWayWant(t) {
+    if (t.phrase) return { ar: t.phrase.ar, en: t.phrase.en };
+    if (t.exchange) return { ar: t.exchange.reply, en: t.exchange.en };
+    return null;
+  }
+
+  function myWayRead(text, want) {
+    var q = normalise(text);
+    var hit = null;
+    courseIndex().forEach(function (item) {
+      if (hit) return;
+      if (normalise(item.ar) === q || normalise(disp(item.ar)) === q) hit = item;
+    });
+    return {
+      hit: hit,
+      same: !!want && (sameSaidLoose(text, want.ar) || sameSaidLoose(text, disp(want.ar))),
+      read: yoursRead(text, want ? want.ar : "")
+    };
+  }
+
+  function myWayVerdict(r) {
+    if (r.same) {
+      return '<div class="verdict-msg ok"><b>That is the line it was after.</b>&nbsp;' +
+        "<span>You had it your own way round, which is the same thing.</span></div>";
+    }
+    if (r.hit) {
+      return '<div class="verdict-msg ok"><b>That is a real line from the course.</b>&nbsp;' +
+        "<span>" + esc(r.hit.en) + "</span></div>" +
+        '<p class="fold-lead">Whether it does the same job here is your call. I can tell you it ' +
+        "exists and what it means; I cannot tell you it fits.</p>";
+    }
+    if (r.read.strange.length) {
+      return '<div class="verdict-msg no"><b>I cannot tell you anything about this one.</b>&nbsp;' +
+        "<span>Not from the course: " + esc(r.read.strange.join(", ")) + "</span></div>" +
+        '<p class="fold-lead">A name, or something you picked up in the street, is fine. A word you ' +
+        "half remember is worth looking up before you lean on it.</p>";
+    }
+    if (!r.read.mine.length) return "";
+    return '<div class="verdict-msg warn"><b>Every word in it is one the course gave you.</b>&nbsp;' +
+      "<span>Whether it says what you meant is for you to judge. Here it is, word by word.</span></div>" +
+      '<div class="fam-words">' + r.read.mine.map(function (m) {
+        return '<span class="fam-word">' + esc(m.word) +
+          '<span class="fam-gloss">' + esc(m.gloss) + "</span></span>";
+      }).join("") + "</div>";
+  }
+
+  function myWayHTML(t) {
+    if (session.state === "checked" || session.isTest) return "";
+    if (session.myWay && session.myWay.at !== session.i) session.myWay = null;
+    if (!myWayWant(t)) return "";
+    if (!session.myWay) {
+      return '<div class="dunno-row"><button class="link-btn" data-act="my-way">' +
+        "Let me try it my way first</button></div>";
+    }
+    var r = session.myWay.read;
+    return '<div class="my-way">' +
+      '<p class="fold-lead">Say the same thing with words you already have. Nothing here is marked ' +
+      "and it does not touch the round: answer it properly afterwards.</p>" +
+      '<div class="talk-input">' +
+      '<input class="type-in talk-field" data-act="my-way-typing" type="text" value="' +
+      esc(session.myWay.draft) + '" placeholder="your own version, in Arabic" autocomplete="off"' +
+      ' autocorrect="off" autocapitalize="off" spellcheck="false"' +
+      ' aria-label="Your own version"></div>' +
+      (r ? myWayVerdict(r) : "") +
+      '<div class="btn-row">' +
+      '<button class="btn btn-ghost" data-act="my-way-close">' +
+      (r ? "Back to the round" : "Never mind") + "</button>" +
+      '<button class="btn" data-act="my-way-check"' +
+      (session.myWay.draft.trim() ? "" : " disabled") + ">See what you said</button>" +
+      "</div></div>";
   }
 
   function dunnoHTML() {
@@ -20061,7 +20214,24 @@
     if (act === "restore") { restoreBackup(); return; }
     if (act === "save-file") { saveToFile(); return; }
     if (act === "backup" || act === "search" || act === "dict-search" || act === "typing"
-      || act === "yours-typing") return;
+      || act === "yours-typing" || act === "my-way-typing") return;
+    if (act === "my-way") {
+      if (session) session.myWay = { at: session.i, draft: "", read: null };
+      render();
+      return;
+    }
+    if (act === "my-way-check") {
+      if (!session || !session.myWay || !session.myWay.draft.trim()) return;
+      session.myWay.read = myWayRead(session.myWay.draft,
+        myWayWant(session.tasks[session.i]));
+      render();
+      return;
+    }
+    if (act === "my-way-close") {
+      if (session) session.myWay = null;
+      render();
+      return;
+    }
     if (act === "trip-set") {
       setTrip(Number(el.getAttribute("data-id")));
       render();
@@ -20629,6 +20799,13 @@
       talk.draft = el.value;
       var send = app.querySelector('[data-act="talk-send"]');
       if (send) send.disabled = !el.value.trim();
+      return;
+    }
+    if (what === "my-way-typing") {
+      if (session && session.myWay && !session.myWay.read) session.myWay.draft = el.value;
+      var mb = app.querySelector && app.querySelector('[data-act="my-way-check"]');
+      if (mb) { mb.disabled = !el.value.trim(); return; }
+      render();
       return;
     }
     if (what === "yours-typing") {
